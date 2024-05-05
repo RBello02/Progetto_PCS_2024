@@ -1,4 +1,7 @@
+#copiare la riga seguente per aggiungere file .cpp
 #list(APPEND DFN_sources "${CMAKE_CURRENT_SOURCE_DIR}/<nome file>")
+
+#copiare la riga seguente per aggiungere file .hpp
 #list(APPEND DFN_headers "${CMAKE_CURRENT_SOURCE_DIR}/<nome file>")
 
 

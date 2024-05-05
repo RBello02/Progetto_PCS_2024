@@ -39,9 +39,9 @@ list(APPEND ${CMAKE_PROJECT_NAME}_LINKED_LIBRARIES PRIVATE GTest::gmock_main)
 # Insert Sources
 ################################################################################
 add_subdirectory(src)
-list(APPEND ${CMAKE_PROJECT_NAME}_SOURCES ${DFN_sources})
-list(APPEND ${CMAKE_PROJECT_NAME}_HEADERS ${DFN_headers})
-list(APPEND ${CMAKE_PROJECT_NAME}_INCLUDE ${DFN_includes})
+list(APPEND ${CMAKE_PROJECT_NAME}_sources ${DFN_sources})
+list(APPEND ${CMAKE_PROJECT_NAME}_headers ${DFN_headers})
+list(APPEND ${CMAKE_PROJECT_NAME}_includes ${DFN_includes})
 
 add_subdirectory(TestingParaview/Code/src)
 list(APPEND ${CMAKE_PROJECT_NAME}_sources ${src_paraview_sources})
@@ -57,11 +57,11 @@ list(APPEND ${CMAKE_PROJECT_NAME}_TEST_includes ${src_test_includes})
 ################################################################################
 add_executable(${PROJECT_NAME}
 	main.cpp
-        ${${CMAKE_PROJECT_NAME}_SOURCES}
-        ${${CMAKE_PROJECT_NAME}_HEADERS})
+        ${${CMAKE_PROJECT_NAME}_sources}
+        ${${CMAKE_PROJECT_NAME}_headers})
 
 target_link_libraries(${PROJECT_NAME} ${${CMAKE_PROJECT_NAME}_LINKED_LIBRARIES})
-target_include_directories(${PROJECT_NAME} PRIVATE ${${CMAKE_PROJECT_NAME}_INCLUDE})
+target_include_directories(${PROJECT_NAME} PRIVATE ${${CMAKE_PROJECT_NAME}_includes})
 target_compile_options(${PROJECT_NAME} PUBLIC -fPIC)
 
 
