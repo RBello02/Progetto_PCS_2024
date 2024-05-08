@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <string>
 
 namespace GeometryLibrary{
 
@@ -15,7 +16,7 @@ bool importData(const string& path, Fractures& fract){
 
     //la prima riga è di header
     string header1;
-    file >> header1;
+    getline(file, header1);
 
     // mi salvo il numero di fratture
     file >> fract.num_fractures;
@@ -29,42 +30,35 @@ bool importData(const string& path, Fractures& fract){
 
     unsigned int cont = 0; //contatore che mi aiuta a salvarmi i dati
     unsigned int id;
-    unsigned int num_vertici;
-    char del; //mi serve per fermare la conversione ogni volta che incontro un ;
+    unsigned int num_vertici = 0;
     MatrixXd vertices;
+    string line;
 
-    while (file.is_open()){
-        cout << "Sono enyrato nel file" << endl;
-        if (cont == 0 || cont == 2){string header;file >> header;}
-        else if (cont == 1){file >> id >> del >> num_vertici;
-                            fract.id_fractures.push_back(id);
-                            fract.dim_fractures.push_back(num_vertici);
-                            vertices = MatrixXd::Zero(3, num_vertici);}
-        else if (cont == 3){
-            //leggo le x
-            for (unsigned int i = 0; i < num_vertici -1; i++){
-                cout << "RENA HO RAGIONE IO" << endl;
-                cout << "size of mat" << vertices.size() << endl;
-                file >> vertices(0,i) >> del;
-                cout << vertices(0,0);
-            }
-            file >> vertices(0,num_vertici-1);
+    while (!file.eof()){
+        getline(file, line);
+        cout << "contatore  " << cont << endl;
+        cout << "line " << line << endl;
 
-            //leggo le y
-            for (unsigned int i = 0; i < num_vertici -1; i++){
-                file >> vertices(1,i) >> del;
-            }
-            file >> vertices(1,num_vertici-1);
+        if (cont == 2){
+                        istringstream convert(line);
+                        char del; //mi serve per fermare la conversione ogni volta che incontro un ;
+                        convert >> id >> del >> num_vertici;
+                        fract.id_fractures.push_back(id);
+                        fract.dim_fractures.push_back(num_vertici);
+                        cout << "num vertici " << num_vertici << endl;
+                        vertices = MatrixXd::Zero(3, num_vertici);}
 
-            //leggo le z
-            for (unsigned int i = 0; i < num_vertici -1; i++){
-                file >> vertices(2,i) >> del;
+        else if (cont < 6 && cont > 3){
+                for (unsigned int i = 0; i < num_vertici -1; i++){
+                char del; //mi serve per fermare la conversione ogni volta che incontro un ;
+                file >> vertices(cont-4,i) >> del;
             }
-            file >> vertices(2,num_vertici-1);
+            file >> vertices(cont-4,num_vertici-1);
+
 
         }
 
-        if (cont == 3){cont = 0;}
+        if (cont == 6){cont = 0;}
         else {cont += 1;}
 
     }
