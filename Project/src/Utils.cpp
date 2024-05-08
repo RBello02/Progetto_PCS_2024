@@ -1,4 +1,5 @@
 #include "Utils.hpp"
+#include "reshaping_array.hpp"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -29,7 +30,7 @@ bool importData(const string& path, Fractures& fract){
     fract.vertices_fractures.resize(fract.num_fractures);
 
     //non so a priori quanti vertici ho considerando tutte le fratture, considero una stima pessimistica basata sul fatto che ogni frattura ha 7 vertici
-    fract.coordinates.resize(fract.num_fractures*7);
+    fract.coordinates.reserve(fract.num_fractures*7);
 
     //mi creo delle variabili ausiliari che mi aiutano a salvarmi i dati
     unsigned int cont = 0; //contatore che mi aiuta a capire per ogni frattura che dati sto leggendo
@@ -69,9 +70,10 @@ bool importData(const string& path, Fractures& fract){
             cont = 0;
 
             //arrivata a questo punto mi sono salvata tutte le info riguardanti una frattura quindi vado ad aggiungerle alla strutture dati
-            for (unsigned int i = 0; i < num_vertici; i++)
-            {
-                fract.coordinates[contatore_vertici] = {vertices(0,i), vertices(1,i), vertices(2,i)};
+            for (unsigned int i = 0; i < num_vertici; i++){
+                fract.coordinates.push_back({vertices(0,i), vertices(1,i), vertices(2,i)});
+                fract.coordinates = ReshapingArray::VerificaRaddoppio(fract.coordinates);
+
                 fract.vertices_fractures[id].push_back(contatore_vertici);
 
                 contatore_vertici += 1;
@@ -82,7 +84,7 @@ bool importData(const string& path, Fractures& fract){
 
     }
 
-
+    fract.coordinates.shrink_to_fit(); //elimino la capacità in eccesso
     file.close();
     return true;
 }
