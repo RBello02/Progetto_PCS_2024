@@ -11,7 +11,7 @@ int main()
 {
     cout << setprecision(16);
     string path = "DFN";
-    string filename = path + "/FR3_data.txt";
+    string filename = path + "/FR10_data.txt";
     Fractures frc;
 
     if (!importData(filename, frc)){return 1;}
