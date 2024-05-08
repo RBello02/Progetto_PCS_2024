@@ -38,9 +38,9 @@ bool importData(const string& path, Fractures& fract){
         getline(file, line);
         cout << "contatore  " << cont << endl;
         cout << "line " << line << endl;
+        istringstream convert(line);
 
         if (cont == 2){
-                        istringstream convert(line);
                         char del; //mi serve per fermare la conversione ogni volta che incontro un ;
                         convert >> id >> del >> num_vertici;
                         fract.id_fractures.push_back(id);
@@ -51,14 +51,14 @@ bool importData(const string& path, Fractures& fract){
         else if (cont < 6 && cont > 3){
                 for (unsigned int i = 0; i < num_vertici -1; i++){
                 char del; //mi serve per fermare la conversione ogni volta che incontro un ;
-                file >> vertices(cont-4,i) >> del;
+                convert >> vertices(cont-4,i) >> del;
             }
-            file >> vertices(cont-4,num_vertici-1);
+            convert >> vertices(cont-4,num_vertici-1);
 
 
         }
 
-        if (cont == 6){cont = 0;}
+        if (cont == 5){cont = 0;}
         else {cont += 1;}
 
     }
