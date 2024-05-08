@@ -14,6 +14,5 @@ int main()
     if (!importData(finame, frc)){return 1;}
 
 
-    //verifico branch
   return 0;
 }
