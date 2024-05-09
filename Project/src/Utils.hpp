@@ -9,6 +9,7 @@ namespace GeometryLibrary {
 
 bool importData(const string& path, Fractures& fract);
 
+
 } //namespace
 
 #endif
