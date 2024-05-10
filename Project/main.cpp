@@ -8,8 +8,8 @@
 #include <cmath>
 
 using namespace GeometryLibrary;
-// using namespace Eigen;
-// using namespace std;
+using namespace Eigen;
+using namespace std;
 
 inline Vector4d Equazione_piano(const Fractures& frc, unsigned int id_fract1)
 {
