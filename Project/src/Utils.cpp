@@ -5,6 +5,12 @@
 #include <sstream>
 #include <string>
 
+
+#include <cmath>
+
+#include "Eigen/Eigen"
+using namespace Eigen;
+
 namespace GeometryLibrary{
 
 bool importData(const string& path, Fractures& fract){
@@ -87,6 +93,59 @@ bool importData(const string& path, Fractures& fract){
     fract.coordinates.shrink_to_fit(); //elimino la capacità in eccesso
     file.close();
     return true;
+}
+
+
+bool NearFractures(const Fractures& frc, unsigned int id_fract1, unsigned int id_fract2){
+
+    // vettori per le coordinate dei due baricentri :
+    array<double, 3> bar1;
+    array<double,3> bar2;
+    //calcolo le coordinate facendo somma/numvertici per ogni coordinata
+    double sommax=0,sommay=0,sommaz=0;
+
+    for (unsigned int k = 0; k < frc.dim_fractures[id_fract1]; k++){
+
+        unsigned int id_vertice = frc.vertices_fractures[id_fract1][k];
+        sommax += frc.coordinates[id_vertice][0];
+        sommay += frc.coordinates[id_vertice][1];
+        sommaz += frc.coordinates[id_vertice][2];
+
+    };
+    bar1[0]=sommax/frc.dim_fractures[id_fract1];
+    bar1[1]=sommay/frc.dim_fractures[id_fract1];
+    bar1[2]=sommaz/frc.dim_fractures[id_fract1];
+
+
+    for (unsigned int k = 0; k < frc.dim_fractures[id_fract2]; k++){
+
+        unsigned int id_vertice = frc.vertices_fractures[id_fract2][k];
+        sommax += frc.coordinates[id_vertice][0];
+        sommay += frc.coordinates[id_vertice][1];
+        sommaz += frc.coordinates[id_vertice][2] ;
+    };
+    bar2[0]=sommax/frc.dim_fractures[id_fract2];
+    bar2[1]=sommay/frc.dim_fractures[id_fract2];
+    bar2[2]=sommaz/frc.dim_fractures[id_fract2];
+
+    //calcolo i raggi delle sfere(al quadrato) e la distanza tra i due baricentri
+    double raggio1=0,raggio2=0,distbb=0;
+    unsigned int id_vertice1=frc.vertices_fractures[id_fract1][0];
+    unsigned int id_vertice2=frc.vertices_fractures[id_fract2][0];
+    for (unsigned int i =0; i<3;i++)
+    {
+        raggio1 += pow((bar1[i]-frc.coordinates[id_vertice1][i]),2);
+        raggio2 += pow((bar2[i]-frc.coordinates[id_vertice2][i]),2);
+        distbb += pow((bar1[i]-bar2[i]),2);
+
+    }
+
+    if (raggio1+raggio2<distbb)
+        return false;
+
+    else
+        return true;
+
 }
 
 
