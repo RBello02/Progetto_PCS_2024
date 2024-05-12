@@ -9,6 +9,7 @@ using namespace Eigen;
 //qui andremo a definire la struct della mesh che importiamo
 namespace GeometryLibrary {
 
+
 struct Fractures
 {
     vector<array<double,3>> coordinates; //memorizzo tutti i vertici dei poligoni

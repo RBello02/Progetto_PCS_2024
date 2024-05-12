@@ -45,18 +45,10 @@ int main()
     {
         for (unsigned int j=i+1; j< frc.num_fractures; j++)
         {
-            unsigned int id_fract1=i;
-            unsigned int id_fract2=j;
-            if( !NearFractures(frc, id_fract1,id_fract2))
-            {
-                cout << "non dobbiamo fare niente"<< endl;
-            }
-            else
-            {
-                cout<<"fare i piani e le rette" << endl;
+            unsigned int id_fract1 = i;
+            unsigned int id_fract2 = j;
+            if( NearFractures(frc, id_fract1,id_fract2)){
                 bool inters = IntersectionFractures(frc,i,j);
-
-
             }
 
         }

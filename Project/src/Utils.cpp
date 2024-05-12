@@ -4,11 +4,13 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <vector>
 
 
 #include <cmath>
 
 #include "Eigen/Eigen"
+
 using namespace Eigen;
 
 namespace GeometryLibrary{
@@ -126,161 +128,31 @@ inline MatrixXd Retta_per_due_vertici_della_frattura(const Fractures& frc, unsig
 
 }
 
-inline double alpha_di_intersezione(MatrixXd A, MatrixXd B)
+inline vector2d alpha_di_intersezione(MatrixXd r_frattura, MatrixXd retta_intersez)
 {
-    // dati i due vettori contenenti i dati delle rette vogliamo trovarne l'intersezione
-    // dati X = at + P e X = at'+P', imponiamo il sistema,
-    // ricavo il valore di a per cui si intersecano, basta farlo rispetto ad una componente dei vettori e lo faccio a mano
-    // tra le componenti disponibili cerco quella tale per cui t-t' non è nulla
 
+    //imposto un sistema lineare per la ricerca dei parametri alpha e beta
+    //primo parametro è la matrice della retta del poligono
+    Vector3d t1 = r_frattura.row(0).transpose();
+    Vector3d P1 = r_frattura.row(1).transpose();
 
-    // A matrice della retta del poligono
-    Vector3d t1 = A.row(0);
-    Vector3d P1 = A.row(1);
+    //secondo parametro è la matrice della retta di intersezione tra i piani
+    Vector3d t2 = retta_intersez.row(0).transpose();
+    Vector3d P2 = retta_intersez.row(1).transpose();
 
-    // B matrice della retta di intersezione tra i piani
-    Vector3d t2 = B.row(0);
-    Vector3d P2 = B.row(1);
+    MatrixXd A = MatrixXd::Zero(3,2);
+    Vector3d b = Vector3d::Zero();
 
-    double alpha = 0;   // alpha è il coefficiente della retta che appartiene al poligono
-    double beta=0; // coefficiente della retta dell'intersezione tra i due piani. non lho usato
-    // il sistema da risolvere è:
-    // alpha*t0+p0=beta*t1+p1 dove p1 e t1 identificano la retta del poligono mentre p2 e t2 la retta tra i piani
+    //imposto i coefficienti della matrice e del termine noto
+    A.col(0) = t1;
+    A.col(1) = -t2;
 
-    // dato che ho due parametri posso mi servono solo due equazioni: (prendo ad esempio le equazioni con le x e le y)
-    // beta=(alpha*t1x+P1x-P2x)/t2x <-- devo fare il controllo su t2x e nel caso prendere altre equazioni
+    for (unsigned int i = 0; i<3; i++){b[i] = P2[i]-P1[i];}
 
-    unsigned int i =0; // mi serve sapere se prendere le equazioni delle x, delle j o delle z quindi i e j mi dicono se
-    unsigned int j=0;
-    if(t2[0]=0 && t2[1]=0){ // prendo l'equazione Z per ricavare beta
-        i=2;
-        // questi controlli potrebbero essere inutili/sbagliati. facendo così ho l'assicurazione che il denominatore (t1[j]*t2[i]-t1[i]*t2[j]) non sia nullo cercando di capire se t1[j] sia diverso daa zero. protrebbe essere una cosa molto stupida
-        if(t1[0]=0)
-        {
-            j=1;
-        }
-        else if(t1[1]=0)
-        {
-            j=0;
+    Vector2d x = A.householderQr().solve(b); //x =[alpha; beta]
 
-        }
-        else
-        {
-            cout <<" forse cè un problema" << endl;
-        }
-
-    }
-    else if(t2[0]=0 && t2[2]=0)  // prendo l'equazione Y per ricavare beta
-    {
-        i=1;
-        if(t1[0]=0)
-        {
-            j=2;
-        }
-        else if(t1[2]=0)
-        {
-            j=0;
-
-        }
-        else
-        {
-            cout <<" forse cè un problema" << endl;
-        }
-    }
-    else  // prendo l'equazione X per ricavare beta
-    {
-        i=0;
-        if(t1[1]=0)
-        {
-            j=2;
-        }
-        else if(t1[2]=0)
-        {
-            j=1;
-
-        }
-        else
-        {
-            cout <<" forse cè un problema" << endl;
-        }
-    }
-
-    alpha=((P1[i]-P2[i])*t2[j]+(P2[j]-P1[j])*t2[i])/(t1[j]*t2[i]-t1[i]*t2[j]);
-
-
-
-    // questi sono tutti i casi al fine di non avere alpha subito zero
-
-    // if (t1(0) == t2(0))
-    // {
-    //     if (t1(1) == t2(1))
-    //     {
-    //         alpha = (P2(2) - P1(2))/(t2(2)-t1(2));
-    //     }
-    //     else
-    //     {
-    //         if (P2(1) == P2(1))
-    //         {
-    //             if (t1(2) == t2(2))
-    //             {
-    //                 alpha = (P2(1) - P1(1))/(t2(1)-t1(1));
-    //             }
-    //             else
-    //             {
-    //                 alpha = (P2(2) - P1(2))/(t2(2)-t1(2));
-    //             }
-    //         }
-    //         else
-    //         {
-    //             alpha = (P2(1) - P1(1))/(t2(1)-t1(1));
-    //         }
-
-    //     }
-    // }
-    // else
-    // {
-    //     if (P1(0) == P2(0))
-    //     {
-    //         if (t1(1) == t2(1))
-    //         {
-    //             if (t1(2) == t2(2))
-    //             {
-    //                 alpha = (P2(0) - P1(0))/(t2(0)-t1(0));
-    //             }
-    //             else
-    //             {
-    //                 alpha = (P2(2) - P1(2))/(t2(2)-t1(2));
-    //             }
-    //         }
-    //         else
-    //         {
-    //             if(P2(1) == P1(2))
-    //             {
-    //                 if (t1(2) == t2(2))
-    //                 {
-    //                     alpha = (P2(1) - P1(1))/(t2(1)-t1(1));
-    //                 }
-    //                 else
-    //                 {
-    //                     alpha = (P2(2) - P1(2))/(t2(2)-t1(2));
-    //                 }
-    //             }
-    //             else
-    //             {
-    //                 alpha = (P2(1) - P1(1))/(t2(1)-t1(1));
-    //             }
-
-    //         }
-    //     }
-    //     else
-    //     {
-    //         alpha = (P2(0) - P1(0))/(t2(0)-t1(0));
-    //     }
-    // }
-
-
-
-    return alpha;
+    vector2d alpha_beta = x;
+    return alpha_beta;
 
 }
 
@@ -469,59 +341,81 @@ bool IntersectionFractures(Fractures& frc, unsigned int id_fract1, unsigned int 
 
         //Devo ora ciclare sulle coppie di vertici delle due fratture per trovare gli alpha di intersezione tra la retta di
         //intersezione tra i due piani determinati dalle fratture e le rette determinate dai vertici
-        map<unsigned int, list<double>> alpha_inters; //non so se sia la scelta migliore ma almeno posso collegare frattura e alpha
+        array<vector<double>,2> beta_inters; //--> nel primo array avrò gli alpha della prima frc e nel secondo della seconda
+        (beta_inters[0]).reserve(8);
+        (beta_inters[1]).reserve(8);
 
         unsigned int num_vertici_frc1 = frc.dim_fractures[id_fract1];
         unsigned int num_vertici_frc2 = frc.dim_fractures[id_fract2];
 
-        for (unsigned int i = 0; i < num_vertici_frc1 -1; i++){
+        //Introduco un contatore che incremento ogni volta che la retta di intersezione tra i due piani interseca un
+        // segnemnto della frattura. se alla fine avrò cont == 4, vuol dire che ho una traccia
+        unsigned int cont = 0;
+
+        for (unsigned int i = 0; i < num_vertici_frc1; i++){
+
+            unsigned int j;
+            if (i == num_vertici_frc1-1){j = 0;}
+            else{j = i+1;}
+
             //mi trovo la retta per ogni coppia di vertici
-            MatrixXd retta_tra_vertici = Retta_per_due_vertici_della_frattura(frc, frc.vertices_fractures[id_fract1][i],frc.vertices_fractures[id_fract1][i+1]);
+            MatrixXd retta_tra_vertici = Retta_per_due_vertici_della_frattura(frc, frc.vertices_fractures[id_fract1][i],frc.vertices_fractures[id_fract1][j]);
             Vector3d dir_retta_tra_vertici;
             dir_retta_tra_vertici = retta_tra_vertici.row(0);
 
             //cerco l'eventuale intersezione tra questa retta e la retta di intrsezione tra i piani, queste esiste se le due rette non
             //sono parallele
             if (!((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).norm() ==0)){
-                double a = alpha_di_intersezione(retta_intersez_piani, retta_tra_vertici); //<----------
+                Vector2d a_b = alpha_di_intersezione(retta_tra_vertici, retta_intersez_piani);
 
-                if (a >= 0 && a <= 1){
-                    auto ret = alpha_inters.insert({id_fract1, {a}}); //<----------
-                    if(!ret.second){(ret.first)->second.push_back(a);}
+                if (a_b[0] >= -pow(10,-10) && a_b[0] <= 1+pow(10, -10)){
+                    cont += 1;
+                    (beta_inters[0]).push_back(a_b[1]);
                 }
+
             }
         }
 
-        for (unsigned int i = 0; i < num_vertici_frc2 -1; i++){
+        for (unsigned int i = 0; i < num_vertici_frc2; i++){
+
+            unsigned int j;
+            if (i == num_vertici_frc2-1){j = 0;}
+            else{j = i+1;}
+
             //mi trovo la retta per ogni coppia di vertici
-            MatrixXd retta_tra_vertici = Retta_per_due_vertici_della_frattura(frc, frc.vertices_fractures[id_fract2][i],frc.vertices_fractures[id_fract2][i+1]);
+            MatrixXd retta_tra_vertici = Retta_per_due_vertici_della_frattura(frc, frc.vertices_fractures[id_fract2][i],frc.vertices_fractures[id_fract2][j]);
             Vector3d dir_retta_tra_vertici;
             dir_retta_tra_vertici = retta_tra_vertici.row(0);
 
             //cerco l'eventuale intersezione tra questa retta e la retta di intrsezione tra i piani, queste esiste se le due rette non
             //sono parallele
             if (!((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).norm() ==0)){
-                double a = alpha_di_intersezione(retta_intersez_piani, retta_tra_vertici);
-
-                if (a >= 0 && a <= 1){
-                    auto ret = alpha_inters.insert({id_fract2, {a}});
-                    if(!ret.second){(ret.first)->second.push_back(a);}
+                Vector2d a_b = alpha_di_intersezione(retta_tra_vertici, retta_intersez_piani);
+                if (a_b[0] >= -pow(10,-10) && a_b[0] <= 1+pow(10, -10)){
+                    cont += 1;
+                    (beta_inters[1]).push_back(a_b[1]);
+                }
                 }
             }
 
+        cout << "id frc: " << id_fract1 << ", alpha: ";
+        for (const auto& elemento : beta_inters[0]) {
+            cout << elemento << " ";
         }
+        cout << endl;
 
-        cout << "La frattura " << id_fract1 << " e la fratt " << id_fract2 << "  si potrebbero intersecare" << endl;
-        for (const auto& coppia : alpha_inters) {
-            cout << "id frc: " << coppia.first << ", alpha: ";
-            for (const auto& elemento : alpha_inters[coppia.first]) {
-                cout << elemento << " ";
-            }
-            cout << endl;
-
+        cout << "id frc: " << id_fract2 << ", alpha: ";
+        for (const auto& elemento : beta_inters[1]) {
+            cout << elemento << " ";
         }
+        cout << endl;
 
-    }
+
+        if (cont == 4){cout << "Ho una traccia tra la frattura " << id_fract1 << " e la fratt " << id_fract2 << endl; }
+
+
+    } //chiude l'else
+    cout << endl;
     return true;
 }
 
