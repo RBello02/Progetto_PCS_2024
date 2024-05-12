@@ -126,94 +126,163 @@ inline MatrixXd Retta_per_due_vertici_della_frattura(const Fractures& frc, unsig
 
 }
 
-// inline double alpha_di_intersezione(MatrixXd A, MatrixXd B)
-// {
-//     // dati i due vettori contenenti i dati delle rette vogliamo trovarne l'intersezione
-//     // dati X = at + P e X = at'+P', imponiamo il sistema,
-//     // ricavo il valore di a per cui si intersecano, basta farlo rispetto ad una componente dei vettori e lo faccio a mano
-//     // tra le componenti disponibili cerco quella tale per cui t-t' non è nulla
+inline double alpha_di_intersezione(MatrixXd A, MatrixXd B)
+{
+    // dati i due vettori contenenti i dati delle rette vogliamo trovarne l'intersezione
+    // dati X = at + P e X = at'+P', imponiamo il sistema,
+    // ricavo il valore di a per cui si intersecano, basta farlo rispetto ad una componente dei vettori e lo faccio a mano
+    // tra le componenti disponibili cerco quella tale per cui t-t' non è nulla
 
-//     Vector3d t1 = A.row(0);
-//     Vector3d P1 = A.row(1);
 
-//     Vector3d t2 = B.row(0);
-//     Vector3d P2 = B.row(1);
+    // A matrice della retta del poligono
+    Vector3d t1 = A.row(0);
+    Vector3d P1 = A.row(1);
 
-//     double alpha = 0;   // inizializzo il valore di alpha
+    // B matrice della retta di intersezione tra i piani
+    Vector3d t2 = B.row(0);
+    Vector3d P2 = B.row(1);
 
-//     // questi sono tutti i casi al fine di non avere alpha subito zero
+    double alpha = 0;   // alpha è il coefficiente della retta che appartiene al poligono
+    double beta=0; // coefficiente della retta dell'intersezione tra i due piani. non lho usato
+    // il sistema da risolvere è:
+    // alpha*t0+p0=beta*t1+p1 dove p1 e t1 identificano la retta del poligono mentre p2 e t2 la retta tra i piani
 
-//     if (t1(0) == t2(0))
-//     {
-//         if (t1(1) == t2(1))
-//         {
-//             alpha = (P2(2) - P1(2))/(t2(2)-t1(2));
-//         }
-//         else
-//         {
-//             if (P2(1) == P2(1))
-//             {
-//                 if (t1(2) == t2(2))
-//                 {
-//                     alpha = (P2(1) - P1(1))/(t2(1)-t1(1));
-//                 }
-//                 else
-//                 {
-//                     alpha = (P2(2) - P1(2))/(t2(2)-t1(2));
-//                 }
-//             }
-//             else
-//             {
-//                 alpha = (P2(1) - P1(1))/(t2(1)-t1(1));
-//             }
+    // dato che ho due parametri posso mi servono solo due equazioni: (prendo ad esempio le equazioni con le x e le y)
+    // beta=(alpha*t1x+P1x-P2x)/t2x <-- devo fare il controllo su t2x e nel caso prendere altre equazioni
 
-//         }
-//     }
-//     else
-//     {
-//         if (P1(0) == P2(0))
-//         {
-//             if (t1(1) == t2(1))
-//             {
-//                 if (t1(2) == t2(2))
-//                 {
-//                     alpha = (P2(0) - P1(0))/(t2(0)-t1(0));
-//                 }
-//                 else
-//                 {
-//                     alpha = (P2(2) - P1(2))/(t2(2)-t1(2));
-//                 }
-//             }
-//             else
-//             {
-//                 if(P2(1) == P1(2))
-//                 {
-//                     if (t1(2) == t2(2))
-//                     {
-//                         alpha = (P2(1) - P1(1))/(t2(1)-t1(1));
-//                     }
-//                     else
-//                     {
-//                         alpha = (P2(2) - P1(2))/(t2(2)-t1(2));
-//                     }
-//                 }
-//                 else
-//                 {
-//                     alpha = (P2(1) - P1(1))/(t2(1)-t1(1));
-//                 }
+    unsigned int i =0; // mi serve sapere se prendere le equazioni delle x, delle j o delle z quindi i e j mi dicono se
+    unsigned int j=0;
+    if(t2[0]=0 && t2[1]=0){ // prendo l'equazione Z per ricavare beta
+        i=2;
+        // questi controlli potrebbero essere inutili/sbagliati. facendo così ho l'assicurazione che il denominatore (t1[j]*t2[i]-t1[i]*t2[j]) non sia nullo cercando di capire se t1[j] sia diverso daa zero. protrebbe essere una cosa molto stupida
+        if(t1[0]=0)
+        {
+            j=1;
+        }
+        else if(t1[1]=0)
+        {
+            j=0;
 
-//             }
-//         }
-//         else
-//         {
-//             alpha = (P2(0) - P1(0))/(t2(0)-t1(0));
-//         }
-//     }
+        }
+        else
+        {
+            cout <<" forse cè un problema" << endl;
+        }
 
-//     return alpha;
+    }
+    else if(t2[0]=0 && t2[2]=0)  // prendo l'equazione Y per ricavare beta
+    {
+        i=1;
+        if(t1[0]=0)
+        {
+            j=2;
+        }
+        else if(t1[2]=0)
+        {
+            j=0;
 
-// }
+        }
+        else
+        {
+            cout <<" forse cè un problema" << endl;
+        }
+    }
+    else  // prendo l'equazione X per ricavare beta
+    {
+        i=0;
+        if(t1[1]=0)
+        {
+            j=2;
+        }
+        else if(t1[2]=0)
+        {
+            j=1;
 
+        }
+        else
+        {
+            cout <<" forse cè un problema" << endl;
+        }
+    }
+
+    alpha=((P1[i]-P2[i])*t2[j]+(P2[j]-P1[j])*t2[i])/(t1[j]*t2[i]-t1[i]*t2[j]);
+
+
+
+    // questi sono tutti i casi al fine di non avere alpha subito zero
+
+    // if (t1(0) == t2(0))
+    // {
+    //     if (t1(1) == t2(1))
+    //     {
+    //         alpha = (P2(2) - P1(2))/(t2(2)-t1(2));
+    //     }
+    //     else
+    //     {
+    //         if (P2(1) == P2(1))
+    //         {
+    //             if (t1(2) == t2(2))
+    //             {
+    //                 alpha = (P2(1) - P1(1))/(t2(1)-t1(1));
+    //             }
+    //             else
+    //             {
+    //                 alpha = (P2(2) - P1(2))/(t2(2)-t1(2));
+    //             }
+    //         }
+    //         else
+    //         {
+    //             alpha = (P2(1) - P1(1))/(t2(1)-t1(1));
+    //         }
+
+    //     }
+    // }
+    // else
+    // {
+    //     if (P1(0) == P2(0))
+    //     {
+    //         if (t1(1) == t2(1))
+    //         {
+    //             if (t1(2) == t2(2))
+    //             {
+    //                 alpha = (P2(0) - P1(0))/(t2(0)-t1(0));
+    //             }
+    //             else
+    //             {
+    //                 alpha = (P2(2) - P1(2))/(t2(2)-t1(2));
+    //             }
+    //         }
+    //         else
+    //         {
+    //             if(P2(1) == P1(2))
+    //             {
+    //                 if (t1(2) == t2(2))
+    //                 {
+    //                     alpha = (P2(1) - P1(1))/(t2(1)-t1(1));
+    //                 }
+    //                 else
+    //                 {
+    //                     alpha = (P2(2) - P1(2))/(t2(2)-t1(2));
+    //                 }
+    //             }
+    //             else
+    //             {
+    //                 alpha = (P2(1) - P1(1))/(t2(1)-t1(1));
+    //             }
+
+    //         }
+    //     }
+    //     else
+    //     {
+    //         alpha = (P2(0) - P1(0))/(t2(0)-t1(0));
+    //     }
+    // }
+
+
+
+    return alpha;
+
+}
 
 
 /****************************************************************************************************************/
@@ -414,10 +483,10 @@ bool IntersectionFractures(Fractures& frc, unsigned int id_fract1, unsigned int 
             //cerco l'eventuale intersezione tra questa retta e la retta di intrsezione tra i piani, queste esiste se le due rette non
             //sono parallele
             if (!((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).norm() ==0)){
-                double a = alpha_di_intersezione(retta_intersez_piani, retta_tra_vertici);
+                double a = alpha_di_intersezione(retta_intersez_piani, retta_tra_vertici); //<----------
 
                 if (a >= 0 && a <= 1){
-                    auto ret = alpha_inters.insert({id_fract1, {a}});
+                    auto ret = alpha_inters.insert({id_fract1, {a}}); //<----------
                     if(!ret.second){(ret.first)->second.push_back(a);}
                 }
             }
