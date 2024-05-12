@@ -20,18 +20,18 @@ inline Matrix3d Coef_piano(const Fractures& frc, unsigned int id_fract1)
 {
     // salvo il piano in forma parametrica X = P0 + a1(P2-P0) + a2(P1-P0), dove a1 e a2 sono le parametrizzazioni
     // il piano è quindi identificato da 3 punti P0,P1,P2
+
     Matrix3d A;
-    for (unsigned int i=0; i<3; i++) // ciclo su 3 punti del poligono
-    {
-        unsigned int id_vertice = frc.vertices_fractures[id_fract1][i];
-        for (unsigned int j = 0; j< 3; j++)
-        {
-            A(i,j) = frc.coordinates[id_vertice][j];
-            //cout << A(i,j)<< " ";
-        }
-        //cout << endl;
-    }
-    return A; // restituisce una matrice con la seguente struttura   (P0;P1;P2)  dove Pi sono VETTORI RIGA
+    Vector3d P0 = frc.coordinates[frc.vertices_fractures[id_fract1][0]];
+    Vector3d P1 = frc.coordinates[frc.vertices_fractures[id_fract1][1]];
+    Vector3d P2 = frc.coordinates[frc.vertices_fractures[id_fract1][2]];
+
+    A.col(0) = P0;
+    A.col(1) = P2-P0;
+    A.col(2) = P1-P0;
+
+
+    return A.transpose(); // restituisce una matrice con la seguente struttura   (P0;P1;P2)  dove Pi sono VETTORI RIGA
 }
 
 inline bool Parallelismo(const Matrix3d& piano_1, const Matrix3d& piano_2)
@@ -342,8 +342,8 @@ bool IntersectionFractures(Fractures& frc, unsigned int id_fract1, unsigned int 
         //Devo ora ciclare sulle coppie di vertici delle due fratture per trovare gli alpha di intersezione tra la retta di
         //intersezione tra i due piani determinati dalle fratture e le rette determinate dai vertici
         array<vector<double>,2> beta_inters; //--> nel primo array avrò gli alpha della prima frc e nel secondo della seconda
-        (beta_inters[0]).reserve(8);
-        (beta_inters[1]).reserve(8);
+        (beta_inters[0]).reserve(2);
+        (beta_inters[1]).reserve(2);
 
         unsigned int num_vertici_frc1 = frc.dim_fractures[id_fract1];
         unsigned int num_vertici_frc2 = frc.dim_fractures[id_fract2];

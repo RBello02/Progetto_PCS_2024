@@ -12,7 +12,7 @@ namespace GeometryLibrary {
 
 struct Fractures
 {
-    vector<array<double,3>> coordinates; //memorizzo tutti i vertici dei poligoni
+    vector<Vector3d> coordinates; //memorizzo tutti i vertici dei poligoni
     unsigned int num_fractures; //numero di fratture, aka poligoni
     vector<unsigned int> id_fractures; //vettore che contiene per ogni frattura il suo id
     vector<unsigned int> dim_fractures; //vettore che contiene per ogni frattura il numero di vertici della frattura
