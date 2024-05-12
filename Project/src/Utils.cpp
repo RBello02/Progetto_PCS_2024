@@ -128,7 +128,7 @@ inline MatrixXd Retta_per_due_vertici_della_frattura(const Fractures& frc, unsig
 
 }
 
-inline vector2d alpha_di_intersezione(MatrixXd r_frattura, MatrixXd retta_intersez)
+inline Vector2d alpha_di_intersezione(MatrixXd r_frattura, MatrixXd retta_intersez)
 {
 
     //imposto un sistema lineare per la ricerca dei parametri alpha e beta
@@ -151,7 +151,7 @@ inline vector2d alpha_di_intersezione(MatrixXd r_frattura, MatrixXd retta_inters
 
     Vector2d x = A.householderQr().solve(b); //x =[alpha; beta]
 
-    vector2d alpha_beta = x;
+    Vector2d alpha_beta = x;
     return alpha_beta;
 
 }
