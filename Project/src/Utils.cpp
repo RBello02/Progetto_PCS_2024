@@ -98,13 +98,13 @@ bool importData(const string& path, Fractures& fract){
 
 bool NearFractures(const Fractures& frc, unsigned int id_fract1, unsigned int id_fract2){
 
-    // vettori per le coordinate dei due baricentri :
+    // vettori per le coordinate dei due baricentri (approssimativamente):
     array<double, 3> bar1;
     array<double,3> bar2;
     //calcolo le coordinate facendo somma/numvertici per ogni coordinata
     double sommax=0,sommay=0,sommaz=0;
 
-    for (unsigned int k = 0; k < frc.dim_fractures[id_fract1]; k++){
+    for (unsigned int k = 0; k < frc.dim_fractures[id_fract1]; k++){    // ciclo sui vertici della frattura e sommo tutte le coordinate
 
         unsigned int id_vertice = frc.vertices_fractures[id_fract1][k];
         sommax += frc.coordinates[id_vertice][0];
@@ -112,12 +112,12 @@ bool NearFractures(const Fractures& frc, unsigned int id_fract1, unsigned int id
         sommaz += frc.coordinates[id_vertice][2];
 
     };
-    bar1[0]=sommax/frc.dim_fractures[id_fract1];
+    bar1[0]=sommax/frc.dim_fractures[id_fract1];                // calcolo la coordinata del baricentro dividendo la somma delle coordinate per il numero di vertici
     bar1[1]=sommay/frc.dim_fractures[id_fract1];
     bar1[2]=sommaz/frc.dim_fractures[id_fract1];
 
 
-    for (unsigned int k = 0; k < frc.dim_fractures[id_fract2]; k++){
+    for (unsigned int k = 0; k < frc.dim_fractures[id_fract2]; k++){    // ripeto il calcolo anche per la seconda frattura
 
         unsigned int id_vertice = frc.vertices_fractures[id_fract2][k];
         sommax += frc.coordinates[id_vertice][0];
@@ -129,18 +129,49 @@ bool NearFractures(const Fractures& frc, unsigned int id_fract1, unsigned int id
     bar2[2]=sommaz/frc.dim_fractures[id_fract2];
 
     //calcolo i raggi delle sfere(al quadrato) e la distanza tra i due baricentri
-    double raggio1=0,raggio2=0,distbb=0;
-    unsigned int id_vertice1=frc.vertices_fractures[id_fract1][0];
-    unsigned int id_vertice2=frc.vertices_fractures[id_fract2][0];
-    for (unsigned int i =0; i<3;i++)
-    {
-        raggio1 += pow((bar1[i]-frc.coordinates[id_vertice1][i]),2);
-        raggio2 += pow((bar2[i]-frc.coordinates[id_vertice2][i]),2);
-        distbb += pow((bar1[i]-bar2[i]),2);
+    double raggio1=0,raggio2=0;
 
+    // cerco il vertice con distanza massima dal baricentro, in realtà mi interessa solo la distanza
+
+    double raggio_da_confrontare_1 = 0;
+
+    for (unsigned int j = 0; j<frc.dim_fractures[id_fract1]; j++)   // ciclo su tutti i poligoni per calcolare la distanza massima dei vertici dal baricentro
+    {
+        unsigned int id_vertice = frc.vertices_fractures[id_fract1][j];  // inizializzo l'id del vertice
+        for (unsigned int i =0; i<3;i++)        // ciclo sulle 3 coordinate per calcolare il raggio del poligono
+        {
+            raggio1 += pow((bar1[i]-frc.coordinates[id_vertice][i]),2);
+        }
+        if (raggio1 >= raggio_da_confrontare_1)
+        {
+            raggio_da_confrontare_1 = raggio1;
+        }
     }
 
-    if (raggio1+raggio2<distbb)
+    double raggio_da_confrontare_2 = 0;
+
+    for (unsigned int j = 0; j<frc.dim_fractures[id_fract2]; j++)   // ciclo su tutti i poligoni per calcolare la distanza massima dei vertici dal baricentro
+    {
+        unsigned int id_vertice = frc.vertices_fractures[id_fract2][j];  // inizializzo l'id del vertice
+        for (unsigned int i =0; i<3;i++)        // ciclo sulle 3 coordinate per calcolare il raggio del poligono
+        {
+            raggio2 += pow((bar1[i]-frc.coordinates[id_vertice][i]),2);
+        }
+        if (raggio2 >= raggio_da_confrontare_2)
+        {
+            raggio_da_confrontare_2 = raggio2;
+        }
+    }
+
+    double distbb = 0;
+
+    for (unsigned int j = 0; j<3; j++)
+    {
+        distbb += pow(bar2[j]-bar1[j],2);
+    }
+
+
+    if (raggio_da_confrontare_1+raggio_da_confrontare_2<distbb)
         return false;
 
     else
