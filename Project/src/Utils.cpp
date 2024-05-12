@@ -26,12 +26,12 @@ inline Matrix3d Coef_piano(const Fractures& frc, unsigned int id_fract1)
     Vector3d P1 = frc.coordinates[frc.vertices_fractures[id_fract1][1]];
     Vector3d P2 = frc.coordinates[frc.vertices_fractures[id_fract1][2]];
 
-    A.col(0) = P0;
-    A.col(1) = P2-P0;
-    A.col(2) = P1-P0;
+    A.row(0) = P0;
+    A.row(1) = P2-P0;
+    A.row(2) = P1-P0;
 
 
-    return A.transpose(); // restituisce una matrice con la seguente struttura   (P0;P1;P2)  dove Pi sono VETTORI RIGA
+    return A; // restituisce una matrice con la seguente struttura   (P0;P1;P2)  dove Pi sono VETTORI RIGA
 }
 
 inline bool Parallelismo(const Matrix3d& piano_1, const Matrix3d& piano_2)
