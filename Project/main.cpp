@@ -1,5 +1,4 @@
-#include "src/GeometryLibrary.hpp"
-#include "src/Utils.hpp"
+#include "src/FracturesLibrary.hpp"
 
 #include <iomanip>
 #include <iostream>
@@ -7,7 +6,7 @@
 #include "Eigen/Eigen"
 #include <cmath>
 
-using namespace GeometryLibrary;
+using namespace FracturesLibrary;
 using namespace Eigen;
 using namespace std;
 

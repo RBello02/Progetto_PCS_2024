@@ -1,4 +1,4 @@
-#include "Utils.hpp"
+#include "FracturesLibrary.hpp"
 #include "reshaping_array.hpp"
 #include <iostream>
 #include <fstream>
@@ -13,7 +13,7 @@
 
 using namespace Eigen;
 
-namespace GeometryLibrary{
+namespace FracturesLibrary{
 
 //funzioni inline di supporto
 inline Matrix3d Coef_piano(const Fractures& frc, unsigned int id_fract1)
@@ -85,7 +85,9 @@ inline MatrixXd Retta_tra_piani(const Matrix3d& piano_1, const Matrix3d& piano_2
 
     // passo 4: ricavare la matrice A
     Matrix3d A;
-    A << n1,n2,t;
+    A.row(0) = n1;
+    A.row(1) = n2;
+    A.row(2) = t;
 
     // passo 5: risolvere il sistema per ricavare P
     Vector3d P = A.partialPivLu().solve(d);
@@ -341,9 +343,8 @@ bool IntersectionFractures(Fractures& frc, unsigned int id_fract1, unsigned int 
 
         //Devo ora ciclare sulle coppie di vertici delle due fratture per trovare gli alpha di intersezione tra la retta di
         //intersezione tra i due piani determinati dalle fratture e le rette determinate dai vertici
-        array<vector<double>,2> beta_inters; //--> nel primo array avrò gli alpha della prima frc e nel secondo della seconda
-        (beta_inters[0]).reserve(2);
-        (beta_inters[1]).reserve(2);
+        vector<array<double,2>> beta_inters; //--> nel primo array avrò gli alpha della prima frc e nel secondo della seconda
+        beta_inters.reserve(4);
 
         unsigned int num_vertici_frc1 = frc.dim_fractures[id_fract1];
         unsigned int num_vertici_frc2 = frc.dim_fractures[id_fract2];
@@ -364,13 +365,18 @@ bool IntersectionFractures(Fractures& frc, unsigned int id_fract1, unsigned int 
             dir_retta_tra_vertici = retta_tra_vertici.row(0);
 
             //cerco l'eventuale intersezione tra questa retta e la retta di intrsezione tra i piani, queste esiste se le due rette non
-            //sono parallele
-            if (!((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).norm() ==0)){
+            //sono parallele e complanari
+            bool non_parallele = !((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).norm() == 0);
+            Vector3d w = retta_tra_vertici.row(1) - retta_intersez_piani.row(1);
+            bool complanari = ((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).dot(w) == 0);
+
+
+            if (non_parallele && complanari){
                 Vector2d a_b = alpha_di_intersezione(retta_tra_vertici, retta_intersez_piani);
 
                 if (a_b[0] >= -pow(10,-10) && a_b[0] <= 1+pow(10, -10)){
                     cont += 1;
-                    (beta_inters[0]).push_back(a_b[1]);
+                    beta_inters.push_back({1,a_b[1]});
                 }
 
             }
@@ -388,27 +394,19 @@ bool IntersectionFractures(Fractures& frc, unsigned int id_fract1, unsigned int 
             dir_retta_tra_vertici = retta_tra_vertici.row(0);
 
             //cerco l'eventuale intersezione tra questa retta e la retta di intrsezione tra i piani, queste esiste se le due rette non
-            //sono parallele
-            if (!((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).norm() ==0)){
+            //sono parallele e complanari
+            bool non_parallele = !((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).norm() == 0);
+            Vector3d w = retta_tra_vertici.row(1) - retta_intersez_piani.row(1);
+            bool complanari = ((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).dot(w) == 0);
+
+            if (non_parallele && complanari){
                 Vector2d a_b = alpha_di_intersezione(retta_tra_vertici, retta_intersez_piani);
                 if (a_b[0] >= -pow(10,-10) && a_b[0] <= 1+pow(10, -10)){
                     cont += 1;
-                    (beta_inters[1]).push_back(a_b[1]);
+                    beta_inters.push_back({2,a_b[1]});
                 }
                 }
             }
-
-        cout << "id frc: " << id_fract1 << ", alpha: ";
-        for (const auto& elemento : beta_inters[0]) {
-            cout << elemento << " ";
-        }
-        cout << endl;
-
-        cout << "id frc: " << id_fract2 << ", alpha: ";
-        for (const auto& elemento : beta_inters[1]) {
-            cout << elemento << " ";
-        }
-        cout << endl;
 
 
         if (cont == 4){cout << "Ho una traccia tra la frattura " << id_fract1 << " e la fratt " << id_fract2 << endl; }
