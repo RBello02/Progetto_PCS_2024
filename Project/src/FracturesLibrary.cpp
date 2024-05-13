@@ -1,34 +1,38 @@
-#include "Utils.hpp"
+#include "FracturesLibrary.hpp"
 #include "reshaping_array.hpp"
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
-
+#include <vector>
+#include <array>
+#include <algorithm>
 
 #include <cmath>
 
 #include "Eigen/Eigen"
+
 using namespace Eigen;
 
-namespace GeometryLibrary{
+namespace FracturesLibrary{
+double tolleranza = pow(10,-10);
 
 //funzioni inline di supporto
 inline Matrix3d Coef_piano(const Fractures& frc, unsigned int id_fract1)
 {
     // salvo il piano in forma parametrica X = P0 + a1(P2-P0) + a2(P1-P0), dove a1 e a2 sono le parametrizzazioni
     // il piano è quindi identificato da 3 punti P0,P1,P2
+
     Matrix3d A;
-    for (unsigned int i=0; i<3; i++) // ciclo su 3 punti del poligono
-    {
-        unsigned int id_vertice = frc.vertices_fractures[id_fract1][i];
-        for (unsigned int j = 0; j< 3; j++)
-        {
-            A(i,j) = frc.coordinates[id_vertice][j];
-            //cout << A(i,j)<< " ";
-        }
-        //cout << endl;
-    }
+    Vector3d P0 = frc.coordinates[frc.vertices_fractures[id_fract1][0]];
+    Vector3d P1 = frc.coordinates[frc.vertices_fractures[id_fract1][1]];
+    Vector3d P2 = frc.coordinates[frc.vertices_fractures[id_fract1][2]];
+
+    A.row(0) = P0;
+    A.row(1) = P2-P0;
+    A.row(2) = P1-P0;
+
+
     return A; // restituisce una matrice con la seguente struttura   (P0;P1;P2)  dove Pi sono VETTORI RIGA
 }
 
@@ -50,7 +54,7 @@ inline bool Parallelismo(const Matrix3d& piano_1, const Matrix3d& piano_2)
 
     // passo 2 : vedo se il prodotto vettoriale tra le normali è 0
     Vector3d t = n1.cross(n2);
-    if (t.norm() == 0)
+    if (t.norm() < tolleranza)
     {
         risultato = !risultato;
     }
@@ -83,7 +87,9 @@ inline MatrixXd Retta_tra_piani(const Matrix3d& piano_1, const Matrix3d& piano_2
 
     // passo 4: ricavare la matrice A
     Matrix3d A;
-    A << n1,n2,t;
+    A.row(0) = n1;
+    A.row(1) = n2;
+    A.row(2) = t;
 
     // passo 5: risolvere il sistema per ricavare P
     Vector3d P = A.partialPivLu().solve(d);
@@ -126,165 +132,44 @@ inline MatrixXd Retta_per_due_vertici_della_frattura(const Fractures& frc, unsig
 
 }
 
-inline double alpha_di_intersezione(MatrixXd A, MatrixXd B)
+inline Vector2d alpha_di_intersezione(MatrixXd r_frattura, MatrixXd retta_intersez)
 {
-    // dati i due vettori contenenti i dati delle rette vogliamo trovarne l'intersezione
-    // dati X = at + P e X = at'+P', imponiamo il sistema,
-    // ricavo il valore di a per cui si intersecano, basta farlo rispetto ad una componente dei vettori e lo faccio a mano
-    // tra le componenti disponibili cerco quella tale per cui t-t' non è nulla
 
+    //imposto un sistema lineare per la ricerca dei parametri alpha e beta
+    //primo parametro è la matrice della retta del poligono
+    Vector3d t1 = r_frattura.row(0).transpose();
+    Vector3d P1 = r_frattura.row(1).transpose();
 
-    // A matrice della retta del poligono
-    Vector3d t1 = A.row(0);
-    Vector3d P1 = A.row(1);
+    //secondo parametro è la matrice della retta di intersezione tra i piani
+    Vector3d t2 = retta_intersez.row(0).transpose();
+    Vector3d P2 = retta_intersez.row(1).transpose();
 
-    // B matrice della retta di intersezione tra i piani
-    Vector3d t2 = B.row(0);
-    Vector3d P2 = B.row(1);
+    MatrixXd A = MatrixXd::Zero(3,2);
+    Vector3d b = Vector3d::Zero();
 
-    double alpha = 0;   // alpha è il coefficiente della retta che appartiene al poligono
-    double beta=0; // coefficiente della retta dell'intersezione tra i due piani. non lho usato
-    // il sistema da risolvere è:
-    // alpha*t0+p0=beta*t1+p1 dove p1 e t1 identificano la retta del poligono mentre p2 e t2 la retta tra i piani
+    //imposto i coefficienti della matrice e del termine noto
+    A.col(0) = t1;
+    A.col(1) = -t2;
 
-    // dato che ho due parametri posso mi servono solo due equazioni: (prendo ad esempio le equazioni con le x e le y)
-    // beta=(alpha*t1x+P1x-P2x)/t2x <-- devo fare il controllo su t2x e nel caso prendere altre equazioni
+    for (unsigned int i = 0; i<3; i++){b[i] = P2[i]-P1[i];}
 
-    unsigned int i =0; // mi serve sapere se prendere le equazioni delle x, delle j o delle z quindi i e j mi dicono se
-    unsigned int j=0;
-    if(t2[0]=0 && t2[1]=0){ // prendo l'equazione Z per ricavare beta
-        i=2;
-        // questi controlli potrebbero essere inutili/sbagliati. facendo così ho l'assicurazione che il denominatore (t1[j]*t2[i]-t1[i]*t2[j]) non sia nullo cercando di capire se t1[j] sia diverso daa zero. protrebbe essere una cosa molto stupida
-        if(t1[0]=0)
-        {
-            j=1;
-        }
-        else if(t1[1]=0)
-        {
-            j=0;
+    Vector2d x = A.householderQr().solve(b); //x =[alpha; beta]
 
-        }
-        else
-        {
-            cout <<" forse cè un problema" << endl;
-        }
-
-    }
-    else if(t2[0]=0 && t2[2]=0)  // prendo l'equazione Y per ricavare beta
-    {
-        i=1;
-        if(t1[0]=0)
-        {
-            j=2;
-        }
-        else if(t1[2]=0)
-        {
-            j=0;
-
-        }
-        else
-        {
-            cout <<" forse cè un problema" << endl;
-        }
-    }
-    else  // prendo l'equazione X per ricavare beta
-    {
-        i=0;
-        if(t1[1]=0)
-        {
-            j=2;
-        }
-        else if(t1[2]=0)
-        {
-            j=1;
-
-        }
-        else
-        {
-            cout <<" forse cè un problema" << endl;
-        }
-    }
-
-    alpha=((P1[i]-P2[i])*t2[j]+(P2[j]-P1[j])*t2[i])/(t1[j]*t2[i]-t1[i]*t2[j]);
-
-
-
-    // questi sono tutti i casi al fine di non avere alpha subito zero
-
-    // if (t1(0) == t2(0))
-    // {
-    //     if (t1(1) == t2(1))
-    //     {
-    //         alpha = (P2(2) - P1(2))/(t2(2)-t1(2));
-    //     }
-    //     else
-    //     {
-    //         if (P2(1) == P2(1))
-    //         {
-    //             if (t1(2) == t2(2))
-    //             {
-    //                 alpha = (P2(1) - P1(1))/(t2(1)-t1(1));
-    //             }
-    //             else
-    //             {
-    //                 alpha = (P2(2) - P1(2))/(t2(2)-t1(2));
-    //             }
-    //         }
-    //         else
-    //         {
-    //             alpha = (P2(1) - P1(1))/(t2(1)-t1(1));
-    //         }
-
-    //     }
-    // }
-    // else
-    // {
-    //     if (P1(0) == P2(0))
-    //     {
-    //         if (t1(1) == t2(1))
-    //         {
-    //             if (t1(2) == t2(2))
-    //             {
-    //                 alpha = (P2(0) - P1(0))/(t2(0)-t1(0));
-    //             }
-    //             else
-    //             {
-    //                 alpha = (P2(2) - P1(2))/(t2(2)-t1(2));
-    //             }
-    //         }
-    //         else
-    //         {
-    //             if(P2(1) == P1(2))
-    //             {
-    //                 if (t1(2) == t2(2))
-    //                 {
-    //                     alpha = (P2(1) - P1(1))/(t2(1)-t1(1));
-    //                 }
-    //                 else
-    //                 {
-    //                     alpha = (P2(2) - P1(2))/(t2(2)-t1(2));
-    //                 }
-    //             }
-    //             else
-    //             {
-    //                 alpha = (P2(1) - P1(1))/(t2(1)-t1(1));
-    //             }
-
-    //         }
-    //     }
-    //     else
-    //     {
-    //         alpha = (P2(0) - P1(0))/(t2(0)-t1(0));
-    //     }
-    // }
-
-
-
-    return alpha;
+    Vector2d alpha_beta = x;
+    return alpha_beta;
 
 }
 
+inline bool compare_beta(const array<double,2>& arr1, const array<double,2>& arr2){
+    return arr1[1] > arr2[1];
+}
 
+inline double Trace::calcolo_lunghezza(){
+    Vector3d origin = this->coordinates_extremes.col(0);
+    Vector3d end = this->coordinates_extremes.col(1);
+    double val = (origin-end).norm();
+    return val;
+}
 /****************************************************************************************************************/
 
 bool importData(const string& path, Fractures& fract){
@@ -416,7 +301,7 @@ bool NearFractures(const Fractures& frc, unsigned int id_fract1, unsigned int id
         {
             raggio1 += pow((bar1[i]-frc.coordinates[id_vertice][i]),2);
         }
-        if (raggio1 >= raggio_da_confrontare_1)
+        if (raggio1 >= raggio_da_confrontare_1 -tolleranza)
         {
             raggio_da_confrontare_1 = raggio1;
         }
@@ -431,7 +316,7 @@ bool NearFractures(const Fractures& frc, unsigned int id_fract1, unsigned int id
         {
             raggio2 += pow((bar1[i]-frc.coordinates[id_vertice][i]),2);
         }
-        if (raggio2 >= raggio_da_confrontare_2)
+        if (raggio2 >= raggio_da_confrontare_2 - tolleranza)
         {
             raggio_da_confrontare_2 = raggio2;
         }
@@ -445,7 +330,7 @@ bool NearFractures(const Fractures& frc, unsigned int id_fract1, unsigned int id
     }
 
 
-    if (raggio_da_confrontare_1+raggio_da_confrontare_2<distbb)
+    if (raggio_da_confrontare_1+raggio_da_confrontare_2 < distbb + tolleranza)
         return false;
 
     else
@@ -453,14 +338,13 @@ bool NearFractures(const Fractures& frc, unsigned int id_fract1, unsigned int id
 
 }
 
-bool IntersectionFractures(Fractures& frc, unsigned int id_fract1, unsigned int id_fract2){
+void IntersectionFractures(Fractures& frc, unsigned int id_fract1, unsigned int id_fract2, list<Trace>& list_traces){
     Matrix3d piano_frc1 = Coef_piano(frc,id_fract1);
     Matrix3d piano_frc2 = Coef_piano(frc,id_fract2);
 
     //procedo nella funzione solo nel caso in cui i due piani non siano paralleli
     if(Parallelismo(piano_frc1, piano_frc2)){
-        cout << "La frattura " << id_fract1 << " e la fratt " << id_fract2 << " non si intersecano" << endl;
-        return false;}
+        cout << "La frattura " << id_fract1 << " e la fratt " << id_fract2 << " non si intersecano" << endl;}
     else{
         //calcolo la retta di intersezione tra i piani in forma parametrica
         MatrixXd retta_intersez_piani = Retta_tra_piani(piano_frc1,piano_frc2);
@@ -469,62 +353,157 @@ bool IntersectionFractures(Fractures& frc, unsigned int id_fract1, unsigned int 
 
         //Devo ora ciclare sulle coppie di vertici delle due fratture per trovare gli alpha di intersezione tra la retta di
         //intersezione tra i due piani determinati dalle fratture e le rette determinate dai vertici
-        map<unsigned int, list<double>> alpha_inters; //non so se sia la scelta migliore ma almeno posso collegare frattura e alpha
+        list<array<double,2>> beta_inters; //--> nel primo array avrò gli alpha della prima frc e nel secondo della seconda
 
         unsigned int num_vertici_frc1 = frc.dim_fractures[id_fract1];
         unsigned int num_vertici_frc2 = frc.dim_fractures[id_fract2];
 
-        for (unsigned int i = 0; i < num_vertici_frc1 -1; i++){
+        //Introduco un contatore che incremento ogni volta che la retta di intersezione tra i due piani interseca un
+        // segnemnto della frattura. se alla fine avrò cont == 4, vuol dire che ho una traccia
+        unsigned int cont = 0;
+
+        for (unsigned int i = 0; i < num_vertici_frc1; i++){
+
+            unsigned int j;
+            if (i == num_vertici_frc1-1){j = 0;}
+            else{j = i+1;}
+
             //mi trovo la retta per ogni coppia di vertici
-            MatrixXd retta_tra_vertici = Retta_per_due_vertici_della_frattura(frc, frc.vertices_fractures[id_fract1][i],frc.vertices_fractures[id_fract1][i+1]);
+            MatrixXd retta_tra_vertici = Retta_per_due_vertici_della_frattura(frc, frc.vertices_fractures[id_fract1][i],frc.vertices_fractures[id_fract1][j]);
             Vector3d dir_retta_tra_vertici;
             dir_retta_tra_vertici = retta_tra_vertici.row(0);
 
             //cerco l'eventuale intersezione tra questa retta e la retta di intrsezione tra i piani, queste esiste se le due rette non
-            //sono parallele
-            if (!((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).norm() ==0)){
-                double a = alpha_di_intersezione(retta_intersez_piani, retta_tra_vertici); //<----------
+            //sono parallele e complanari
+            bool non_parallele = !((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).norm() < tolleranza);
 
-                if (a >= 0 && a <= 1){
-                    auto ret = alpha_inters.insert({id_fract1, {a}}); //<----------
-                    if(!ret.second){(ret.first)->second.push_back(a);}
+            if (non_parallele){
+                Vector2d a_b = alpha_di_intersezione(retta_tra_vertici, retta_intersez_piani);
+
+                if (a_b[0] >= -tolleranza && a_b[0] <= 1+tolleranza){
+                    cont += 1;
+                    beta_inters.push_back({static_cast<double>(id_fract1),a_b[1]});
                 }
+
             }
         }
 
-        for (unsigned int i = 0; i < num_vertici_frc2 -1; i++){
+        for (unsigned int i = 0; i < num_vertici_frc2; i++){
+
+            unsigned int j;
+            if (i == num_vertici_frc2-1){j = 0;}
+            else{j = i+1;}
+
             //mi trovo la retta per ogni coppia di vertici
-            MatrixXd retta_tra_vertici = Retta_per_due_vertici_della_frattura(frc, frc.vertices_fractures[id_fract2][i],frc.vertices_fractures[id_fract2][i+1]);
+            MatrixXd retta_tra_vertici = Retta_per_due_vertici_della_frattura(frc, frc.vertices_fractures[id_fract2][i],frc.vertices_fractures[id_fract2][j]);
             Vector3d dir_retta_tra_vertici;
             dir_retta_tra_vertici = retta_tra_vertici.row(0);
 
             //cerco l'eventuale intersezione tra questa retta e la retta di intrsezione tra i piani, queste esiste se le due rette non
-            //sono parallele
-            if (!((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).norm() ==0)){
-                double a = alpha_di_intersezione(retta_intersez_piani, retta_tra_vertici);
+            //sono parallele e complanari
+            bool non_parallele = !((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).norm() < tolleranza);
 
-                if (a >= 0 && a <= 1){
-                    auto ret = alpha_inters.insert({id_fract2, {a}});
-                    if(!ret.second){(ret.first)->second.push_back(a);}
+            if (non_parallele){
+                Vector2d a_b = alpha_di_intersezione(retta_tra_vertici, retta_intersez_piani);
+                if (a_b[0] >= - tolleranza && a_b[0] <= 1+ tolleranza){
+                    cont += 1;
+                    beta_inters.push_back({static_cast<double>(id_fract2),a_b[1]});
+                }
                 }
             }
 
-        }
 
-        cout << "La frattura " << id_fract1 << " e la fratt " << id_fract2 << "  si potrebbero intersecare" << endl;
-        for (const auto& coppia : alpha_inters) {
-            cout << "id frc: " << coppia.first << ", alpha: ";
-            for (const auto& elemento : alpha_inters[coppia.first]) {
-                cout << elemento << " ";
-            }
+        //se trovo una traccia la salvo
+        if (cont == 4){
+            cout << "Ho una traccia tra la frattura " << id_fract1 << " e la fratt " << id_fract2 << endl;
+            //posso ordinare gli array tra loro in base al valore di beta
+            beta_inters.sort(compare_beta);
+
+
             cout << endl;
 
+            Trace traccia;
+            traccia.id = list_traces.size();
+            MatrixXd coord_estremi_traccia = MatrixXd::Zero(3,2);
+            auto it_beta = beta_inters.begin();
+            double beta0 = (*it_beta)[1];
+            unsigned int id_frc_beta0 = (*it_beta)[0];
+            ++ it_beta;
+            Vector3d origin = retta_intersez_piani.row(1).transpose() + (*it_beta)[1] * dir_retta_intersez_piani;
+            double beta1 = (*it_beta)[1];
+            unsigned int id_frc_beta1 = (*it_beta)[0];
+            ++ it_beta;
+            Vector3d end = retta_intersez_piani.row(1).transpose() + (*it_beta)[1] * dir_retta_intersez_piani;
+            double beta2 = (*it_beta)[1];
+            unsigned int id_frc_beta2 = (*it_beta)[0];
+            ++ it_beta;
+            double beta3 = (*it_beta)[1];
+            unsigned int id_frc_beta3 = (*it_beta)[0];
+
+            coord_estremi_traccia.col(0) = origin;
+            coord_estremi_traccia.col(1) = end;
+            traccia.coordinates_extremes = coord_estremi_traccia;
+            traccia.id_frc1 = id_fract1;
+            traccia.id_frc2 = id_fract2;
+
+            traccia.len = traccia.calcolo_lunghezza();
+            list_traces.push_back(traccia);
+
+
+            //determiniamo se la traccia è passante o no
+            if (abs(beta0 -beta1) < tolleranza && abs(beta2-beta3) < tolleranza){
+                //la traccia è passante per entrambe
+                auto ret1 = frc.P_traces_of_fractures.insert({id_fract1, {traccia}});
+                if(!ret1.second)
+                    (ret1.first)->second.push_back(traccia);
+
+                auto ret2 = frc.P_traces_of_fractures.insert({id_fract2, {traccia}});
+                if(!ret2.second)
+                    (ret2.first)->second.push_back(traccia);
+            }
+            else if(abs(beta0 -beta1) < tolleranza){
+                auto ret1 = frc.P_traces_of_fractures.insert({id_frc_beta2, {traccia}});
+                if(!ret1.second)
+                    (ret1.first)->second.push_back(traccia);
+
+                auto ret2 = frc.NP_traces_of_fractures.insert({id_frc_beta3, {traccia}});
+                if(!ret2.second)
+                    (ret2.first)->second.push_back(traccia);
+            }
+            else if(abs(beta2-beta3) < tolleranza){
+                auto ret1 = frc.P_traces_of_fractures.insert({id_frc_beta1, {traccia}});
+                if(!ret1.second)
+                    (ret1.first)->second.push_back(traccia);
+
+                auto ret2 = frc.NP_traces_of_fractures.insert({id_frc_beta0, {traccia}});
+                if(!ret2.second)
+                    (ret2.first)->second.push_back(traccia);
+            }
+            else if ( id_frc_beta1 == id_frc_beta2){
+                auto ret1 = frc.P_traces_of_fractures.insert({id_frc_beta1, {traccia}});
+                if(!ret1.second)
+                    (ret1.first)->second.push_back(traccia);
+
+                auto ret2 = frc.NP_traces_of_fractures.insert({id_frc_beta0, {traccia}});
+                if(!ret2.second)
+                    (ret2.first)->second.push_back(traccia);}
+
+            else{
+                auto ret1 = frc.NP_traces_of_fractures.insert({id_fract1, {traccia}});
+                if(!ret1.second)
+                    (ret1.first)->second.push_back(traccia);
+
+                auto ret2 = frc.NP_traces_of_fractures.insert({id_fract2, {traccia}});
+                if(!ret2.second)
+                    (ret2.first)->second.push_back(traccia);}
+
         }
 
-    }
-    return true;
-}
 
+
+    } //chiude l'else
+
+}
 
 
 
