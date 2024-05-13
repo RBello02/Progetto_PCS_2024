@@ -5,7 +5,8 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
+#include <array>
+#include <algorithm>
 
 #include <cmath>
 
@@ -14,6 +15,7 @@
 using namespace Eigen;
 
 namespace FracturesLibrary{
+double tolleranza = pow(10,-10);
 
 //funzioni inline di supporto
 inline Matrix3d Coef_piano(const Fractures& frc, unsigned int id_fract1)
@@ -52,7 +54,7 @@ inline bool Parallelismo(const Matrix3d& piano_1, const Matrix3d& piano_2)
 
     // passo 2 : vedo se il prodotto vettoriale tra le normali è 0
     Vector3d t = n1.cross(n2);
-    if (t.norm() == 0)
+    if (t.norm() < tolleranza)
     {
         risultato = !risultato;
     }
@@ -158,7 +160,16 @@ inline Vector2d alpha_di_intersezione(MatrixXd r_frattura, MatrixXd retta_inters
 
 }
 
+inline bool compare_beta(const array<double,2>& arr1, const array<double,2>& arr2){
+    return arr1[1] > arr2[1];
+}
 
+inline double Trace::calcolo_lunghezza(){
+    Vector3d origin = this->coordinates_extremes.col(0);
+    Vector3d end = this->coordinates_extremes.col(1);
+    double val = (origin-end).norm();
+    return val;
+}
 /****************************************************************************************************************/
 
 bool importData(const string& path, Fractures& fract){
@@ -290,7 +301,7 @@ bool NearFractures(const Fractures& frc, unsigned int id_fract1, unsigned int id
         {
             raggio1 += pow((bar1[i]-frc.coordinates[id_vertice][i]),2);
         }
-        if (raggio1 >= raggio_da_confrontare_1)
+        if (raggio1 >= raggio_da_confrontare_1 -tolleranza)
         {
             raggio_da_confrontare_1 = raggio1;
         }
@@ -305,7 +316,7 @@ bool NearFractures(const Fractures& frc, unsigned int id_fract1, unsigned int id
         {
             raggio2 += pow((bar1[i]-frc.coordinates[id_vertice][i]),2);
         }
-        if (raggio2 >= raggio_da_confrontare_2)
+        if (raggio2 >= raggio_da_confrontare_2 - tolleranza)
         {
             raggio_da_confrontare_2 = raggio2;
         }
@@ -319,7 +330,7 @@ bool NearFractures(const Fractures& frc, unsigned int id_fract1, unsigned int id
     }
 
 
-    if (raggio_da_confrontare_1+raggio_da_confrontare_2<distbb)
+    if (raggio_da_confrontare_1+raggio_da_confrontare_2 < distbb + tolleranza)
         return false;
 
     else
@@ -327,14 +338,13 @@ bool NearFractures(const Fractures& frc, unsigned int id_fract1, unsigned int id
 
 }
 
-bool IntersectionFractures(Fractures& frc, unsigned int id_fract1, unsigned int id_fract2){
+void IntersectionFractures(Fractures& frc, unsigned int id_fract1, unsigned int id_fract2, list<Trace>& list_traces){
     Matrix3d piano_frc1 = Coef_piano(frc,id_fract1);
     Matrix3d piano_frc2 = Coef_piano(frc,id_fract2);
 
     //procedo nella funzione solo nel caso in cui i due piani non siano paralleli
     if(Parallelismo(piano_frc1, piano_frc2)){
-        cout << "La frattura " << id_fract1 << " e la fratt " << id_fract2 << " non si intersecano" << endl;
-        return false;}
+        cout << "La frattura " << id_fract1 << " e la fratt " << id_fract2 << " non si intersecano" << endl;}
     else{
         //calcolo la retta di intersezione tra i piani in forma parametrica
         MatrixXd retta_intersez_piani = Retta_tra_piani(piano_frc1,piano_frc2);
@@ -343,8 +353,7 @@ bool IntersectionFractures(Fractures& frc, unsigned int id_fract1, unsigned int 
 
         //Devo ora ciclare sulle coppie di vertici delle due fratture per trovare gli alpha di intersezione tra la retta di
         //intersezione tra i due piani determinati dalle fratture e le rette determinate dai vertici
-        vector<array<double,2>> beta_inters; //--> nel primo array avrò gli alpha della prima frc e nel secondo della seconda
-        beta_inters.reserve(4);
+        list<array<double,2>> beta_inters; //--> nel primo array avrò gli alpha della prima frc e nel secondo della seconda
 
         unsigned int num_vertici_frc1 = frc.dim_fractures[id_fract1];
         unsigned int num_vertici_frc2 = frc.dim_fractures[id_fract2];
@@ -366,17 +375,14 @@ bool IntersectionFractures(Fractures& frc, unsigned int id_fract1, unsigned int 
 
             //cerco l'eventuale intersezione tra questa retta e la retta di intrsezione tra i piani, queste esiste se le due rette non
             //sono parallele e complanari
-            bool non_parallele = !((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).norm() == 0);
-            Vector3d w = retta_tra_vertici.row(1) - retta_intersez_piani.row(1);
-            bool complanari = ((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).dot(w) == 0);
+            bool non_parallele = !((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).norm() < tolleranza);
 
-
-            if (non_parallele && complanari){
+            if (non_parallele){
                 Vector2d a_b = alpha_di_intersezione(retta_tra_vertici, retta_intersez_piani);
 
-                if (a_b[0] >= -pow(10,-10) && a_b[0] <= 1+pow(10, -10)){
+                if (a_b[0] >= -tolleranza && a_b[0] <= 1+tolleranza){
                     cont += 1;
-                    beta_inters.push_back({1,a_b[1]});
+                    beta_inters.push_back({static_cast<double>(id_fract1),a_b[1]});
                 }
 
             }
@@ -395,28 +401,109 @@ bool IntersectionFractures(Fractures& frc, unsigned int id_fract1, unsigned int 
 
             //cerco l'eventuale intersezione tra questa retta e la retta di intrsezione tra i piani, queste esiste se le due rette non
             //sono parallele e complanari
-            bool non_parallele = !((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).norm() == 0);
-            Vector3d w = retta_tra_vertici.row(1) - retta_intersez_piani.row(1);
-            bool complanari = ((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).dot(w) == 0);
+            bool non_parallele = !((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).norm() < tolleranza);
 
-            if (non_parallele && complanari){
+            if (non_parallele){
                 Vector2d a_b = alpha_di_intersezione(retta_tra_vertici, retta_intersez_piani);
-                if (a_b[0] >= -pow(10,-10) && a_b[0] <= 1+pow(10, -10)){
+                if (a_b[0] >= - tolleranza && a_b[0] <= 1+ tolleranza){
                     cont += 1;
-                    beta_inters.push_back({2,a_b[1]});
+                    beta_inters.push_back({static_cast<double>(id_fract2),a_b[1]});
                 }
                 }
             }
 
 
-        if (cont == 4){cout << "Ho una traccia tra la frattura " << id_fract1 << " e la fratt " << id_fract2 << endl; }
+        //se trovo una traccia la salvo
+        if (cont == 4){
+            cout << "Ho una traccia tra la frattura " << id_fract1 << " e la fratt " << id_fract2 << endl;
+            //posso ordinare gli array tra loro in base al valore di beta
+            beta_inters.sort(compare_beta);
+
+
+            cout << endl;
+
+            Trace traccia;
+            traccia.id = list_traces.size();
+            MatrixXd coord_estremi_traccia = MatrixXd::Zero(3,2);
+            auto it_beta = beta_inters.begin();
+            double beta0 = (*it_beta)[1];
+            unsigned int id_frc_beta0 = (*it_beta)[0];
+            ++ it_beta;
+            Vector3d origin = retta_intersez_piani.row(1).transpose() + (*it_beta)[1] * dir_retta_intersez_piani;
+            double beta1 = (*it_beta)[1];
+            unsigned int id_frc_beta1 = (*it_beta)[0];
+            ++ it_beta;
+            Vector3d end = retta_intersez_piani.row(1).transpose() + (*it_beta)[1] * dir_retta_intersez_piani;
+            double beta2 = (*it_beta)[1];
+            unsigned int id_frc_beta2 = (*it_beta)[0];
+            ++ it_beta;
+            double beta3 = (*it_beta)[1];
+            unsigned int id_frc_beta3 = (*it_beta)[0];
+
+            coord_estremi_traccia.col(0) = origin;
+            coord_estremi_traccia.col(1) = end;
+            traccia.coordinates_extremes = coord_estremi_traccia;
+            traccia.id_frc1 = id_fract1;
+            traccia.id_frc2 = id_fract2;
+
+            traccia.len = traccia.calcolo_lunghezza();
+            list_traces.push_back(traccia);
+
+
+            //determiniamo se la traccia è passante o no
+            if (abs(beta0 -beta1) < tolleranza && abs(beta2-beta3) < tolleranza){
+                //la traccia è passante per entrambe
+                auto ret1 = frc.P_traces_of_fractures.insert({id_fract1, {traccia}});
+                if(!ret1.second)
+                    (ret1.first)->second.push_back(traccia);
+
+                auto ret2 = frc.P_traces_of_fractures.insert({id_fract2, {traccia}});
+                if(!ret2.second)
+                    (ret2.first)->second.push_back(traccia);
+            }
+            else if(abs(beta0 -beta1) < tolleranza){
+                auto ret1 = frc.P_traces_of_fractures.insert({id_frc_beta2, {traccia}});
+                if(!ret1.second)
+                    (ret1.first)->second.push_back(traccia);
+
+                auto ret2 = frc.NP_traces_of_fractures.insert({id_frc_beta3, {traccia}});
+                if(!ret2.second)
+                    (ret2.first)->second.push_back(traccia);
+            }
+            else if(abs(beta2-beta3) < tolleranza){
+                auto ret1 = frc.P_traces_of_fractures.insert({id_frc_beta1, {traccia}});
+                if(!ret1.second)
+                    (ret1.first)->second.push_back(traccia);
+
+                auto ret2 = frc.NP_traces_of_fractures.insert({id_frc_beta0, {traccia}});
+                if(!ret2.second)
+                    (ret2.first)->second.push_back(traccia);
+            }
+            else if ( id_frc_beta1 == id_frc_beta2){
+                auto ret1 = frc.P_traces_of_fractures.insert({id_frc_beta1, {traccia}});
+                if(!ret1.second)
+                    (ret1.first)->second.push_back(traccia);
+
+                auto ret2 = frc.NP_traces_of_fractures.insert({id_frc_beta0, {traccia}});
+                if(!ret2.second)
+                    (ret2.first)->second.push_back(traccia);}
+
+            else{
+                auto ret1 = frc.NP_traces_of_fractures.insert({id_fract1, {traccia}});
+                if(!ret1.second)
+                    (ret1.first)->second.push_back(traccia);
+
+                auto ret2 = frc.NP_traces_of_fractures.insert({id_fract2, {traccia}});
+                if(!ret2.second)
+                    (ret2.first)->second.push_back(traccia);}
+
+        }
+
 
 
     } //chiude l'else
-    cout << endl;
-    return true;
-}
 
+}
 
 
 
