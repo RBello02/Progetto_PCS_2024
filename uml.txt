@@ -1,0 +1,68 @@
+@startuml
+
+package FracturesLibrary <<Folder>> {
+struct Trace
+{
++ id : unsigned int
++ len : double
++ coordinates_extremes : MatrixXd
++ id_fract1 : unsigned int
++ id_fract2 : unsigned int
+
++ inline double calcolo_lunghezza()
+'Triangle(Vertices) (costruttore)
+
+'metodo per calcolare la lunghezza ma non prende ninete in input perchè ha gia le info che gli servono
+
+}
+
+struct Fractures
+{
++ coordinates : vector<Vector3d>
++ num_fractures : unsigned int
++ id_fractures : vector<unsigned int>
++ dim_fractures : vector<unsigned int>
++ vertices_fractures : vector<vector<unsigned int>>
++ P_traces_of_fractures : map<unsigned int, list<Trace>> ' mappa con le tracce passanti
++ NP_traces_of_fractures : map<unsigned int, list<Trace>> ' mappa con le tracce non passanti
+}
+
+
+Trace <|-- Funzioni
+Fractures <|--Funzioni
+
+class Funzioni { 
++ bool {abstract}importData(const string& path, Fractures& fract)
++ bool {abstract} NearFractures(const Fractures& frc, unsigned int id_fract1, unsigned int id_fract2);
++ void {abstract} IntersectionFractures(Fractures& frc, unsigned int id_fract1, unsigned int id_fract2, list<Trace>& list_traces);
+--funzioni di supporto--
++ inline Matrix3d {abstract} Coef_piano(const Fractures& frc, unsigned int id_fract1)
++ inline bool  {abstract} Parallelismo(const Matrix3d& piano_1, const Matrix3d& piano_2)
++ inline MatrixXd {abstract} Retta_tra_piani(const Matrix3d& piano_1, const Matrix3d& piano_2)
++ inline MatrixXd {abstract} Retta_per_due_vertici_della_frattura(const Fractures& frc, unsigned int id_vertice1, unsigned int id_vertice2)
++ inline Vector2d {abstract}alpha_di_intersezione(MatrixXd r_frattura, MatrixXd retta_intersez)
++ inline bool {abstract} compare_beta(const array<double,2>& arr1, const array<double,2>& arr2)
+
+
+}
+
+}
+
+package Reshaping_array <<Frame>>{
+class Reshaping{
+--template<typename T>--
++ inline vector<T> {abstract} VerificaRaddoppio( vector<T>& vec)
++ inline vector<T> {abstract} VerificaDimezzamento( vector<T>& vec)
+
+
+}
+}
+
+package Gedim <<Frame>>
+{
+}
+Reshaping_array.Reshaping --> FracturesLibrary.Fractures::coordinates : controllo dimensione vettori
+
+
+
+@enduml
