@@ -37,7 +37,7 @@ inline Matrix3d Fracture::calcolo_piano(const vector<Vector3d>& coord)
     return A; // restituisce una matrice con la seguente struttura   (P0;P1;P2)  dove Pi sono VETTORI RIGA
 }
 
-inline bool Parallelismo(const Matrix3d& piano_1, const Matrix3d& piano_2)
+inline bool FracturesFunctions::Parallelismo(const Matrix3d& piano_1, const Matrix3d& piano_2)
 {
     // questa funzione verifica se i piani sono paralleli
 
@@ -55,7 +55,7 @@ inline bool Parallelismo(const Matrix3d& piano_1, const Matrix3d& piano_2)
 
     // passo 2 : vedo se il prodotto vettoriale tra le normali è 0
     Vector3d t = n1.cross(n2);
-    if (t.norm() < tolleranza)
+    if (t.norm() < tolleranza1D)
     {
         risultato = !risultato;
     }
@@ -173,7 +173,7 @@ inline double Trace::calcolo_lunghezza(){
 }
 /****************************************************************************************************************/
 
-bool importData(const string& path, vector<Fracture>& lista, vector<Vector3d>& coord){
+bool FracturesFunctions::importData(const string& path, vector<Fracture>& lista, vector<Vector3d>& coord){
 
     //apro il file
     ifstream file;
@@ -252,7 +252,7 @@ bool importData(const string& path, vector<Fracture>& lista, vector<Vector3d>& c
 }
 
 
-bool NearFractures(const Fracture& frc1, const Fracture& frc2, const vector<Vector3d>& coord){
+bool FracturesFunctions::NearFractures(const Fracture& frc1, const Fracture& frc2, const vector<Vector3d>& coord){
 
     // vettori per le coordinate dei due baricentri (approssimativamente):
     array<double, 3> bar1;
@@ -299,7 +299,7 @@ bool NearFractures(const Fracture& frc1, const Fracture& frc2, const vector<Vect
         {
             raggio1 += pow((bar1[i]-coord[id_vertice][i]),2);
         }
-        if (raggio1 >= raggio_da_confrontare_1 -tolleranza)
+        if (raggio1 >= raggio_da_confrontare_1 -tolleranza1D)
         {
             raggio_da_confrontare_1 = raggio1;
         }
@@ -314,7 +314,7 @@ bool NearFractures(const Fracture& frc1, const Fracture& frc2, const vector<Vect
         {
             raggio2 += pow((bar1[i]-coord[id_vertice][i]),2);
         }
-        if (raggio2 >= raggio_da_confrontare_2 - tolleranza)
+        if (raggio2 >= raggio_da_confrontare_2 - tolleranza1D)
         {
             raggio_da_confrontare_2 = raggio2;
         }
@@ -328,7 +328,7 @@ bool NearFractures(const Fracture& frc1, const Fracture& frc2, const vector<Vect
     }
 
 
-    if (raggio_da_confrontare_1+raggio_da_confrontare_2 < distbb + tolleranza)
+    if (raggio_da_confrontare_1+raggio_da_confrontare_2 < distbb + tolleranza1D)
         return false;
 
     else
@@ -336,7 +336,7 @@ bool NearFractures(const Fracture& frc1, const Fracture& frc2, const vector<Vect
 
 }
 
-void IntersectionFractures(Fracture &frc1, Fracture &frc2, const vector<Vector3d>& coord, list<Trace>& list_traces, map<unsigned int, list<Trace> > &P_traces, map<unsigned int, list<Trace> > &NP_traces){
+void FracturesFunctions::IntersectionFractures(Fracture &frc1, Fracture &frc2, const vector<Vector3d>& coord, list<Trace>& list_traces, map<unsigned int, list<Trace> > &P_traces, map<unsigned int, list<Trace> > &NP_traces){
     Matrix3d piano_frc1 = frc1.calcolo_piano(coord);
     Matrix3d piano_frc2 = frc2.calcolo_piano(coord);
 
@@ -371,12 +371,12 @@ void IntersectionFractures(Fracture &frc1, Fracture &frc2, const vector<Vector3d
 
             //cerco l'eventuale intersezione tra questa retta e la retta di intrsezione tra i piani, queste esiste se le due rette non
             //sono parallele e complanari
-            bool non_parallele = !((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).norm() < tolleranza);
+            bool non_parallele = !((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).norm() < tolleranza1D);
 
             if (non_parallele){
                 Vector2d a_b = alpha_di_intersezione(retta_tra_vertici, retta_intersez_piani);
 
-                if (a_b[0] >= -tolleranza && a_b[0] <= 1+tolleranza){
+                if (a_b[0] >= -tolleranza1D && a_b[0] <= 1+tolleranza1D){
                     cont += 1;
                     beta_inters.push_back({static_cast<double>(frc1.id),a_b[1]});
                 }
@@ -397,11 +397,11 @@ void IntersectionFractures(Fracture &frc1, Fracture &frc2, const vector<Vector3d
 
             //cerco l'eventuale intersezione tra questa retta e la retta di intrsezione tra i piani, queste esiste se le due rette non
             //sono parallele e complanari
-            bool non_parallele = !((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).norm() < tolleranza);
+            bool non_parallele = !((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).norm() < tolleranza1D);
 
             if (non_parallele){
                 Vector2d a_b = alpha_di_intersezione(retta_tra_vertici, retta_intersez_piani);
-                if (a_b[0] >= - tolleranza && a_b[0] <= 1+ tolleranza){
+                if (a_b[0] >= - tolleranza1D && a_b[0] <= 1+ tolleranza1D){
                     cont += 1;
                     beta_inters.push_back({static_cast<double>(frc2.id),a_b[1]});
                 }
@@ -447,7 +447,7 @@ void IntersectionFractures(Fracture &frc1, Fracture &frc2, const vector<Vector3d
 
 
             //determiniamo se la traccia è passante o no
-            if (abs(beta0 -beta1) < tolleranza && abs(beta2-beta3) < tolleranza){
+            if (abs(beta0 -beta1) < tolleranza1D && abs(beta2-beta3) < tolleranza1D){
                 //la traccia è passante per entrambe
                 auto ret1 = P_traces.insert({frc1.id, {traccia}});
                 if(!ret1.second)
@@ -457,7 +457,7 @@ void IntersectionFractures(Fracture &frc1, Fracture &frc2, const vector<Vector3d
                 if(!ret2.second)
                     (ret2.first)->second.push_back(traccia);
             }
-            else if(abs(beta0 -beta1) < tolleranza){
+            else if(abs(beta0 -beta1) < tolleranza1D){
                 auto ret1 = P_traces.insert({id_frc_beta2, {traccia}});
                 if(!ret1.second)
                     (ret1.first)->second.push_back(traccia);
@@ -466,7 +466,7 @@ void IntersectionFractures(Fracture &frc1, Fracture &frc2, const vector<Vector3d
                 if(!ret2.second)
                     (ret2.first)->second.push_back(traccia);
             }
-            else if(abs(beta2-beta3) < tolleranza){
+            else if(abs(beta2-beta3) < tolleranza1D){
                 auto ret1 = P_traces.insert({id_frc_beta1, {traccia}});
                 if(!ret1.second)
                     (ret1.first)->second.push_back(traccia);

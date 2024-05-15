@@ -2,14 +2,13 @@
 #define __FRACTURESLIBRARY_H
 
 #include "Eigen/Eigen"
+#include <limits>
 
 using namespace std;
 using namespace Eigen;
 
 //qui andremo a definire la struct della mesh che importiamo
-namespace FracturesLibrary {
-
-
+namespace FracturesLibrary{
 
 struct Trace
 {
@@ -34,14 +33,23 @@ struct Fracture
 
 
 
-bool importData(const string& path, vector<Fracture>& lista, vector<Vector3d>& coord);
+struct FracturesFunctions {
 
-bool NearFractures(const Fracture& frc1, const Fracture& frc2, const vector<Vector3d>& coord);
+    double eps_macchina  = numeric_limits<double>::epsilon();
+    const double tolleranza1D = max(pow(10,-13), eps_macchina);
+    const double tolleranza2D = max(eps_macchina, pow(tolleranza1D, 2) * 0.75);
 
-void IntersectionFractures(Fracture &frc1, Fracture &frc2, const vector<Vector3d>& coord, list<Trace>& list_traces, map<unsigned int, list<Trace>>& P_traces, map<unsigned int, list<Trace>>& NP_traces);
+    bool importData(const string& path, vector<Fracture>& lista, vector<Vector3d>& coord);
+
+    bool NearFractures(const Fracture& frc1, const Fracture& frc2, const vector<Vector3d>& coord);
+
+    void IntersectionFractures(Fracture &frc1, Fracture &frc2, const vector<Vector3d>& coord, list<Trace>& list_traces, map<unsigned int, list<Trace>>& P_traces, map<unsigned int, list<Trace>>& NP_traces);
+    inline bool Parallelismo(const Matrix3d& piano_1, const Matrix3d& piano_2);
+
+};
 
 
+}// namespace
 
-} //namespace
 
 #endif

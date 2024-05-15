@@ -32,8 +32,10 @@ int main()
     vector<Vector3d> coordinates;
     unsigned int num_fratt;
 
+    FracturesFunctions f;
 
-    if (!importData(filenameI, list_fractures, coordinates)){return 1;}
+
+    if (!f.importData(filenameI, list_fractures, coordinates)){return 1;}
     else{
         //stampo un poo' di roba per verificare che sia tutto giusto
         num_fratt = list_fractures.size();
@@ -63,8 +65,8 @@ int main()
             Fracture frc1 = list_fractures[i];
             Fracture frc2 = list_fractures[j];
 
-            if( NearFractures(frc1, frc2, coordinates)){
-                IntersectionFractures(frc1, frc2, coordinates, list_traces, P_traces_of_fractures, NP_traces_of_fractures);
+            if( f.NearFractures(frc1, frc2, coordinates)){
+                f.IntersectionFractures(frc1, frc2, coordinates, list_traces, P_traces_of_fractures, NP_traces_of_fractures);
             }
 
         }
