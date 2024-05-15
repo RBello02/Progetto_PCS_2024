@@ -18,23 +18,35 @@ inline bool compare_tracce(const Trace& trc1, const Trace& trc2){
 int main()
 {
     cout << setprecision(16);
-    string path = "DFN";
-    string filenameI = path + "/FR82_data.txt";
-    Fractures frc;
-    list<Trace> list_traces; //lista delle tracce
 
-    if (!importData(filenameI, frc)){return 1;}
+    string path = "DFN";
+    string filenameI = path + "/FR3_data.txt";
+
+    //definisco le liste che conterranno le tracce e le fratture
+    vector<Fracture> list_fractures; //lista di fratture
+    list<Trace> list_traces; //lista delle tracce
+    map<unsigned int, list<Trace>> P_traces_of_fractures; //per ogni frattura memorizziamo una lista contenente gli id elle tracce passanti
+    map<unsigned int, list<Trace>> NP_traces_of_fractures; //analogo a sopra ma per tracce non passanti
+
+    //mi creo un vettore di array dove mi salvo tutte le coordinate
+    vector<Vector3d> coordinates;
+    unsigned int num_fratt;
+
+
+    if (!importData(filenameI, list_fractures, coordinates)){return 1;}
     else{
         //stampo un poo' di roba per verificare che sia tutto giusto
-        cout << "Ho un numero di fratture pari a " << frc.num_fractures << endl;
+        num_fratt = list_fractures.size();
+        cout << "Ho un numero di fratture pari a " << num_fratt << endl;
 
-        for (unsigned int i = 0; i < frc.num_fractures ; i++){
-            cout << "FRATTURA NUM " << i <<  " che ha " << frc.dim_fractures[i] << " vertici." << endl;
+        for (Fracture frc : list_fractures){
 
-            for (unsigned int k = 0; k < frc.dim_fractures[i]; k++){
+            cout << "FRATTURA NUM " << frc.id <<  " che ha " << frc.num_vertici << " vertici." << endl;
 
-                 unsigned int id_vertice = frc.vertices_fractures[i][k];
-                cout << "Il vertice " << k << ", che ha id = " << id_vertice << " , ha coord (" << frc.coordinates[id_vertice][0] << " , "  <<frc.coordinates[id_vertice][1] <<  " , " <<frc.coordinates[id_vertice][2] << " )" << endl;
+            for (unsigned int k = 0; k < frc.num_vertici; k++){
+
+                unsigned int id_vertice = frc.vertices[k];
+                cout << "Il vertice " << k << ", che ha id = " << id_vertice << " , ha coord (" << coordinates[id_vertice][0] << " , "  << coordinates[id_vertice][1] <<  " , " << coordinates[id_vertice][2] << " )" << endl;
              }
             cout << endl;
         }
@@ -42,15 +54,17 @@ int main()
 
     }
 
+
     // ciclo sulle coppie di poligoni e vedo se sono vicini oppure no
-    for(unsigned int i=0; i<frc.num_fractures; i++)
+    for(unsigned int i=0; i<num_fratt; i++)
     {
-        for (unsigned int j=i+1; j< frc.num_fractures; j++)
+        for (unsigned int j=i+1; j< num_fratt; j++)
         {
-            unsigned int id_fract1 = i;
-            unsigned int id_fract2 = j;
-            if( NearFractures(frc, id_fract1,id_fract2)){
-                IntersectionFractures(frc,i,j, list_traces);
+            Fracture frc1 = list_fractures[i];
+            Fracture frc2 = list_fractures[j];
+
+            if( NearFractures(frc1, frc2, coordinates)){
+                IntersectionFractures(frc1, frc2, coordinates, list_traces, P_traces_of_fractures, NP_traces_of_fractures);
             }
 
         }
@@ -68,7 +82,7 @@ int main()
     ofs << "# TraceId; FractureId1; FractureId2; X1; Y1; Z1; X2; Y2; Z2" << endl;
     const string del = " ; ";
 
-    for (auto traccia : list_traces){
+    for (Trace traccia : list_traces){
         ofs << traccia.id << del << traccia.id_frc1 << del << traccia.id_frc2 << del << traccia.coordinates_extremes(0,0) << del << traccia.coordinates_extremes(1,0) << del << traccia.coordinates_extremes(2,0) << del << traccia.coordinates_extremes(0,1) << del << traccia.coordinates_extremes(1,1) << del << traccia.coordinates_extremes(2,1) << endl;
     }
 
@@ -85,24 +99,25 @@ int main()
     string header_frc = "# FractureId; NumTraces";
     string header_trc = "# TraceId; Tips; Lenght";
 
-    for (unsigned int i = 0; i < frc.num_fractures; i++){
-        ofs1 << header_frc << endl;
-        ofs1 << i << del << frc.P_traces_of_fractures[i].size() + frc.NP_traces_of_fractures[i].size() << endl;
+    for (Fracture fratt : list_fractures){
 
-        if (frc.P_traces_of_fractures[i].size() + frc.NP_traces_of_fractures[i].size() != 0){
+        ofs1 << header_frc << endl;
+        ofs1 << fratt.id << del << P_traces_of_fractures[fratt.id].size() + NP_traces_of_fractures[fratt.id].size() << endl;
+
+        if (P_traces_of_fractures[fratt.id].size() + NP_traces_of_fractures[fratt.id].size() != 0){
             ofs1 << header_trc << endl;
 
             //prima ordiniamo le liste
-            (frc.P_traces_of_fractures[i]).sort(compare_tracce);
-            (frc.NP_traces_of_fractures[i]).sort(compare_tracce);
+            (P_traces_of_fractures[fratt.id]).sort(compare_tracce);
+            (NP_traces_of_fractures[fratt.id]).sort(compare_tracce);
 
             //scorriamo la lista delle tracce passanti
-            for (auto traccia : frc.P_traces_of_fractures[i]){
+            for (Trace traccia : P_traces_of_fractures[fratt.id]){
                 ofs1 << traccia.id << del << "false" << del << traccia.len << endl;
             }
 
             //scorriamo la lista delle tracce non passanti
-            for (auto traccia : frc.NP_traces_of_fractures[i]){
+            for (Trace traccia : NP_traces_of_fractures[fratt.id]){
                 ofs1 << traccia.id << del << "true"  << del << traccia.len << endl;
             }
         }
