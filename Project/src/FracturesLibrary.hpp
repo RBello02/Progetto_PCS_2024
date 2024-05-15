@@ -23,27 +23,22 @@ struct Trace
 };
 
 
-struct Fractures
+struct Fracture
 {
-    vector<Vector3d> coordinates; //memorizzo tutti i vertici dei poligoni
-    unsigned int num_fractures; //numero di fratture, aka poligoni
-    vector<unsigned int> id_fractures; //vettore che contiene per ogni frattura il suo id
-    vector<unsigned int> dim_fractures; //vettore che contiene per ogni frattura il numero di vertici della frattura
-    vector<vector<unsigned int>> vertices_fractures; //per ogni frattura mi salvo la matrice con gli identificativi dei vertici
-    map<unsigned int, list<Trace>> P_traces_of_fractures; //per ogni frattura memorizziamo una lista che contiene
-        //degli array che contengono le tracce appartenenti alle fratture e se sono passanti o no
-    map<unsigned int, list<Trace>> NP_traces_of_fractures; //analogo a sopra ma per tracce non passanti
+    unsigned int id;
+    unsigned int num_vertici;
+    vector<unsigned int> vertices;
 
+    inline Matrix3d calcolo_piano(const vector<Vector3d>& coord);
 };
 
 
 
+bool importData(const string& path, vector<Fracture>& lista, vector<Vector3d>& coord);
 
-bool importData(const string& path, Fractures& fract);
+bool NearFractures(const Fracture& frc1, const Fracture& frc2, const vector<Vector3d>& coord);
 
-bool NearFractures(const Fractures& frc, unsigned int id_fract1, unsigned int id_fract2);
-
-void IntersectionFractures(Fractures& frc, unsigned int id_fract1, unsigned int id_fract2, list<Trace>& list_traces);
+void IntersectionFractures(Fracture &frc1, Fracture &frc2, const vector<Vector3d>& coord, list<Trace>& list_traces, map<unsigned int, list<Trace>>& P_traces, map<unsigned int, list<Trace>>& NP_traces);
 
 
 
