@@ -59,7 +59,7 @@ int main()
     }
 
 
-    // ciclo sulle coppie di poligoni e vedo se sono vicini oppure no
+    // ciclo sulle coppie di poligoni e determino le tracce
     for(unsigned int i=0; i<num_fratt; i++)
     {
         for (unsigned int j=i+1; j< num_fratt; j++)
@@ -140,7 +140,7 @@ int main()
         if (P_traces_of_fractures[frattura.id].size() + NP_traces_of_fractures[frattura.id].size() == 0){
 
             //salvo le celle 0D
-            mesh.NumberCell0D = frattura.num_vertici;
+            mesh.NumberCell0D += frattura.num_vertici;
             mesh.Cell0DId.reserve(frattura.num_vertici);
             mesh.Cell0DCoordinates.reserve(frattura.num_vertici);
             for (unsigned int v = 0; v < frattura.num_vertici; v++){
@@ -149,7 +149,7 @@ int main()
             }
 
             //salvo le celle 1D
-            mesh.NumberCell1D = frattura.num_vertici;
+            mesh.NumberCell1D += frattura.num_vertici;
             mesh.Cell1DId.reserve(frattura.num_vertici);
             for (unsigned int v = 0; v < frattura.num_vertici; v++){
                 unsigned int id_origin = frattura.vertices[v];
@@ -165,15 +165,12 @@ int main()
             mesh.Cell2DId.reserve(1);
             mesh.Cell2DId.push_back(1);
             mesh.Cell2DVertices.reserve(1);
-            mesh.Cell2DVertices[1].resize(frattura.num_vertici);
-            mesh.Cell2DVertices[1] = frattura.vertices;
+            mesh.Cell2DVertices.push_back(frattura.vertices);
             mesh.Cell2DEdges.reserve(1);
-            mesh.Cell2DEdges[1].resize(frattura.num_vertici);
-            mesh.Cell2DEdges[1] = mesh.Cell1DId;
+            mesh.Cell2DEdges.push_back(mesh.Cell1DId);
         }
         else {
-            f.FracturesFunctions::SottoPoligonazione(frattura, P_traces_of_fractures[frattura.id], NP_traces_of_fractures[frattura.id], coordinates, mesh);
-
+            mesh = f.FracturesFunctions::SottoPoligonazione(frattura, P_traces_of_fractures[frattura.id], NP_traces_of_fractures[frattura.id], coordinates);
         }
 
         //aggiungo la mesh creata alla mappa

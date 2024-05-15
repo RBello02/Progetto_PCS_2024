@@ -137,11 +137,11 @@ inline Vector2d alpha_di_intersezione(MatrixXd r_frattura, MatrixXd retta_inters
 {
 
     //imposto un sistema lineare per la ricerca dei parametri alpha e beta
-    //primo parametro è la matrice della retta del poligono
+    //primo parametro è la matrice della retta del poligono --> retta in funzione di alpha
     Vector3d t1 = r_frattura.row(0).transpose();
     Vector3d P1 = r_frattura.row(1).transpose();
 
-    //secondo parametro è la matrice della retta di intersezione tra i piani
+    //secondo parametro è la matrice della retta di intersezione tra i piani --> retta in funzione di beta
     Vector3d t2 = retta_intersez.row(0).transpose();
     Vector3d P2 = retta_intersez.row(1).transpose();
 

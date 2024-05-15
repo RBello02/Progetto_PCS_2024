@@ -48,7 +48,7 @@ struct FracturesFunctions {
     bool NearFractures(const Fracture& frc1, const Fracture& frc2, const vector<Vector3d>& coord);
     void IntersectionFractures(Fracture &frc1, Fracture &frc2, const vector<Vector3d>& coord, list<Trace>& list_traces, map<unsigned int, list<Trace>>& P_traces, map<unsigned int, list<Trace>>& NP_traces);
     inline bool Parallelismo(const Matrix3d& piano_1, const Matrix3d& piano_2);
-    void SottoPoligonazione(const Fracture& frattura, const list<Trace>& P_traces, const list<Trace>& NP_traces, const vector<Vector3d>& coord, PolygonalMesh mesh);
+    PolygonalMesh SottoPoligonazione(const Fracture& frattura, const list<Trace>& P_traces, const list<Trace>& NP_traces, const vector<Vector3d>& coord);
 };
 
 
