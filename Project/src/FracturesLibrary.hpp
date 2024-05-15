@@ -16,8 +16,8 @@ struct Trace
     unsigned int id; //id della traccia
     double len; //lunghezza della traccia
     MatrixXd coordinates_extremes; //matrice 3x2 con le coordinate degli estremi
-    unsigned int id_frc1;
-    unsigned int id_frc2;
+    unsigned int id_frc1; //id della prima frattura a cui appartiene la traccia
+    unsigned int id_frc2; //id della seconda frattura a cui appartiene la traccia
 
     inline double calcolo_lunghezza(); //metodo che mi calcola la lunghezza di una traccia
 };
@@ -25,11 +25,11 @@ struct Trace
 
 struct Fracture
 {
-    unsigned int id;
-    unsigned int num_vertici;
-    vector<unsigned int> vertices;
+    unsigned int id; //id della frattura
+    unsigned int num_vertici; //numero di vertici della frattura
+    vector<unsigned int> vertices; //vector con gli id dei vertici
 
-    inline Matrix3d calcolo_piano(const vector<Vector3d>& coord);
+    inline Matrix3d calcolo_piano(const vector<Vector3d>& coord); //metodo per il calcolo del piano contenente la frattura
 };
 
 
