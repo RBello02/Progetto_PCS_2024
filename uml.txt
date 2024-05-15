@@ -24,25 +24,37 @@ struct Fracture
 }
 
 
-Trace <|-- Funzioni
-Fracture <|--Funzioni
 
-class Funzioni { 
-+ bool {abstract} importData(const string& path, vector<Fracture>& lista, vector<Vector3d>& coord);
-+ bool {abstract} NearFractures(const Fracture& frc1, const Fracture& frc2, const vector<Vector3d>& coord);
-+ void {abstract} IntersectionFractures(Fracture &frc1, Fracture &frc2, const vector<Vector3d>& coord, list<Trace>& list_traces, map<unsigned int, list<Trace>>& P_traces, map<unsigned int, list<Trace>>& NP_traces);
+struct FracturesFunctions { 
++ double eps_macchina
++ const double tolleranza1D
++const double tolleranda2D
+
++ bool {abstract} importData(path, vector_fracture,  coord);
++ bool {abstract} NearFractures(fracture1, fracture2, coord);
++ void {abstract} IntersectionFractures(fracure1, fracture2, coord, list_traces, P_traces,  NP_traces);
++ inline bool {abstract} Parallelismo(piano_1, piano_2);
 
 --funzioni di supporto--
 
-+ inline bool Parallelismo(const Matrix3d& piano_1, const Matrix3d& piano_2)
-+ inline MatrixXd Retta_tra_piani(const Matrix3d& piano_1, const Matrix3d& piano_2)
-+ inline MatrixXd Retta_per_due_vertici_della_frattura(unsigned int id_vertice1, unsigned int id_vertice2, const vector<Vector3d>& coord)
-+ inline Vector2d alpha_di_intersezione(MatrixXd r_frattura, MatrixXd retta_intersez)
-+ inline bool compare_beta(const array<double,2>& arr1, const array<double,2>& arr2)
++ inline bool Parallelismo(piano_1, piano_2)
++ inline MatrixXd Retta_tra_piani(piano_1, piano_2)
++ inline MatrixXd Retta_per_due_vertici_della_frattura( id_vertice1, id_vertice2, coord)
++ inline Vector2d alpha_di_intersezione(retta_fracture, retta_intersez)
++ inline bool compare_beta(array1, array2)
 
 }
+Trace <|-- FracturesFunctions
+Fracture <|--FracturesFunctions
+
+entity VariablesMain {
++ list_fractures : vector<Fracture> 
++ list_traces : list<Trace> 
++ P_traces_of_fractures : map<unsigned int, list<Trace>> 
++ NP_traces_of_fractures : map<unsigned int, list<Trace>>
 
 }
+} /'chiusira mainspace FracturesLibrary'/
 
 package Reshaping_array <<Frame>>{
 class Reshaping{
@@ -52,13 +64,30 @@ class Reshaping{
 
 
 }
+
 }
 
-package Gedim <<Frame>>
-{
+
+Reshaping_array.Reshaping --> FracturesLibrary.FracturesFunctions::importData : controllo dimensione vettori
+FracturesLibrary.VariablesMain <|--FracturesLibrary.FracturesFunctions::intersectionFractures
+
+package PolygonalMesh <<Folder>>{
+struct PolygonalMesh{
+
++ NumberCell0D : unsigned int   
++ Cell0DId : vector<unsigned int>   
++ Cell0DCoordinates :  vector<Vector3d>   
+
++ NumberCell1D : unsigned int
++ Cell1DId :  vector<unsigned int>  
++ Cell1DVertices : vector<Vector2i>  
+
++ NumberCell2D : unsigned int 
++ Cell2DId : vector<unsigned int> 
++ Cell2DVertices : vector<vector<unsigned int>>  
++ Cell2DEdges : vector<vector<unsigned int>> 
 }
-Reshaping_array.Reshaping --> FracturesLibrary.Fractures::coordinates : controllo dimensione vettori
 
-
+}
 
 @enduml
