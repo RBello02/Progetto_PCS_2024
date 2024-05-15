@@ -7,7 +7,7 @@ using namespace std;
 using namespace Eigen;
 
 
-namespace PolygonalMesh {
+namespace PolygonalLibrary {
 
 struct PolygonalMesh{
 
@@ -24,6 +24,7 @@ struct PolygonalMesh{
     vector<vector<unsigned int>> Cell2DVertices = {}; ///< Cell2D Vertices indices, size 1 x NumberCell2DVertices[NumberCell2D]
     vector<vector<unsigned int>> Cell2DEdges = {}; ///< Cell2D Cell1D indices, size 1 x NumberCell2DEdges[NumberCell2D]
 };
+
 
 } //namespace
 
