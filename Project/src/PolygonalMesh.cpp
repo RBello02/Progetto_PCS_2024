@@ -79,19 +79,20 @@ inline double appartiene_a_segmento(Vector3d& origin, Vector3d& end, Vector3d& p
 
 }
 
-inline double pto_unico(Vector3d& pto, vector<Vector3d>& punti, double toll, unsigned int id){
+inline double pto_unico(Vector3d& pto, vector<Vector3d>& punti, double toll, unsigned int& id){
     //l'id mi serve quando cerco un punto tra i vertici
 
     bool unico = true;
 
     if(punti.size() == 0){return unico;}
 
-    for (Vector3d elem : punti){
+    for (unsigned int i = 0; i < punti.size(); i++){
+        Vector3d elem = punti[i];
         bool uguagl_x = (abs(pto[0] - elem [0]) < toll);
         bool uguagl_y = (abs(pto[1] - elem [1]) < toll);
         bool uguagl_z = (abs(pto[2] - elem [2]) < toll);
 
-        if (uguagl_x && uguagl_y && uguagl_z){unico = false;return unico;}
+        if (uguagl_x && uguagl_y && uguagl_z){unico = false; id = i; return unico;}
     }
     return unico;
 }
@@ -131,7 +132,6 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
     nuovi_punti.reserve(2); //male che vada ho 4 beta
     id_nuoviPunti.reserve(4);
 
-    unsigned int cont = 0;
 
     for (unsigned int i = 0; i< frattura.num_vertici; i++){
         unsigned int id_o = frattura.vertices[i];
@@ -162,7 +162,7 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
                     for(unsigned int i = 0; i<frattura.num_vertici; i++){
                         coord_frc.push_back(mesh.Cell0DCoordinates[frattura.vertices[i]]);
                     }
-                    int id_new_pto = 0;
+                    unsigned int id_new_pto = 0;
                     if (pto_unico(pto, coord_frc, toll, id_new_pto)){
                         //in questo caso non devo aggiungere nulla alla mesh
                         nuovi_punti.push_back(pto);
@@ -378,7 +378,7 @@ PolygonalMesh FracturesFunctions::SottoPoligonazione(const Fracture& frattura, c
         vert_fract.push_back(frc.vertices[i]);
     }
 
-    //divisione_sottopol(frc, P_traces, NP_traces, mesh, tolleranza1D, vert_fract);
+    divisione_sottopol(frc, P_traces, NP_traces, mesh, tolleranza1D, vert_fract);
 
     return mesh;
 
