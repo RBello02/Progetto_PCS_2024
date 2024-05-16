@@ -1,4 +1,5 @@
 #include "src/FracturesLibrary.hpp"
+#include "src/PolygonalMesh.hpp"
 
 #include <iomanip>
 #include <iostream>
@@ -7,6 +8,7 @@
 #include <fstream>
 
 using namespace FracturesLibrary;
+using namespace PolygonalLibrary;
 using namespace Eigen;
 using namespace std;
 
@@ -20,7 +22,7 @@ int main()
     cout << setprecision(16);
 
     string path = "DFN";
-    string filenameI = path + "/FR10_data.txt";
+    string filenameI = path + "/FR3_data.txt";
 
     //definisco le liste che conterranno le tracce e le fratture
     vector<Fracture> list_fractures; //lista di fratture
@@ -57,7 +59,7 @@ int main()
     }
 
 
-    // ciclo sulle coppie di poligoni e vedo se sono vicini oppure no
+    // ciclo sulle coppie di poligoni e determino le tracce
     for(unsigned int i=0; i<num_fratt; i++)
     {
         for (unsigned int j=i+1; j< num_fratt; j++)
@@ -127,6 +129,54 @@ int main()
     }
 
     ofs1.close();
+
+    //PARTE 2 PROGETTO
+    vector<PolygonalMesh> sottoPoligonazione_per_frattura;
+    sottoPoligonazione_per_frattura.reserve(num_fratt);
+    //calcolo ora la sottopoligonazione per ogni frattura
+    for(Fracture frattura : list_fractures){
+        PolygonalMesh mesh;
+
+        //se la frattura non ha tracce la lista sarà costituita da una sola mesh che corrisponde al poligono
+        if (P_traces_of_fractures[frattura.id].size() + NP_traces_of_fractures[frattura.id].size() == 0){
+
+            //salvo le celle 0D
+            mesh.NumberCell0D += frattura.num_vertici;
+            mesh.Cell0DId.reserve(frattura.num_vertici);
+            mesh.Cell0DCoordinates.reserve(frattura.num_vertici);
+            for (unsigned int v = 0; v < frattura.num_vertici; v++){
+                mesh.Cell0DId.push_back(v);
+                mesh.Cell0DCoordinates.push_back(coordinates[frattura.vertices[v]]);
+            }
+
+            //salvo le celle 1D
+            mesh.NumberCell1D += frattura.num_vertici;
+            mesh.Cell1DId.reserve(frattura.num_vertici);
+            for (unsigned int v = 0; v < frattura.num_vertici; v++){
+                unsigned int id_origin = frattura.vertices[v];
+                unsigned int id_end;
+                if(v == frattura.num_vertici){id_end = frattura.vertices[0];}
+                else{id_end = frattura.vertices[v+1];}
+                mesh.Cell1DId.push_back(v);
+                mesh.Cell1DVertices.push_back({id_origin, id_end});
+            }
+
+            //salvo le celle 2D --> in questo caso ne ho solo una, la frattura stessa
+            mesh.NumberCell2D = 1;
+            mesh.Cell2DId.reserve(1);
+            mesh.Cell2DId.push_back(0);
+            mesh.Cell2DVertices.reserve(1);
+            mesh.Cell2DVertices.push_back(frattura.vertices);
+            mesh.Cell2DEdges.reserve(1);
+            mesh.Cell2DEdges.push_back(mesh.Cell1DId);
+        }
+        else {
+            mesh = f.FracturesFunctions::SottoPoligonazione(frattura, P_traces_of_fractures[frattura.id], NP_traces_of_fractures[frattura.id], coordinates);
+        }
+
+        //aggiungo la mesh creata alla mappa
+        sottoPoligonazione_per_frattura.push_back(mesh);
+    }
 
 
     return 0;
