@@ -130,6 +130,7 @@ int main()
 
     ofs1.close();
 
+    //PARTE 2 PROGETTO
     vector<PolygonalMesh> sottoPoligonazione_per_frattura;
     sottoPoligonazione_per_frattura.reserve(num_fratt);
     //calcolo ora la sottopoligonazione per ogni frattura
@@ -163,7 +164,7 @@ int main()
             //salvo le celle 2D --> in questo caso ne ho solo una, la frattura stessa
             mesh.NumberCell2D = 1;
             mesh.Cell2DId.reserve(1);
-            mesh.Cell2DId.push_back(1);
+            mesh.Cell2DId.push_back(0);
             mesh.Cell2DVertices.reserve(1);
             mesh.Cell2DVertices.push_back(frattura.vertices);
             mesh.Cell2DEdges.reserve(1);
