@@ -22,7 +22,7 @@ int main()
     cout << setprecision(16);
 
     string path = "DFN";
-    string filenameI = path + "/FR10_data.txt";
+    string filenameI = path + "/FR3_data.txt";
 
     //definisco le liste che conterranno le tracce e le fratture
     vector<Fracture> list_fractures; //lista di fratture
@@ -175,7 +175,7 @@ int main()
         }
 
         //aggiungo la mesh creata alla mappa
-        sottoPoligonazione_per_frattura[frattura.id] = mesh;
+        sottoPoligonazione_per_frattura.push_back(mesh);
     }
 
 

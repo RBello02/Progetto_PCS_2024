@@ -110,13 +110,13 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
 
     //ricordiamo: prima le tracce passanti, poi quelle non passanti in ordine decrescente (le liste sono già ordinate)
     Trace traccia_tagliante;
-    if (P_traces.size() == 0){
+    if (P_traces.size() != 0){
         auto it = P_traces.begin();
         traccia_tagliante = *it;
         P_traces.pop_front();
     }
     else{
-        auto it = P_traces.begin();
+        auto it = NP_traces.begin();
         traccia_tagliante = *it;
         NP_traces.pop_front();
     }
@@ -238,10 +238,10 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
     }
 
     //determino le tracce passanti e quelle non per ogni sotto-frattura
-    list<Trace> P_traces1;
-    list<Trace> NP_traces1;
-    list<Trace> P_traces2;
-    list<Trace> NP_traces2;
+    list<Trace> P_traces1 = {};
+    list<Trace> NP_traces1 = {};
+    list<Trace> P_traces2 = {};
+    list<Trace> NP_traces2  = {};
 
 
     //MI MANCA DA VERIFICRE QUALI TRACCE APPARTENGANO A QUALI LISTE
