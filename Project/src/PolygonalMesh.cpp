@@ -129,7 +129,7 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
     //ciclo sui lati della frattura per cercare i due punti di intersezione (devo gestire il caso di capotare su un vertice --> conta doppio)
     vector<Vector3d> nuovi_punti;
     vector<unsigned int> id_nuoviPunti;
-    nuovi_punti.reserve(2); //male che vada ho 4 beta
+    nuovi_punti.reserve(4); //male che vada ho 4 beta
     id_nuoviPunti.reserve(4);
 
 
@@ -156,14 +156,14 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
                 unsigned int a = 0;
                 if(pto_unico(pto, nuovi_punti, toll, a)){
 
-                    //devo gesture anche il caso in cui il punto gestisce con un vertice della frattura
+                    //devo gesture anche il caso in cui il punto coincide con un vertice della frattura
                     vector<Vector3d> coord_frc;
                     coord_frc.reserve(frattura.num_vertici);
                     for(unsigned int i = 0; i<frattura.num_vertici; i++){
                         coord_frc.push_back(mesh.Cell0DCoordinates[frattura.vertices[i]]);
                     }
                     unsigned int id_new_pto = 0;
-                    if (pto_unico(pto, coord_frc, toll, id_new_pto)){
+                    if (!pto_unico(pto, coord_frc, toll, id_new_pto)){
                         //in questo caso non devo aggiungere nulla alla mesh
                         nuovi_punti.push_back(pto);
                         id_nuoviPunti.push_back(id_new_pto);
