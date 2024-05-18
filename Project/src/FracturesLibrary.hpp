@@ -40,7 +40,7 @@ struct Fracture
 struct FracturesFunctions {
 
     double eps_macchina  = numeric_limits<double>::epsilon();
-    const double tolleranza1D = max(pow(10,-13), eps_macchina);
+    const double tolleranza1D = max(pow(10,-16), eps_macchina);
     const double tolleranza2D = max(eps_macchina, pow(tolleranza1D, 2) * 0.75);
     const double tolleranza3D = max(eps_macchina, sqrt(2)/12 * pow(tolleranza1D,3));
 

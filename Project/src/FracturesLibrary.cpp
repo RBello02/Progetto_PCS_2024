@@ -234,7 +234,8 @@ bool FracturesFunctions::importData(const string& path, vector<Fracture>& lista,
         }
 
         //salvo ora le coordinate nel vettore coord e i rispettivi id nella struct Fracture
-        for (unsigned int k = 0; k < frc.num_vertici; k++){
+        for (unsigned int k = 0; k < frc.num_vertici; k++)
+        {
             Vector3d v = vert.col(k);
             coord.push_back(v);
             ReshapingArray::VerificaRaddoppio(coord);
