@@ -129,19 +129,11 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
     MatrixXd retta_traccia = Retta_per_due_punti(pt1, pt2);         // calcolo la retta passante per gli estremi della traccia
     Vector3d dir_t = retta_traccia.row(0);              // ricavo la direttrice
 
-<<<<<<< HEAD
-    //ciclo sui lati della frattura per cercare i due punti di intersezione (devo gestire il caso di capitare su un vertice --> conta doppio)
-    vector<Vector3d> nuovi_punti;  // inizializzo un vettore dove salvo le coordinate dei nuovi punti
-    vector<unsigned int> id_nuoviPunti;  // inizializzo un vettore contenente gli ID dei nuovi punti
-    nuovi_punti.reserve(2); //male che vada ho 4 beta, riservo 2 celle di memoria
-    id_nuoviPunti.reserve(4);  //  riservo 4 celle di memoria agli ID
-=======
     //ciclo sui lati della frattura per cercare i due punti di intersezione (devo gestire il caso di capotare su un vertice --> conta doppio)
     vector<Vector3d> nuovi_punti;
     vector<unsigned int> id_nuoviPunti;
     nuovi_punti.reserve(4); //male che vada ho 4 beta
     id_nuoviPunti.reserve(4);
->>>>>>> 35c9fb660d15bf3d0853de9579e7ec1c831d9a6f
 
 
     for (unsigned int i = 0; i< frattura.num_vertici; i++)  // ciclo sui vertici della frattura
@@ -171,11 +163,7 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
                 if(pto_unico(pto, nuovi_punti, toll, a))  // vedo il nuovo pto coincide con i punti di intersezione gia trovati, al passo 0 nuovi punti è vuoto quindi restituisco true ed entro nell'if
                 {
 
-<<<<<<< HEAD
                     //devo gestire anche il caso in cui il punto coincide con un vertice della frattura
-=======
-                    //devo gesture anche il caso in cui il punto coincide con un vertice della frattura
->>>>>>> 35c9fb660d15bf3d0853de9579e7ec1c831d9a6f
                     vector<Vector3d> coord_frc;
                     coord_frc.reserve(frattura.num_vertici);
                     for(unsigned int i = 0; i<frattura.num_vertici; i++)
@@ -183,12 +171,8 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
                         coord_frc.push_back(mesh.Cell0DCoordinates[frattura.vertices[i]]);  // mi salvo le coordinate dei vertici del poligono
                     }
                     unsigned int id_new_pto = 0;
-<<<<<<< HEAD
-                    if (pto_unico(pto, coord_frc, toll, id_new_pto))  // se il mio punto di intersezione coincide con un vertice del poligono
-                    {
-=======
+                    
                     if (!pto_unico(pto, coord_frc, toll, id_new_pto)){
->>>>>>> 35c9fb660d15bf3d0853de9579e7ec1c831d9a6f
                         //in questo caso non devo aggiungere nulla alla mesh
                         nuovi_punti.push_back(pto);  // a nuovo punto appendo il punto di intersezione
                         id_nuoviPunti.push_back(id_new_pto); // appendo anche l'ID nuovo che coincide con l'ID del vertice
