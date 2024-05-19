@@ -137,11 +137,11 @@ inline Vector2d alpha_di_intersezione(MatrixXd r_frattura, MatrixXd retta_inters
 {
 
     //imposto un sistema lineare per la ricerca dei parametri alpha e beta
-    //primo parametro è la matrice della retta del poligono
+    //primo parametro è la matrice della retta del poligono --> retta in funzione di alpha
     Vector3d t1 = r_frattura.row(0).transpose();
     Vector3d P1 = r_frattura.row(1).transpose();
 
-    //secondo parametro è la matrice della retta di intersezione tra i piani
+    //secondo parametro è la matrice della retta di intersezione tra i piani --> retta in funzione di beta
     Vector3d t2 = retta_intersez.row(0).transpose();
     Vector3d P2 = retta_intersez.row(1).transpose();
 
@@ -234,7 +234,8 @@ bool FracturesFunctions::importData(const string& path, vector<Fracture>& lista,
         }
 
         //salvo ora le coordinate nel vettore coord e i rispettivi id nella struct Fracture
-        for (unsigned int k = 0; k < frc.num_vertici; k++){
+        for (unsigned int k = 0; k < frc.num_vertici; k++)
+        {
             Vector3d v = vert.col(k);
             coord.push_back(v);
             ReshapingArray::VerificaRaddoppio(coord);
@@ -356,7 +357,6 @@ void FracturesFunctions::IntersectionFractures(Fracture &frc1, Fracture &frc2, c
 
         //Introduco un contatore che incremento ogni volta che la retta di intersezione tra i due piani interseca un
         // segnemnto della frattura. se alla fine avrò cont == 4, vuol dire che ho una traccia
-        unsigned int cont = 0;
 
         for (unsigned int i = 0; i < frc1.num_vertici; i++){
 
@@ -377,7 +377,6 @@ void FracturesFunctions::IntersectionFractures(Fracture &frc1, Fracture &frc2, c
                 Vector2d a_b = alpha_di_intersezione(retta_tra_vertici, retta_intersez_piani);
 
                 if (a_b[0] >= -tolleranza1D && a_b[0] <= 1+tolleranza1D){
-                    cont += 1;
                     beta_inters.push_back({static_cast<double>(frc1.id),a_b[1]});
                 }
 
@@ -402,7 +401,6 @@ void FracturesFunctions::IntersectionFractures(Fracture &frc1, Fracture &frc2, c
             if (non_parallele){
                 Vector2d a_b = alpha_di_intersezione(retta_tra_vertici, retta_intersez_piani);
                 if (a_b[0] >= - tolleranza1D && a_b[0] <= 1+ tolleranza1D){
-                    cont += 1;
                     beta_inters.push_back({static_cast<double>(frc2.id),a_b[1]});
                 }
                 }
@@ -410,7 +408,9 @@ void FracturesFunctions::IntersectionFractures(Fracture &frc1, Fracture &frc2, c
 
 
         //se trovo una traccia la salvo
-        if (cont == 4){
+        beta_inters.sort(compare_beta);
+        beta_inters.unique();  // tolgo i duplicati al fine di eliminare i casi degeneri (vedi nel test)
+        if (beta_inters.size()==4){
             cout << "Ho una traccia tra la frattura " << frc1.id << " e la fratt " << frc2.id << endl;
             //posso ordinare gli array tra loro in base al valore di beta
             beta_inters.sort(compare_beta);
