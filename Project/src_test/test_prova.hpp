@@ -380,8 +380,8 @@ TEST(NearFracture_test, generale){
     ASSERT_TRUE(Risultato_funzione);
 
 }
+// nel mio cè un problema
 TEST(NearFracture_test, prova){
-    //bool NearFractures(const Fracture& frc1, const Fracture& frc2, const vector<Vector3d>& coord);
     Fracture f1;
     Fracture f2;
     FracturesFunctions g;
