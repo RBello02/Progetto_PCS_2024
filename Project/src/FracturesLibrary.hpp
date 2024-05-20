@@ -49,6 +49,16 @@ struct FracturesFunctions {
     void IntersectionFractures(Fracture &frc1, Fracture &frc2, const vector<Vector3d>& coord, list<Trace>& list_traces, map<unsigned int, list<Trace>>& P_traces, map<unsigned int, list<Trace>>& NP_traces);
     inline bool Parallelismo(const Matrix3d& piano_1, const Matrix3d& piano_2);
     PolygonalMesh SottoPoligonazione(const Fracture& frattura, const list<Trace>& P_traces, const list<Trace>& NP_traces, const vector<Vector3d>& coord);
+
+    //funzioni di supporto
+    inline MatrixXd Retta_tra_piani(const Matrix3d& piano_1, const Matrix3d& piano_2);
+    inline MatrixXd Retta_per_due_vertici_della_frattura(unsigned int id_vertice1, unsigned int id_vertice2, const vector<Vector3d>& coord);
+    inline Vector2d alpha_di_intersezione(MatrixXd r_frattura, MatrixXd retta_intersez);
+    inline MatrixXd Retta_per_due_punti(Vector3d& pt1, Vector3d& pt2);
+    inline Vector2d intersezione_rette(MatrixXd& r_frattura, MatrixXd& r_traccia);
+    inline bool appartiene_a_segmento(Vector3d& origin, Vector3d& end, Vector3d& pto);
+    inline bool pto_unico(Vector3d& pto, vector<Vector3d>& punti, unsigned int& id);
+
 };
 
 

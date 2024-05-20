@@ -7,99 +7,12 @@ using namespace FracturesLibrary;
 
 namespace FracturesLibrary{
 
-//funzioni di supporto
-inline MatrixXd Retta_per_due_punti(Vector3d& pt1, Vector3d& pt2)
-{
-    // l'equazione parametrica è X = at+P
-
-    // passo 1: salvo le coordinate dei due punti
-    double x1 = pt1[0];
-    double y1 = pt1[1];
-    double z1 = pt1[2];
-
-    double x2 = pt2[0];
-    double y2 = pt2[1];
-    double z2 = pt2[2];
-
-    // passo 2: trovo direttrice e punto di partenza della retta
-
-    Vector3d t = {x2-x1,y2-y1,z2-z1};
-    Vector3d P = {x1,y1,z1};
-
-    // salvo in un formato particolare
-    MatrixXd X;
-    X.resize(2,3);
-    X.row(0) = t.transpose();
-    X.row(1) = P.transpose();  // come una matrice 2x3
-
-    return X;
-
-}
-
-inline Vector2d intersezione_rette(MatrixXd& r_frattura, MatrixXd& r_traccia)
-{
-
-    //imposto un sistema lineare per la ricerca dei parametri alpha e beta
-    //primo parametro è la matrice della retta del poligono --> retta in funzione di alpha
-    Vector3d t1 = r_frattura.row(0).transpose();
-    Vector3d P1 = r_frattura.row(1).transpose();
-
-    //secondo parametro è la matrice della retta della traccia --> retta in funzione di beta
-    Vector3d t2 = r_traccia.row(0).transpose();
-    Vector3d P2 = r_traccia.row(1).transpose();
-
-    MatrixXd A = MatrixXd::Zero(3,2);
-    Vector3d b = Vector3d::Zero();
-
-    //imposto i coefficienti della matrice e del termine noto
-    A.col(0) = t1;
-    A.col(1) = -t2;
-
-    for (unsigned int i = 0; i<3; i++){b[i] = P2[i]-P1[i];}
-
-    Vector2d x = A.householderQr().solve(b); //x =[alpha; beta]
-
-    Vector2d alpha_beta = x;
-    return alpha_beta;
-
-}
-
-inline double appartiene_a_segmento(Vector3d& origin, Vector3d& end, Vector3d& pto, double toll){
-    bool appartiene = false;
-
-    //calcolo la distanza di pto dai due estremi del segmento, se la somma di queste due distanza è maggiore della distanza dei
-    // due estremi allora il pto è esterno
-    double lung_segmento = (origin-end).norm();
-    double pto_o = (origin-pto).norm();
-    double pto_e = (end-pto).norm();
-
-    if(abs(pto_o + pto_e - lung_segmento) < toll){appartiene = true;}
-
-    return appartiene;
-
-}
-
-inline double pto_unico(Vector3d& pto, vector<Vector3d>& punti, double toll, unsigned int& id){
-    //l'id mi serve quando cerco un punto tra i vertici
-
-    bool unico = true;
-
-    if(punti.size() == 0){return unico;}
-
-    for (unsigned int i = 0; i < punti.size(); i++){
-        Vector3d elem = punti[i];
-        bool uguagl_x = (abs(pto[0] - elem [0]) < toll);
-        bool uguagl_y = (abs(pto[1] - elem [1]) < toll);
-        bool uguagl_z = (abs(pto[2] - elem [2]) < toll);
-
-        if (uguagl_x && uguagl_y && uguagl_z){unico = false; id = i; return unico;}
-    }
-    return unico;
-}
 /*****************************************************************************************************************************/
 
 void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Trace> NP_traces, PolygonalMesh& mesh, const double& toll, list<unsigned int> lista_vert)
 {
+    FracturesFunctions fx;
+
     /*questa procedura sarà definita ricorsivamente:
         * prima divido la frattura in due in base alla prima traccia che dobbiamo considerare
         * vado a dividere le tracce restanti in base a quale poligono appartengono
@@ -126,7 +39,7 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
 
     Vector3d pt1 = traccia_tagliante.coordinates_extremes.col(0);   // dopo aver salvato l'oggetto traccia estraggo le coordinate degli estremi della traccia
     Vector3d pt2 = traccia_tagliante.coordinates_extremes.col(1);
-    MatrixXd retta_traccia = Retta_per_due_punti(pt1, pt2);         // calcolo la retta passante per gli estremi della traccia
+    MatrixXd retta_traccia = fx.Retta_per_due_punti(pt1, pt2);         // calcolo la retta passante per gli estremi della traccia
     Vector3d dir_t = retta_traccia.row(0);              // ricavo la direttrice
 
     //ciclo sui lati della frattura per cercare i due punti di intersezione (devo gestire il caso di capotare su un vertice --> conta doppio)
@@ -146,7 +59,7 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
 
         Vector3d origin = mesh.Cell0DCoordinates[id_o];   // determino le coordinate di origine segmento
         Vector3d end = mesh.Cell0DCoordinates[id_e];        // determino le coordinate di fine segmento
-        MatrixXd retta_fratt = Retta_per_due_punti(origin, end);  // costruisco la retta per questi due punti
+        MatrixXd retta_fratt = fx.Retta_per_due_punti(origin, end);  // costruisco la retta per questi due punti
         Vector3d dir_f = retta_fratt.row(0);        // calcolo la direttrice
 
         //interseco le rette se queste non sono parallele
@@ -154,13 +67,13 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
 
         if(non_parallele) // se le rette non sono parallele si intersecano
         {
-            Vector2d a_b = intersezione_rette(retta_fratt, retta_traccia);   // vettore contenente alpha e beta di intersezione tra le due rette
+            Vector2d a_b = fx.intersezione_rette(retta_fratt, retta_traccia);   // vettore contenente alpha e beta di intersezione tra le due rette
             //il punto deve stare sul segmento della frattura, ossia alpha appartiene a [0,1]
             if (a_b[0] > -toll && a_b[0] < 1+ toll){  // la posizione 0 corrisponde agli alpha, faccio un controllo su questi
                 Vector3d pto = retta_traccia.row(1).transpose() + a_b[1] * dir_t;  // determino il punto di intersezione prendendo il beta di intersezione e sostituendolo nell'equazione della retta
                 //se pto è già in nuovi_punti lo ignoro sennò faccio quello che devo
                 unsigned int a = 0;  // questa è l'inizializzazione del nuovo id da inserire
-                if(pto_unico(pto, nuovi_punti, toll, a))  // vedo il nuovo pto coincide con i punti di intersezione gia trovati, al passo 0 nuovi punti è vuoto quindi restituisco true ed entro nell'if
+                if(fx.pto_unico(pto, nuovi_punti, a))  // vedo il nuovo pto coincide con i punti di intersezione gia trovati, al passo 0 nuovi punti è vuoto quindi restituisco true ed entro nell'if
                 {
 
                     //devo gestire anche il caso in cui il punto coincide con un vertice della frattura
@@ -172,7 +85,7 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
                     }
                     unsigned int id_new_pto = 0;
                     
-                    if (!pto_unico(pto, coord_frc, toll, id_new_pto)){
+                    if (!fx.pto_unico(pto, coord_frc, id_new_pto)){
                         //in questo caso non devo aggiungere nulla alla mesh
                         nuovi_punti.push_back(pto);  // a nuovo punto appendo il punto di intersezione
                         id_nuoviPunti.push_back(id_new_pto); // appendo anche l'ID nuovo che coincide con l'ID del vertice
@@ -276,7 +189,7 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
             Vector3d fine = traccia.coordinates_extremes.col(1);   // definisco le coordinate degli estremi della traccia
 
             // passo 2: definisco la retta della traccia
-            MatrixXd retta_traccia = Retta_per_due_punti(origine,fine);
+            MatrixXd retta_traccia = fx.Retta_per_due_punti(origine,fine);
             Vector3d direttrice_traccia = retta_traccia.row(0);
 
            // passo 3: ciclo sui vertici della frattura 1 per capire se orgine e fine sono combinazione convessa dei vertici
@@ -292,14 +205,14 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
                 Vector3d x = mesh.Cell0DCoordinates[id_x];   // determino le coordinate di origine segmento
                 Vector3d y = mesh.Cell0DCoordinates[id_y];
 
-                MatrixXd retta_segmenti = Retta_per_due_punti(x,y);
+                MatrixXd retta_segmenti = fx.Retta_per_due_punti(x,y);
                 Vector3d direttrice_segmenti = retta_segmenti.row(0);
 
                 bool non_parallele = !((direttrice_segmenti.cross(direttrice_traccia)).norm() < toll); // verifico che non sono parallele
 
                 if (non_parallele)
                 {
-                    Vector2d alpha_beta = intersezione_rette(retta_segmenti, retta_traccia);  // l'intersezione tra le rette dei segmenti e la traccia
+                    Vector2d alpha_beta = fx.intersezione_rette(retta_segmenti, retta_traccia);  // l'intersezione tra le rette dei segmenti e la traccia
                     if (alpha_beta[0] - toll >= 0 && alpha_beta[0] + toll <= 1)
                     {
                         appartenenza_alla_frattura_1 = true;  // se vedo che il punto appartiene al segmento questa variabile diventa true
@@ -321,7 +234,7 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
                 Vector3d x = mesh.Cell0DCoordinates[id_x];   // determino le coordinate di origine segmento
                 Vector3d y = mesh.Cell0DCoordinates[id_y];
 
-                MatrixXd retta_segmenti = Retta_per_due_punti(x,y);
+                MatrixXd retta_segmenti = fx.Retta_per_due_punti(x,y);
                 Vector3d direttrice_segmenti = retta_segmenti.row(0);
 
                 bool non_parallele = !((direttrice_segmenti.cross(direttrice_traccia)).norm() < toll); // verifico che non sono parallele
@@ -329,7 +242,7 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
 
                 if (non_parallele)
                 {
-                    Vector2d alpha_beta = intersezione_rette(retta_segmenti, retta_traccia);  // l'intersezione tra le rette dei segmenti e la traccia
+                    Vector2d alpha_beta = fx.intersezione_rette(retta_segmenti, retta_traccia);  // l'intersezione tra le rette dei segmenti e la traccia
                     if (alpha_beta[0] - toll >= 0 && alpha_beta[0] + toll <= 1)
                     {
                         appartenenza_alla_frattura_2 = true;  // se vedo che il punto appartiene al segmento questa variabile diventa true
@@ -368,7 +281,7 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
             Vector3d fine = traccia.coordinates_extremes.col(1);   // definisco le coordinate degli estremi della traccia
 
             // passo 2: definisco la retta della traccia
-            MatrixXd retta_traccia = Retta_per_due_punti(origine,fine);
+            MatrixXd retta_traccia = fx.Retta_per_due_punti(origine,fine);
             Vector3d direttrice_traccia = retta_traccia.row(0);
 
             // passo 3: ciclo sui vertici della frattura 1 per capire se orgine e fine sono combinazione convessa dei vertici
@@ -384,7 +297,7 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
                 Vector3d x = mesh.Cell0DCoordinates[id_x];   // determino le coordinate di origine segmento
                 Vector3d y = mesh.Cell0DCoordinates[id_y];
 
-                MatrixXd retta_segmenti = Retta_per_due_punti(x,y);
+                MatrixXd retta_segmenti = fx.Retta_per_due_punti(x,y);
                 Vector3d direttrice_segmenti = retta_segmenti.row(0);
 
                 bool non_parallele = !((direttrice_segmenti.cross(direttrice_traccia)).norm() < toll); // verifico che non sono parallele
@@ -392,7 +305,7 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
 
                 if (non_parallele)
                 {
-                    Vector2d alpha_beta = intersezione_rette(retta_segmenti, retta_traccia);  // l'intersezione tra le rette dei segmenti e la traccia
+                    Vector2d alpha_beta = fx.intersezione_rette(retta_segmenti, retta_traccia);  // l'intersezione tra le rette dei segmenti e la traccia
                     if (alpha_beta[0] - toll >= 0 && alpha_beta[0] + toll <= 1)
                     {
                         appartenenza_alla_frattura_1 = true;  // se vedo che il punto appartiene al segmento questa variabile diventa true
@@ -414,7 +327,7 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
                 Vector3d x = mesh.Cell0DCoordinates[id_x];   // determino le coordinate di origine segmento
                 Vector3d y = mesh.Cell0DCoordinates[id_y];
 
-                MatrixXd retta_segmenti = Retta_per_due_punti(x,y);
+                MatrixXd retta_segmenti = fx.Retta_per_due_punti(x,y);
                 Vector3d direttrice_segmenti = retta_segmenti.row(0);
 
                 bool non_parallele = !((direttrice_segmenti.cross(direttrice_traccia)).norm() < toll); // verifico che non sono parallele
@@ -422,7 +335,7 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
 
                 if (non_parallele)
                 {
-                    Vector2d alpha_beta = intersezione_rette(retta_segmenti, retta_traccia);  // l'intersezione tra le rette dei segmenti e la traccia
+                    Vector2d alpha_beta = fx.intersezione_rette(retta_segmenti, retta_traccia);  // l'intersezione tra le rette dei segmenti e la traccia
                     if (alpha_beta[0] - toll >= 0 && alpha_beta[0] + toll <= 1)
                     {
                         appartenenza_alla_frattura_2 = true;  // se vedo che il punto appartiene al segmento questa variabile diventa true

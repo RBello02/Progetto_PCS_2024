@@ -2,7 +2,7 @@
 #list(APPEND DFN_sources "${CMAKE_CURRENT_SOURCE_DIR}/<nome file>")
 list(APPEND DFN_sources "${CMAKE_CURRENT_SOURCE_DIR}/FracturesLibrary.cpp")
 list(APPEND DFN_sources "${CMAKE_CURRENT_SOURCE_DIR}/PolygonalMesh.cpp")
-
+list(APPEND DFN_sources "${CMAKE_CURRENT_SOURCE_DIR}/utils.cpp")
 
 
 #copiare la riga seguente per aggiungere file .hpp

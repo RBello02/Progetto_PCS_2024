@@ -59,107 +59,7 @@ inline bool FracturesFunctions::Parallelismo(const Matrix3d& piano_1, const Matr
     {
         risultato = !risultato;
     }
-    return risultato;
-}
-
-inline MatrixXd Retta_tra_piani(const Matrix3d& piano_1, const Matrix3d& piano_2)
-{
-    // calcolo la retta di intersezione tra i piani in forma parametrica
-    // X = at+P
-
-
-    // NOMENCLATURA
-    // u1 = piano_1.row(1) v1 = piano_1.row(2) sono i vettori direttori del primo piano
-    // u2 = piano_2.row(1) v2 = piano_2.row(2) sono i vettori direttori del secondo piano
-    // P0_1 = piano_1.row(0) punto iniziale per il piano 1
-    // P0_2 = piano_2.row(0) punto iniziale per il piano 2
-
-    // passo 1: ricavare la normale ai piani
-    Vector3d n1 = piano_1.row(1).cross(piano_1.row(2))/(piano_1.row(1).norm()*piano_1.row(2).norm());
-    Vector3d n2 = piano_2.row(1).cross(piano_2.row(2))/(piano_2.row(1).norm()*piano_2.row(2).norm());
-
-    // passo 2 : ricavare la direttrice della retta
-    Vector3d t = n1.cross(n2);
-
-    // passo 3: ricavare lo scalare d per i due piani
-    double d1 = n1.dot(piano_1.row(0));
-    double d2 = n2.dot(piano_2.row(0));
-    Vector3d d = {d1,d2,0};  // salvo queste quantita in un vettore
-
-    // passo 4: ricavare la matrice A
-    Matrix3d A;
-    A.row(0) = n1;
-    A.row(1) = n2;
-    A.row(2) = t;
-
-    // passo 5: risolvere il sistema per ricavare P
-    Vector3d P = A.partialPivLu().solve(d);
-
-    // salvo in un formato particolare
-    MatrixXd X;
-    X.resize(2,3);
-    X.row(0) = t.transpose();
-    X.row(1) = P.transpose();  // come una matrice 2x3
-
-    return X;
-
-}
-
-inline MatrixXd Retta_per_due_vertici_della_frattura(unsigned int id_vertice1, unsigned int id_vertice2, const vector<Vector3d>& coord)
-{
-    // l'equazione parametrica è X = at+P
-
-    // passo 1: salvo le coordinate dei due punti
-    double x1 = coord[id_vertice1][0];
-    double y1 = coord[id_vertice1][1];
-    double z1 = coord[id_vertice1][2];
-
-    double x2 = coord[id_vertice2][0];
-    double y2 = coord[id_vertice2][1];
-    double z2 = coord[id_vertice2][2];
-
-    // passo 2: trovo direttrice e punto di partenza della retta
-
-    Vector3d t = {x2-x1,y2-y1,z2-z1};
-    Vector3d P = {x1,y1,z1};
-
-    // salvo in un formato particolare
-    MatrixXd X;
-    X.resize(2,3);
-    X.row(0) = t.transpose();
-    X.row(1) = P.transpose();  // come una matrice 2x3
-
-    return X;
-
-}
-
-inline Vector2d alpha_di_intersezione(MatrixXd r_frattura, MatrixXd retta_intersez)
-{
-
-    //imposto un sistema lineare per la ricerca dei parametri alpha e beta
-    //primo parametro è la matrice della retta del poligono --> retta in funzione di alpha
-    Vector3d t1 = r_frattura.row(0).transpose();
-    Vector3d P1 = r_frattura.row(1).transpose();
-
-    //secondo parametro è la matrice della retta di intersezione tra i piani --> retta in funzione di beta
-    Vector3d t2 = retta_intersez.row(0).transpose();
-    Vector3d P2 = retta_intersez.row(1).transpose();
-
-    MatrixXd A = MatrixXd::Zero(3,2);
-    Vector3d b = Vector3d::Zero();
-
-    //imposto i coefficienti della matrice e del termine noto
-    A.col(0) = t1;
-    A.col(1) = -t2;
-
-    for (unsigned int i = 0; i<3; i++){b[i] = P2[i]-P1[i];}
-
-    Vector2d x = A.householderQr().solve(b); //x =[alpha; beta]
-
-    Vector2d alpha_beta = x;
-    return alpha_beta;
-
-}
+    return risultato;}
 
 inline bool compare_beta(const array<double,2>& arr1, const array<double,2>& arr2){
     return arr1[1] > arr2[1];
@@ -276,6 +176,9 @@ bool FracturesFunctions::NearFractures(const Fracture& frc1, const Fracture& frc
     bar1[2]=sommaz/frc1.num_vertici;
 
 
+    sommax=0;
+    sommay=0;
+    sommaz=0;
     for (unsigned int k = 0; k < frc2.num_vertici; k++){    // ripeto il calcolo anche per la seconda frattura
 
         unsigned int id_vertice = frc2.vertices[k];
@@ -288,7 +191,7 @@ bool FracturesFunctions::NearFractures(const Fracture& frc1, const Fracture& frc
     bar2[2]=sommaz/frc2.num_vertici;
 
     //calcolo i raggi delle sfere(al quadrato) e la distanza tra i due baricentri
-    double raggio1=0,raggio2=0;
+
 
     // cerco il vertice con distanza massima dal baricentro, in realtà mi interessa solo la distanza
 
@@ -296,6 +199,7 @@ bool FracturesFunctions::NearFractures(const Fracture& frc1, const Fracture& frc
 
     for (unsigned int j = 0; j<frc1.num_vertici; j++)   // ciclo su tutti i poligoni per calcolare la distanza massima dei vertici dal baricentro
     {
+        double raggio1=0;
         unsigned int id_vertice = frc1.vertices[j];  // inizializzo l'id del vertice
         for (unsigned int i =0; i<3;i++)        // ciclo sulle 3 coordinate per calcolare il raggio del poligono
         {
@@ -311,10 +215,11 @@ bool FracturesFunctions::NearFractures(const Fracture& frc1, const Fracture& frc
 
     for (unsigned int j = 0; j<frc2.num_vertici; j++)   // ciclo su tutti i poligoni per calcolare la distanza massima dei vertici dal baricentro
     {
+        double raggio2=0;
         unsigned int id_vertice = frc2.vertices[j];  // inizializzo l'id del vertice
         for (unsigned int i =0; i<3;i++)        // ciclo sulle 3 coordinate per calcolare il raggio del poligono
         {
-            raggio2 += pow((bar1[i]-coord[id_vertice][i]),2);
+            raggio2 += pow((bar2[i]-coord[id_vertice][i]),2);
         }
         if (raggio2 >= raggio_da_confrontare_2 - tolleranza1D)
         {
@@ -340,13 +245,15 @@ void FracturesFunctions::IntersectionFractures(Fracture &frc1, Fracture &frc2, c
     Matrix3d piano_frc1 = frc1.calcolo_piano(coord);
     Matrix3d piano_frc2 = frc2.calcolo_piano(coord);
 
+    FracturesFunctions fx;
+
     //procedo nella funzione solo nel caso in cui i due piani non siano paralleli
     if(Parallelismo(piano_frc1, piano_frc2)){
         cout << "La frattura " << frc1.id << " e la fratt " << frc2.id << " non si intersecano" << endl;}
     else{
 
         //calcolo la retta di intersezione tra i piani in forma parametrica
-        MatrixXd retta_intersez_piani = Retta_tra_piani(piano_frc1,piano_frc2);
+        MatrixXd retta_intersez_piani = fx.Retta_tra_piani(piano_frc1,piano_frc2);
         Vector3d dir_retta_intersez_piani;
         dir_retta_intersez_piani = retta_intersez_piani.row(0);
 
@@ -364,7 +271,7 @@ void FracturesFunctions::IntersectionFractures(Fracture &frc1, Fracture &frc2, c
             else{j = i+1;}
 
             //mi trovo la retta per ogni coppia di vertici
-            MatrixXd retta_tra_vertici = Retta_per_due_vertici_della_frattura(frc1.vertices[i],frc1.vertices[j], coord);
+            MatrixXd retta_tra_vertici = fx.Retta_per_due_vertici_della_frattura(frc1.vertices[i],frc1.vertices[j], coord);
             Vector3d dir_retta_tra_vertici;
             dir_retta_tra_vertici = retta_tra_vertici.row(0);
 
@@ -373,7 +280,7 @@ void FracturesFunctions::IntersectionFractures(Fracture &frc1, Fracture &frc2, c
             bool non_parallele = !((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).norm() < tolleranza1D);
 
             if (non_parallele){
-                Vector2d a_b = alpha_di_intersezione(retta_tra_vertici, retta_intersez_piani);
+                Vector2d a_b = fx.alpha_di_intersezione(retta_tra_vertici, retta_intersez_piani);
 
                 if (a_b[0] >= -tolleranza1D && a_b[0] <= 1+tolleranza1D){
                     beta_inters.push_back({static_cast<double>(frc1.id),a_b[1]});
@@ -389,7 +296,7 @@ void FracturesFunctions::IntersectionFractures(Fracture &frc1, Fracture &frc2, c
             else{j = i+1;}
 
             //mi trovo la retta per ogni coppia di vertici
-            MatrixXd retta_tra_vertici = Retta_per_due_vertici_della_frattura(frc2.vertices[i],frc2.vertices[j], coord);
+            MatrixXd retta_tra_vertici = fx.Retta_per_due_vertici_della_frattura(frc2.vertices[i],frc2.vertices[j], coord);
             Vector3d dir_retta_tra_vertici;
             dir_retta_tra_vertici = retta_tra_vertici.row(0);
 
@@ -398,7 +305,7 @@ void FracturesFunctions::IntersectionFractures(Fracture &frc1, Fracture &frc2, c
             bool non_parallele = !((dir_retta_tra_vertici.cross(dir_retta_intersez_piani)).norm() < tolleranza1D);
 
             if (non_parallele){
-                Vector2d a_b = alpha_di_intersezione(retta_tra_vertici, retta_intersez_piani);
+                Vector2d a_b = fx.alpha_di_intersezione(retta_tra_vertici, retta_intersez_piani);
                 if (a_b[0] >= - tolleranza1D && a_b[0] <= 1+ tolleranza1D){
                     beta_inters.push_back({static_cast<double>(frc2.id),a_b[1]});
                 }
