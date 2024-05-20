@@ -3,6 +3,7 @@
 
 #include "Eigen/Eigen"
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include <math.h>
 #include "FracturesLibrary.hpp"
 
@@ -238,25 +239,36 @@ TEST(alpha_intersez_test,generale_poligono1){
     Vector2d Risultato_funzione;
     Risultato_funzione=alpha_di_intersezione(A1,A2);
     Vector2d risultato_atteso={1,-0.015625};
-    ASSERT_EQ(risultato_atteso, Risultato_funzione);
+
+    for(unsigned int i = 0; i < Risultato_funzione.size(); i++){
+        ASSERT_DOUBLE_EQ(risultato_atteso[i], Risultato_funzione[i]);
+    }
+
+    //EXPECT_EQ(risultato_atteso, Risultato_funzione);
     //***************** secondo lato:
     A1 << -4,4,0,
         4,0,0;
     Risultato_funzione=alpha_di_intersezione(A1,A2);
     risultato_atteso={0,-0.015625};
-    ASSERT_EQ(risultato_atteso, Risultato_funzione);
+    for(unsigned int i = 0; i < Risultato_funzione.size(); i++){
+        ASSERT_DOUBLE_EQ(risultato_atteso[i], Risultato_funzione[i]);
+    }
     //************************* terzo lato:
     A1 << -4,-4,0,
         0,4,0;
     Risultato_funzione=alpha_di_intersezione(A1,A2);
     risultato_atteso={1,0.015625}; // sono scambiati rispetto a quelli di rena
-        ASSERT_EQ(risultato_atteso, Risultato_funzione);
+    for(unsigned int i = 0; i < Risultato_funzione.size(); i++){
+        ASSERT_DOUBLE_EQ(risultato_atteso[i], Risultato_funzione[i]);
+    }
     //************************** quarto lato:
     A1 << 4,-4,0,
         -4,0,0;
         risultato_atteso={0,0.015625};
-    ASSERT_EQ(risultato_atteso, Risultato_funzione);
-
+    Risultato_funzione=alpha_di_intersezione(A1,A2);
+    for(unsigned int i = 0; i < Risultato_funzione.size(); i++){
+        ASSERT_DOUBLE_EQ(risultato_atteso[i], Risultato_funzione[i]);
+    }
 }
 TEST(alpha_intersez_test,generale_poligono2){
     MatrixXd A1, A2;
@@ -270,24 +282,33 @@ TEST(alpha_intersez_test,generale_poligono2){
     Vector2d Risultato_funzione;
     Risultato_funzione=alpha_di_intersezione(A1,A2);
     Vector2d risultato_atteso={1,-0.0078125}; // sono scambiati rispetto a quelli di renato
-    ASSERT_EQ(risultato_atteso, Risultato_funzione);
+    for(unsigned int i = 0; i < Risultato_funzione.size(); i++){
+        ASSERT_DOUBLE_EQ(risultato_atteso[i], Risultato_funzione[i]);
+    }
     //***************** secondo lato:
     A1 << -2,0,2,
         2,0,0;
     Risultato_funzione=alpha_di_intersezione(A1,A2);
     risultato_atteso={0,-0.0078125};
-    ASSERT_EQ(risultato_atteso, Risultato_funzione);
+    for(unsigned int i = 0; i < Risultato_funzione.size(); i++){
+        ASSERT_DOUBLE_EQ(risultato_atteso[i], Risultato_funzione[i]);
+    }
     //************************* terzo lato:
     A1 << -2,0,-2,
                  0,0,2;
     Risultato_funzione=alpha_di_intersezione(A1,A2);
     risultato_atteso={1, 0.0078125};
-    ASSERT_EQ(risultato_atteso, Risultato_funzione);
+    for(unsigned int i = 0; i < Risultato_funzione.size(); i++){
+        ASSERT_DOUBLE_EQ(risultato_atteso[i], Risultato_funzione[i]);
+    }
     //************************** quarto lato:
     A1 << 2,0,-2,
         -2,0,0;
+    Risultato_funzione=alpha_di_intersezione(A1,A2);
     risultato_atteso={0, 0.0078125};
-    ASSERT_EQ(risultato_atteso,Risultato_funzione);
+    for(unsigned int i = 0; i < Risultato_funzione.size(); i++){
+        ASSERT_DOUBLE_EQ(risultato_atteso[i], Risultato_funzione[i]);
+    }
 
 }
 //** il mio funziona ma forse perchè sono int(?)
@@ -303,7 +324,9 @@ TEST(alpha_intersez_test,prova){
     Vector2d Risultato_funzione;
     Risultato_funzione=alpha_di_intersezione(A1,A2);
     Vector2d risultato_atteso={-1,0};
-    ASSERT_EQ(risultato_atteso, Risultato_funzione);
+    for(unsigned int i = 0; i < Risultato_funzione.size(); i++){
+        ASSERT_DOUBLE_EQ(risultato_atteso[i], Risultato_funzione[i]);
+    }
 
 }
 
