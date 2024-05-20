@@ -100,7 +100,57 @@ inline double pto_unico(Vector3d& pto, vector<Vector3d>& punti, double toll, uns
     }
     return unico;
 }
+    TEST(Retta_per_due_punti_test, generale){
+    Vector3d pt1,pt2;
+    pt1={0,-4,0};
+    pt2={0,0,-2};
+    MatrixXd risultato_funzione;
+    risultato_funzione.resize(2,3);
+    risultato_funzione=Retta_per_due_punti(pt1,pt2);
+    MatrixXd Risultato_atteso;
+    Risultato_atteso.resize(2,3);
+    Risultato_atteso << 0,4,-2,
+        0,-4,0;
+    ASSERT_EQ(Risultato_atteso,risultato_funzione);
 
+
+}
+TEST(intersezione_rette_test,prova){
+    FracturesFunctions g;
+    MatrixXd A1, A2;
+    A1.resize(2,3);
+    A2.resize(2,3);
+    A1 << 2,0,1,
+        3,1,2;
+    A2 << 5,4,0,
+        1,1,1;
+    Vector2d Risultato_funzione;
+    Risultato_funzione=alpha_di_intersezione(A1,A2);
+    Vector2d risultato_atteso={-1,0};
+    ASSERT_EQ(risultato_atteso,Risultato_funzione);
+
+}
+TEST(appartiene_a_segmento_test,generale){
+    bool risultato_funzione;
+    Vector3d origine,fine,punto;
+    double toll=1e-15;
+    origine={1,2,3};
+    fine={9,8,7};
+    punto={2,4,5};
+    risultato_funzione=appartiene_a_segmento(origine,fine,punto,toll);
+    ASSERT_FALSE(risultato_funzione);
+}
+TEST(punto_unico_test,generale){
+    bool risultato_funzione;
+    Vector3d pto;
+    vector<Vector3d> punti;
+    double toll=1e-15;
+    pto={2,4,5};
+    punti={{1,4,5},{5,7,8},{9,20,4},{2,4,5}};
+    unsigned int id=0;
+    risultato_funzione=pto_unico(pto,punti,toll, id);
+    ASSERT_FALSE(risultato_funzione);
+}
 
 
 #endif
