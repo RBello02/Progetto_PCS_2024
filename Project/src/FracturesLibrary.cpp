@@ -255,6 +255,7 @@ bool FracturesFunctions::importData(const string& path, vector<Fracture>& lista,
 
 bool FracturesFunctions::NearFractures(const Fracture& frc1, const Fracture& frc2, const vector<Vector3d>& coord){
 
+    bool flag = true;
     // vettori per le coordinate dei due baricentri (approssimativamente):
     array<double, 3> bar1;
     array<double,3> bar2;
@@ -329,11 +330,9 @@ bool FracturesFunctions::NearFractures(const Fracture& frc1, const Fracture& frc
     }
 
 
-    if (raggio_da_confrontare_1+raggio_da_confrontare_2 < distbb + tolleranza1D)
-        return false;
+    if (raggio_da_confrontare_1+raggio_da_confrontare_2 < distbb + tolleranza1D){flag = false;}
 
-    else
-        return true;
+    return flag;
 
 }
 
