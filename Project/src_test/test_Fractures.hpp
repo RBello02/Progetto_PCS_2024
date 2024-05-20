@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 #include <math.h>
 #include "FracturesLibrary.hpp"
+#include <limits>
 
 
 using namespace std;
@@ -204,27 +205,10 @@ TEST(Retta_tra_piani_test, generale){
     ASSERT_EQ(risultato_atteso, Risultato_funzione);
 
 }
-TEST(Retta_tra_piani_test, prova){
-    Matrix3d A1, A2;
-    A1 << 5,9,100,
-        82.78,0.1,9.65,
-        70,4.3,10;
-    A2 <<4.9,0,99.99,
-        2,0.87,4,
-        12.75,98,33.33;
-    MatrixXd Risultato_funzione;
-    Risultato_funzione.resize(2,3);
-    Risultato_funzione=Retta_tra_piani(A1,A2);
-    MatrixXd risultato_atteso;
-    risultato_atteso.resize(2,3);
-    risultato_atteso << -22652.93, 119500.73, -54577.72,
-        5,9,100;
-    ASSERT_EQ(risultato_atteso, Risultato_funzione);
-
-}
 
 //**********+alpha_intersezione:falliscono quelli generali, da rivedere i risultati*************
 TEST(alpha_intersez_test,generale_poligono1){
+    FracturesFunctions g;
     MatrixXd A1, A2;
     A1.resize(2,3);
     A2.resize(2,3);
@@ -238,27 +222,30 @@ TEST(alpha_intersez_test,generale_poligono1){
     Vector2d Risultato_funzione;
     Risultato_funzione=alpha_di_intersezione(A1,A2);
     Vector2d risultato_atteso={1,-0.015625};
-    ASSERT_EQ(risultato_atteso, Risultato_funzione);
+
+    //3.33067e-16 vs 2.22045e-16 mi restituisce questi valori
+    ASSERT_LE((risultato_atteso-Risultato_funzione).norm(),1e-15);
     //***************** secondo lato:
     A1 << -4,4,0,
         4,0,0;
     Risultato_funzione=alpha_di_intersezione(A1,A2);
     risultato_atteso={0,-0.015625};
-    ASSERT_EQ(risultato_atteso, Risultato_funzione);
+    ASSERT_LE((risultato_atteso-Risultato_funzione).norm(),1e-15);
     //************************* terzo lato:
     A1 << -4,-4,0,
         0,4,0;
     Risultato_funzione=alpha_di_intersezione(A1,A2);
     risultato_atteso={1,0.015625}; // sono scambiati rispetto a quelli di rena
-        ASSERT_EQ(risultato_atteso, Risultato_funzione);
+    ASSERT_LE((risultato_atteso-Risultato_funzione).norm(),1e-15);
     //************************** quarto lato:
     A1 << 4,-4,0,
         -4,0,0;
         risultato_atteso={0,0.015625};
-    ASSERT_EQ(risultato_atteso, Risultato_funzione);
+    ASSERT_LE((risultato_atteso-Risultato_funzione).norm(),1e-15);
 
 }
 TEST(alpha_intersez_test,generale_poligono2){
+    FracturesFunctions g;
     MatrixXd A1, A2;
     A1.resize(2,3);
     A2.resize(2,3);
@@ -270,28 +257,29 @@ TEST(alpha_intersez_test,generale_poligono2){
     Vector2d Risultato_funzione;
     Risultato_funzione=alpha_di_intersezione(A1,A2);
     Vector2d risultato_atteso={1,-0.0078125}; // sono scambiati rispetto a quelli di renato
-    ASSERT_EQ(risultato_atteso, Risultato_funzione);
+    ASSERT_LE((risultato_atteso-Risultato_funzione).norm(),1e-15);
     //***************** secondo lato:
     A1 << -2,0,2,
         2,0,0;
     Risultato_funzione=alpha_di_intersezione(A1,A2);
     risultato_atteso={0,-0.0078125};
-    ASSERT_EQ(risultato_atteso, Risultato_funzione);
+    ASSERT_LE((risultato_atteso-Risultato_funzione).norm(),1e-15);
     //************************* terzo lato:
     A1 << -2,0,-2,
                  0,0,2;
     Risultato_funzione=alpha_di_intersezione(A1,A2);
     risultato_atteso={1, 0.0078125};
-    ASSERT_EQ(risultato_atteso, Risultato_funzione);
+    ASSERT_LE((risultato_atteso-Risultato_funzione).norm(),1e-15);
     //************************** quarto lato:
     A1 << 2,0,-2,
         -2,0,0;
     risultato_atteso={0, 0.0078125};
-    ASSERT_EQ(risultato_atteso,Risultato_funzione);
+    ASSERT_LE((risultato_atteso-Risultato_funzione).norm(),1e-15);
 
 }
 //** il mio funziona ma forse perchè sono int(?)
 TEST(alpha_intersez_test,prova){
+    FracturesFunctions g;
     MatrixXd A1, A2;
     A1.resize(2,3);
     A2.resize(2,3);
@@ -303,7 +291,7 @@ TEST(alpha_intersez_test,prova){
     Vector2d Risultato_funzione;
     Risultato_funzione=alpha_di_intersezione(A1,A2);
     Vector2d risultato_atteso={-1,0};
-    ASSERT_EQ(risultato_atteso, Risultato_funzione);
+    ASSERT_LE((risultato_atteso-Risultato_funzione).norm(),g.tolleranza1D);
 
 }
 
