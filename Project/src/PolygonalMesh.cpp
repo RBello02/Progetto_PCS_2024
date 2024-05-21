@@ -1,11 +1,13 @@
 #include "PolygonalMesh.hpp"
 #include "FracturesLibrary.hpp"
 #include "reshaping_array.hpp"
+#include "Utils.hpp"
 
 using namespace PolygonalLibrary;
 using namespace FracturesLibrary;
+using namespace UtilsFunction;
 
-namespace FracturesLibrary{
+namespace UtilsFunction{
 
 /*****************************************************************************************************************************/
 

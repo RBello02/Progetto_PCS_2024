@@ -1,5 +1,6 @@
 #include "test_Fractures.hpp"
 #include "test_PolygonalMesh.hpp"
+#include "Utils.hpp"
 
 
 int main(int argc, char **argv)

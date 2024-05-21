@@ -1,5 +1,6 @@
 #include "src/FracturesLibrary.hpp"
 #include "src/PolygonalMesh.hpp"
+#include "src/Utils.hpp"
 
 #include <iomanip>
 #include <iostream>
@@ -9,6 +10,7 @@
 
 using namespace FracturesLibrary;
 using namespace PolygonalLibrary;
+using namespace UtilsFunction;
 using namespace Eigen;
 using namespace std;
 

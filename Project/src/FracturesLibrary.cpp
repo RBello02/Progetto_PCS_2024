@@ -1,76 +1,26 @@
 #include "FracturesLibrary.hpp"
 #include "reshaping_array.hpp"
+#include "Utils.hpp"
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <vector>
 #include <array>
-#include <algorithm>
 
 #include <cmath>
 
 #include "Eigen/Eigen"
 
 using namespace Eigen;
+using namespace UtilsFunction;
 
-namespace FracturesLibrary{
-double tolleranza = pow(10,-10);
-
-//funzioni inline di supporto
-inline Matrix3d Fracture::calcolo_piano(const vector<Vector3d>& coord)
-{
-    // salvo il piano in forma parametrica X = P0 + a1(P2-P0) + a2(P1-P0), dove a1 e a2 sono le parametrizzazioni
-    // il piano è quindi identificato da 3 punti P0,P1,P2
-
-
-    Matrix3d A;
-    Vector3d P0 = coord[vertices[0]];
-    Vector3d P1 = coord[vertices[1]];
-    Vector3d P2 = coord[vertices[2]];
-
-    A.row(0) = P0;
-    A.row(1) = P2-P0;
-    A.row(2) = P1-P0;
-
-
-    return A; // restituisce una matrice con la seguente struttura   (P0;P1;P2)  dove Pi sono VETTORI RIGA
-}
-
-inline bool FracturesFunctions::Parallelismo(const Matrix3d& piano_1, const Matrix3d& piano_2)
-{
-    // questa funzione verifica se i piani sono paralleli
-
-    bool risultato = false;
-
-    // NOMENCLATURA
-    // u1 = piano_1.row(1) v1 = piano_1.row(2) sono i vettori direttori del primo piano
-    // u2 = piano_2.row(1) v2 = piano_2.row(2) sono i vettori direttori del secondo piano
-    // P0_1 = piano_1.row(0) punto iniziale per il piano 1
-    // P0_2 = piano_2.row(0) punto iniziale per il piano 2
-
-    // passo 1: ricavare la normale ai piani
-    Vector3d n1 = piano_1.row(1).cross(piano_1.row(2));
-    Vector3d n2 = piano_2.row(1).cross(piano_2.row(2));
-
-    // passo 2 : vedo se il prodotto vettoriale tra le normali è 0
-    Vector3d t = n1.cross(n2);
-    if (t.norm() < tolleranza1D)
-    {
-        risultato = !risultato;
-    }
-    return risultato;}
+namespace UtilsFunction{
 
 inline bool compare_beta(const array<double,2>& arr1, const array<double,2>& arr2){
     return arr1[1] > arr2[1];
 }
 
-inline double Trace::calcolo_lunghezza(){
-    Vector3d origin = this->coordinates_extremes.col(0);
-    Vector3d end = this->coordinates_extremes.col(1);
-    double val = (origin-end).norm();
-    return val;
-}
 /****************************************************************************************************************/
 
 bool FracturesFunctions::importData(const string& path, vector<Fracture>& lista, vector<Vector3d>& coord){

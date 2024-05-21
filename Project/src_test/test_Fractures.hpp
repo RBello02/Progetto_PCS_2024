@@ -6,13 +6,14 @@
 #include <gmock/gmock.h>
 #include <math.h>
 #include "FracturesLibrary.hpp"
-#include <limits>
+#include "Utils.hpp"
+
 
 
 using namespace std;
 using namespace Eigen;
 using namespace FracturesLibrary;
-
+using namespace UtilsFunction;
 
 
 // ***************retta_per_vertici**************************+
@@ -135,7 +136,7 @@ TEST(Retta_tra_piani_test, generale_reny){
 
 //**********+alpha_intersezione*************
 TEST(alpha_intersez_test,generale_poligono1){
-    FracturesFunctions g;
+    FracturesFunctions fx;
     MatrixXd A1, A2;
     A1.resize(2,3);
     A2.resize(2,3);
@@ -190,7 +191,7 @@ TEST(alpha_intersez_test,generale_poligono1){
 }
 
 TEST(alpha_intersez_test,generale_poligono2){
-    FracturesFunctions g;
+    FracturesFunctions fx;
     MatrixXd A1, A2;
     A1.resize(2,3);
     A2.resize(2,3);
@@ -241,7 +242,7 @@ TEST(alpha_intersez_test,generale_poligono2){
 }
 
 TEST(alpha_intersez_test,generale_sofi){
-    FracturesFunctions g;
+    FracturesFunctions fx;
     MatrixXd A1, A2;
     A1.resize(2,3);
     A2.resize(2,3);
