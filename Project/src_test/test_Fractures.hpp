@@ -401,6 +401,45 @@ TEST(NearFracture_test, poligoni_uguali){
     ASSERT_TRUE(Risultato_funzione);
 
 }
+// FracturesFunctions::IntersectionFractures
+
+TEST(IntersectionFractures_test, generale_sofi){
+    Fracture f1;
+    Fracture f2;
+    FracturesFunctions g;
+    Trace t;
+    vector<Vector3d> coordinate;
+    list<Trace> list_traces; //lista delle tracce
+    map<unsigned int, list<Trace>> P_traces_of_fractures; //per ogni frattura memorizziamo una lista contenente gli id elle tracce passanti
+    map<unsigned int, list<Trace>> NP_traces_of_fractures; //analogo a sopra ma per tracce non passanti
+
+    coordinate={{0,-4,0},{4,0,0},{0,4,0},{-4,0,0},{0,0,-2},{2,0,0},{0,0,2},{-2,0,0}};
+    f1.num_vertici=4;
+    f2.num_vertici=4;
+    f1.vertices={0,1,2,3};
+    f2.vertices={4,5,6,7};
+    f1.id=0;
+    f2.id=1;
+    g.IntersectionFractures(f1, f2, coordinate, list_traces,P_traces_of_fractures, NP_traces_of_fractures);
+    MatrixXd estremi;
+    estremi.resize(3,2);
+    estremi << 2, -2,
+        0,0,
+        0,0;
+
+    MatrixXd risultato_funzione;
+    risultato_funzione.resize(3,2);
+    risultato_funzione=t.coordinates_extremes;
+
+    for (unsigned int i = 0; i < risultato_funzione.cols(); i++){
+        for (unsigned int j = 0; j < risultato_funzione.rows(); j++){
+            EXPECT_NEAR(risultato_funzione(j,i), estremi(j,i), g.tolleranza1D);
+        }
+    }
+    EXPECT_EQ(t.id_frc1,f1.id);
+    EXPECT_EQ(t.id_frc2,f2.id);
+    ASSERT_DOUBLE_EQ(t.len,4);
 
 
+}
 #endif
