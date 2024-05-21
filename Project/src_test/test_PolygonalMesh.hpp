@@ -30,6 +30,30 @@ TEST(Retta_per_due_punti_test, generale_reny){
 
 
 }
+TEST(Retta_per_due_punti_test, punti_uguali){
+    FracturesFunctions fx;
+    Vector3d pt1,pt2;
+    pt1={0,-4,0};
+    pt2={0,-4,0};
+    MatrixXd risultato_funzione;
+    risultato_funzione.resize(2,3);
+    risultato_funzione=fx.Retta_per_due_punti(pt1,pt2);
+    MatrixXd Risultato_atteso;
+    Risultato_atteso.resize(2,3);
+    Risultato_atteso << 0,0,0,
+        0,-4,0;
+
+    for (unsigned int i = 0; i < Risultato_atteso.cols(); i++){
+        for (unsigned int j = 0; j < Risultato_atteso.rows(); j++){
+            ASSERT_NEAR(risultato_funzione(j,i), Risultato_atteso(j,i), fx.tolleranza1D);
+        }
+    }
+
+    // dato che la direzione è nulla non ha senso la retta, capire cosa fa il programma in questo caso, se lo gestisce prima di usare la funzione
+
+
+}
+
 
 TEST(intersezione_rette_test, generale_sofi){
     FracturesFunctions fx;
@@ -61,6 +85,22 @@ TEST(appartiene_a_segmento_test, genarale_sofi){
     risultato_funzione=fx.appartiene_a_segmento(origine,fine,punto);
     ASSERT_FALSE(risultato_funzione);
 }
+//ho aggiunto questo test per controllare che il segmento comprenda sia orgine che fine
+TEST(appartiene_a_segmento_test, origine_fine){
+    FracturesFunctions fx;
+    bool risultato_funzione;
+    Vector3d origine,fine,punto;
+    origine={1,2,3};
+    fine={9,8,7};
+    punto={1,2,3};
+    risultato_funzione=fx.appartiene_a_segmento(origine,fine,punto);
+    ASSERT_TRUE(risultato_funzione);
+    punto={9,8,7};
+    risultato_funzione=fx.appartiene_a_segmento(origine,fine,punto);
+    ASSERT_TRUE(risultato_funzione);
+
+}
+
 
 TEST(punto_unico_test, generale_sofi){
     FracturesFunctions fx;

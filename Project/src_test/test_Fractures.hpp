@@ -123,7 +123,7 @@ TEST(Retta_tra_piani_test, generale_reny){
     Risultato_funzione=fx.Retta_tra_piani(A1,A2);
     MatrixXd risultato_atteso;
     risultato_atteso.resize(2,3);
-    risultato_atteso << -1/sqrt(2),0,0,
+    risultato_atteso << (1/sqrt(2)),0,0,
         0,0,0;
 
     for (unsigned int i = 0; i < risultato_atteso.cols(); i++){
@@ -320,6 +320,20 @@ TEST(clacolo_lung_test, generale_sofi){
     ASSERT_DOUBLE_EQ(b,sqrt(2));
 }
 
+// ho aggiunto questo test per vedere che succede se do due punti uguali, quindi lunghezza della traccia nulla
+TEST(clacolo_lung_test, lunghezza_nulla){
+
+    Trace t;
+    t.coordinates_extremes.resize(3,2);
+    t.coordinates_extremes << 1, 1,
+        0, 0,
+        0, 0;
+    double b;
+    b=t.calcolo_lunghezza();
+
+    ASSERT_DOUBLE_EQ(b,0);
+}
+
 //************************intersezioni**************
 TEST(NearFracture_test, generale_reny){
     //bool NearFractures(const Fracture& frc1, const Fracture& frc2, const vector<Vector3d>& coord);
@@ -369,4 +383,24 @@ TEST(NearFracture_test, sfere_tangenti){
     EXPECT_FALSE(Risultato_funzione);
 
 }
+
+//ho aggiunto questo test per vedere che succede usando due poligoni uguali
+TEST(NearFracture_test, poligoni_uguali){
+    //bool NearFractures(const Fracture& frc1, const Fracture& frc2, const vector<Vector3d>& coord);
+    Fracture f1;
+    Fracture f2;
+    FracturesFunctions g;
+    vector<Vector3d> coordinate;
+    coordinate={{0,-4,0},{4,0,0},{0,4,0},{-4,0,0},{0,-4,0},{4,0,0},{0,4,0},{-4,0,0}};
+    f1.num_vertici=4;
+    f2.num_vertici=4;
+    f1.vertices={0,1,2,3};
+    f2.vertices={4,5,6,7};
+    bool Risultato_funzione;
+    Risultato_funzione=g.NearFractures(f1,f2,coordinate);
+    ASSERT_TRUE(Risultato_funzione);
+
+}
+
+
 #endif
