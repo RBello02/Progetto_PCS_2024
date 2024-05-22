@@ -30,6 +30,7 @@ TEST(Retta_per_due_punti_test, generale_reny){
 
 
 }
+
 TEST(Retta_per_due_punti_test, punti_uguali){
     FracturesFunctions fx;
     Vector3d pt1,pt2;
@@ -85,6 +86,7 @@ TEST(appartiene_a_segmento_test, genarale_sofi){
     risultato_funzione=fx.appartiene_a_segmento(origine,fine,punto);
     ASSERT_FALSE(risultato_funzione);
 }
+
 //ho aggiunto questo test per controllare che il segmento comprenda sia orgine che fine
 TEST(appartiene_a_segmento_test, origine_fine){
     FracturesFunctions fx;

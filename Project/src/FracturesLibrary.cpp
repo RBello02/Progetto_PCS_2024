@@ -153,7 +153,7 @@ bool FracturesFunctions::NearFractures(const Fracture& frc1, const Fracture& frc
         unsigned int id_vertice = frc1.vertices[j];  // inizializzo l'id del vertice
         for (unsigned int i =0; i<3;i++)        // ciclo sulle 3 coordinate per calcolare il raggio del poligono
         {
-            raggio1 += pow((bar1[i]-coord[id_vertice][i]),2);
+            raggio1 += (bar1[i]-coord[id_vertice][i])*(bar1[i]-coord[id_vertice][i]);
         }
         if (raggio1 >= raggio_da_confrontare_1 -tolleranza1D)
         {
@@ -169,7 +169,7 @@ bool FracturesFunctions::NearFractures(const Fracture& frc1, const Fracture& frc
         unsigned int id_vertice = frc2.vertices[j];  // inizializzo l'id del vertice
         for (unsigned int i =0; i<3;i++)        // ciclo sulle 3 coordinate per calcolare il raggio del poligono
         {
-            raggio2 += pow((bar2[i]-coord[id_vertice][i]),2);
+            raggio2 += (bar2[i]-coord[id_vertice][i])*(bar2[i]-coord[id_vertice][i]);
         }
         if (raggio2 >= raggio_da_confrontare_2 - tolleranza1D)
         {
@@ -181,11 +181,11 @@ bool FracturesFunctions::NearFractures(const Fracture& frc1, const Fracture& frc
 
     for (unsigned int j = 0; j<3; j++)
     {
-        distbb += pow(bar2[j]-bar1[j],2);
+        distbb += (bar2[j]-bar1[j])*(bar2[j]-bar1[j]);
     }
 
 
-    if (raggio_da_confrontare_1+raggio_da_confrontare_2 < distbb + tolleranza1D){flag = false;}
+    if (sqrt(raggio_da_confrontare_1+raggio_da_confrontare_2) < sqrt(distbb) + tolleranza1D){flag = false;}
 
     return flag;
 

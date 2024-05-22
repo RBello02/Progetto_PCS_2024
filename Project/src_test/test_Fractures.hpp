@@ -114,7 +114,7 @@ TEST(Retta_tra_piani_test, generale_reny){
     Matrix3d A1, A2;
     A1 <<0,-4,0,
         0,8,0,
-        4,-4,0;
+        4,4,0;
     A2 <<0,0,-2,
         0,0,4,
         2,0,2;
@@ -123,7 +123,7 @@ TEST(Retta_tra_piani_test, generale_reny){
     Risultato_funzione=fx.Retta_tra_piani(A1,A2);
     MatrixXd risultato_atteso;
     risultato_atteso.resize(2,3);
-    risultato_atteso << (1/sqrt(2)),0,0,
+    risultato_atteso << 1/2,0,0,
         0,0,0;
 
     for (unsigned int i = 0; i < risultato_atteso.cols(); i++){
@@ -426,6 +426,8 @@ TEST(IntersectionFractures_test, generale_sofi){
     estremi << 2, -2,
         0,0,
         0,0;
+
+    t = (*list_traces.begin());
 
     MatrixXd risultato_funzione;
     risultato_funzione.resize(3,2);
