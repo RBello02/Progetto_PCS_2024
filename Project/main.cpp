@@ -25,7 +25,7 @@ int main()
     cout << setprecision(16);
 
     string path = "DFN";
-    string filenameI = path + "/FR50_data.txt";
+    string filenameI = path + "/FR3_data.txt";
 
     //definisco le liste che conterranno le tracce e le fratture
     vector<Fracture> list_fractures; //lista di fratture (è un vettore)
@@ -186,18 +186,20 @@ int main()
         //aggiungo la mesh creata alla mappa
         sottoPoligonazione_per_frattura.push_back(mesh);
     }
-string name="Mesh_";
-    for(unsigned int i=0; i< sottoPoligonazione_per_frattura.size();i++){
-       PolygonalMesh mesh=sottoPoligonazione_per_frattura[i];
-        name=name+to_string(i);
-        MatrixXd punti;
-        punti.resize(3,mesh.NumberCell0D);
-        for(unsigned int j=0; j<mesh.NumberCell0D;j++){
-            punti.col(j)=mesh.Cell0DCoordinates[j];
-        }
-        vector<Gedim::UCDCell> cells;
-        VectorXi materials;
-        Gedim::UCDUtilities::CreatePointCells(punti,materials);
+
+    // string name="Mesh_";
+    //     for(unsigned int i=0; i< sottoPoligonazione_per_frattura.size();i++){
+    //        PolygonalMesh mesh=sottoPoligonazione_per_frattura[i];
+    //         name=name+to_string(i);
+    //         MatrixXd punti;
+    //         punti.resize(3,mesh.NumberCell0D);
+    //         for(unsigned int j=0; j<mesh.NumberCell0D;j++){
+    //             punti.col(j)=mesh.Cell0DCoordinates[j];
+    //         }
+    //         vector<Gedim::UCDCell> cells;
+    //         VectorXi materials;
+    //         Gedim::UCDUtilities::CreatePointCells(punti,materials);
+    //     }
         
 
     return 0;
