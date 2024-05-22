@@ -420,7 +420,7 @@ TEST(IntersectionFractures_test, generale_sofi){
     f2.vertices={4,5,6,7};
     f1.id=0;
     f2.id=1;
-    g.IntersectionFractures(f1, f2, coordinate, list_traces,P_traces_of_fractures, NP_traces_of_fractures);
+    g.IntersectionFractures(f1, f2, coordinate, list_traces, P_traces_of_fractures, NP_traces_of_fractures);
     MatrixXd estremi;
     estremi.resize(3,2);
     estremi << 2, -2,
@@ -442,6 +442,40 @@ TEST(IntersectionFractures_test, generale_sofi){
     EXPECT_EQ(t.id_frc2,f2.id);
     ASSERT_DOUBLE_EQ(t.len,4);
 
+    //verifico che la traccia sia passante per la frattura 1 e non passante per la frattura 0
+    list<unsigned int> trc_per_0_P = {};
+    list<unsigned int> trc_per_0_NP = {};
+    list<unsigned int> trc_per_1_P = {};
+    list<unsigned int> trc_per_1_NP = {};
 
+    for (auto it = P_traces_of_fractures.begin(); it != P_traces_of_fractures.end(); it++){
+        list<Trace> lista= it->second;
+        unsigned int id_frc = it->first;
+        for (const Trace &trc : lista){
+            if (id_frc == 0){trc_per_0_P.push_back(trc.id);}
+            if (id_frc == 1){trc_per_1_P.push_back(trc.id);}
+        }
+    }
+
+    for (auto it = NP_traces_of_fractures.begin(); it != NP_traces_of_fractures.end(); it++){
+        list<Trace> lista= it->second;
+        unsigned int id_frc = it->first;
+        for (const Trace &trc : lista){
+            if (id_frc == 0){trc_per_0_NP.push_back(trc.id);}
+            if (id_frc == 1){trc_per_1_NP.push_back(trc.id);}
+        }
+    }
+
+    EXPECT_EQ(trc_per_0_P.size(), 0); //la fratt 0 non ha tracce passanti
+    EXPECT_EQ(trc_per_1_NP.size(), 0); //la fratt 1 non ha tracce non passanti
+
+    auto it_0 = find(trc_per_0_NP.begin(), trc_per_0_NP.end(), t.id);
+    auto it_1 = find(trc_per_1_P.begin(), trc_per_1_P.end(), t.id);
+
+    bool pr0 = (it_0 == trc_per_0_NP.end()); //ritorna vero se non ho trovato la traccia
+    bool pr1 = (it_1 == trc_per_1_P.end()); //ritorna vero se non ho trovato la traccia
+
+    EXPECT_FALSE(pr0);
+    EXPECT_FALSE(pr1);
 }
 #endif

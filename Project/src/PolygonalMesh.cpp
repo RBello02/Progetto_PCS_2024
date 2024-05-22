@@ -115,8 +115,10 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
 
     //creo le due sottofratture e mi ricalcolo le loro info
     Fracture frc1;
+    frc1.id = frattura.id;
     frc1.vertices.reserve(10);  // riservo i vertici
     Fracture frc2;
+    frc2.id = frattura.id;
     frc2.vertices.reserve(10);  // riserco i vertici
 
     //per suddividere i vertici nelle due fratture scorro la lista e avrò un booleano che switcho appena trovo uno dei due nuovi vertici
@@ -156,18 +158,6 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
     frc1.num_vertici = frc1.vertices.size();   // ovviamente il numero di vertici diventa equivalente alla dimensione attuale del vettore
     frc2.num_vertici = frc1.vertices.size();
 
-    //creo una lista di vertici per ogni sottofrattura
-    list<unsigned int> vert_fract1;
-    for (unsigned int i = 0; i< frc1.num_vertici; i++)
-    {
-        vert_fract1.push_back(frc1.vertices[i]);   // una lista con i nuovi vertici per la frattura 1
-    }
-
-    list<unsigned int> vert_fract2;
-    for (unsigned int i = 0; i< frc2.num_vertici; i++)
-    {
-        vert_fract1.push_back(frc2.vertices[i]); // una lista con i nuovi vertici della frattura 2
-    }
 
     //determino le tracce passanti e quelle non per ogni sotto-frattura
     list<Trace> P_traces1 = {};   // inizializzo la nuova lista di tracce per le mie fratture

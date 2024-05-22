@@ -25,7 +25,9 @@ struct Trace
         double val = sqrt( (origin[0]-end[0])*(origin[0]-end[0]) + (origin[1]-end[1])*(origin[1]-end[1]) + (origin[2]-end[2])*(origin[2]-end[2]));
         return val;
     }
+
 };
+
 
 
 struct Fracture
