@@ -182,7 +182,7 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
     // LAVORO PRIMA SULLE TRACCE PASSANTI
     for (Trace traccia : P_traces)  // ciclo sulle tracce
     {
-        if (traccia.id_frc1 == frattura.id)  // se sto ciclando sulle tracce della mia frattura
+        if (traccia.id_frc1 == frattura.id || traccia.id_frc2 == frattura.id)  // se sto ciclando sulle tracce della mia frattura
         {
             // adesso devo vedere se le tracce dove sto ciclando sono dentro frac1 o frac2, considero anche il caso in cui appartengono a entrambi
 
@@ -274,7 +274,7 @@ void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Tr
     // LAVORO ORA SULLE TRACCE NON PASSANTI
     for (Trace traccia : NP_traces)  // ciclo sulle tracce
     {
-        if (traccia.id_frc1 == frattura.id)  // se sto ciclando sulle tracce della mia frattura
+        if (traccia.id_frc1 == frattura.id || traccia.id_frc2 == frattura.id)  // se sto ciclando sulle tracce della mia frattura
         {
             // adesso devo vedere se le tracce dove sto ciclando sono dentro frac1 o frac2, considero anche il caso in cui appartengono a entrambi
 
