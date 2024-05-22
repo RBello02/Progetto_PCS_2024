@@ -20,9 +20,9 @@ struct Trace
 
     //metodo che mi calcola la lunghezza di una traccia
     inline double calcolo_lunghezza(){
-        Vector3d origin = this->coordinates_extremes.col(0);
-        Vector3d end = this->coordinates_extremes.col(1);
-        double val = (origin-end).norm();
+        Vector3d origin = coordinates_extremes.col(0);
+        Vector3d end = coordinates_extremes.col(1);
+        double val = sqrt( (origin[0]-end[0])*(origin[0]-end[0]) + (origin[1]-end[1])*(origin[1]-end[1]) + (origin[2]-end[2])*(origin[2]-end[2]));
         return val;
     }
 };

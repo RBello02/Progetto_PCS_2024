@@ -476,6 +476,7 @@ PolygonalMesh FracturesFunctions::SottoPoligonazione(const Fracture& frattura, c
     frc.num_vertici = frattura.num_vertici; // questo nuovo oggetto avrà lo stesso numero di vertici della frattura che gli passo in input
     frc.vertices.reserve(frc.num_vertici);  // riservo la memoria per salvare gli ID di questa frattura
     coord_frc.reserve(frattura.num_vertici);  // riservo la memoria per salvare le coordinate di questa frattura
+    frc.id = frattura.id;
 
     PolygonalMesh mesh;    // inizializzo un oggetto mesh
     mesh.NumberCell0D += frc.num_vertici;  // il numero di vertici è lo stesso della frattura frc

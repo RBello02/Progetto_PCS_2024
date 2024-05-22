@@ -80,7 +80,9 @@ bool FracturesFunctions::importData(const string& path, vector<Fracture>& lista,
                 char del;
                 convert2 >> vert(k,l) >> del;
             }
-            convert2 >> vert(k,frc.num_vertici-1);
+            double z2;
+            convert2 >> z2;
+            vert(k,frc.num_vertici-1) = z2;
         }
 
         //salvo ora le coordinate nel vettore coord e i rispettivi id nella struct Fracture
@@ -210,9 +212,6 @@ void FracturesFunctions::IntersectionFractures(Fracture &frc1, Fracture &frc2, c
         //Devo ora ciclare sulle coppie di vertici delle due fratture per trovare gli alpha di intersezione tra la retta di
         //intersezione tra i due piani determinati dalle fratture e le rette determinate dai vertici
         list<array<double,2>> beta_inters; //--> nel primo array avrò gli alpha della prima frc e nel secondo della seconda
-
-        //Introduco un contatore che incremento ogni volta che la retta di intersezione tra i due piani interseca un
-        // segnemnto della frattura. se alla fine avrò cont == 4, vuol dire che ho una traccia
 
         for (unsigned int i = 0; i < frc1.num_vertici; i++){
 
