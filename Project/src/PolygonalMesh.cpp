@@ -207,8 +207,8 @@ namespace UtilsFunction
                     }
                 }
                 // vediamo come sono segnati gli estremi delle tracce
-                double segnatura_origine = ((origine-pt0).cross(dir_t)).dot(segnatura);
-                double segnatura_fine = (fine-pt0).cross(dir_t).dot(segnatura);
+                double segnatura_origine = ((dir_t).cross(origine-pt0)).dot(segnatura);
+                double segnatura_fine = (dir_t).cross(fine-pt0).dot(segnatura);
 
                 if ( (segnatura_origine > toll && segnatura_fine > toll) || (segnatura_origine >= 0 && segnatura_origine < toll && segnatura_fine > toll) || (segnatura_origine > toll && segnatura_fine >= 0 && segnatura_fine < toll))  // entrambe stessa direzione della segnatura della frattura 1
                 {
@@ -259,8 +259,8 @@ namespace UtilsFunction
                     }
                 }
                 // vediamo come sono segnati gli estremi delle tracce
-                double segnatura_origine = ((origine-pt0).cross(dir_t)).dot(segnatura);
-                double segnatura_fine = (fine-pt0).cross(dir_t).dot(segnatura);
+                double segnatura_origine = ((dir_t).cross(origine-pt0)).dot(segnatura);
+                double segnatura_fine = ((dir_t).cross(fine-pt0)).dot(segnatura);
 
                 if ( (segnatura_origine > toll && segnatura_fine > toll) || (segnatura_origine >= 0 && segnatura_origine < toll && segnatura_fine > toll) || (segnatura_origine > toll && segnatura_fine >= 0 && segnatura_fine < toll))  // entrambe stessa direzione della segnatura della frattura 1
                 {
