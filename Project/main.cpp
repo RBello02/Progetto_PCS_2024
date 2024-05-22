@@ -1,6 +1,7 @@
 #include "src/FracturesLibrary.hpp"
 #include "src/PolygonalMesh.hpp"
 #include "src/Utils.hpp"
+#include "UCDUtilities.hpp"
 
 #include <iomanip>
 #include <iostream>
@@ -185,7 +186,19 @@ int main()
         //aggiungo la mesh creata alla mappa
         sottoPoligonazione_per_frattura.push_back(mesh);
     }
-
+string name="Mesh_";
+    for(unsigned int i=0; i< sottoPoligonazione_per_frattura.size();i++){
+       PolygonalMesh mesh=sottoPoligonazione_per_frattura[i];
+        name=name+to_string(i);
+        MatrixXd punti;
+        punti.resize(3,mesh.NumberCell0D);
+        for(unsigned int j=0; j<mesh.NumberCell0D;j++){
+            punti.col(j)=mesh.Cell0DCoordinates[j];
+        }
+        vector<Gedim::UCDCell> cells;
+        VectorXi materials;
+        Gedim::UCDUtilities::CreatePointCells(punti,materials);
+        
 
     return 0;
 }
