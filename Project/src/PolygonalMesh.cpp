@@ -318,7 +318,7 @@ namespace UtilsFunction
             for (unsigned int v = 0; v < frc1.num_vertici; v++){
                 unsigned int id_origin = frc1.vertices[v];
                 unsigned int id_end;
-                if(v == frc1.num_vertici){id_end = frc1.vertices[0];}
+                if(v == frc1.num_vertici-1){id_end = frc1.vertices[0];}
                 else{id_end = frc1.vertices[v+1];}
 
                 //celle 1D
@@ -363,7 +363,7 @@ namespace UtilsFunction
             for (unsigned int v = 0; v < frc2.num_vertici; v++){
                 unsigned int id_origin = frc2.vertices[v];
                 unsigned int id_end;
-                if(v == frc2.num_vertici){id_end = frc2.vertices[0];}
+                if(v == frc2.num_vertici-1){id_end = frc2.vertices[0];}
                 else{id_end = frc2.vertices[v+1];}
 
                 //celle 1D
