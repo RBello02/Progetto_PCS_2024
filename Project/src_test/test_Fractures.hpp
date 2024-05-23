@@ -134,6 +134,8 @@ TEST(Retta_tra_piani_test, generale_reny){
 
 }
 
+
+
 //**********+alpha_intersezione*************
 TEST(alpha_intersez_test,generale_poligono1){
     FracturesFunctions fx;
@@ -483,16 +485,17 @@ TEST(IntersectionFractures_test, generale_sofi){
 }
 
 
-TEST(IntersectionFractures_test, intersezione_in_un_pto){
+TEST(IntersectionFractures_test, traccia_di_lunghezza_nulla){
     Fracture f1;
     Fracture f2;
     FracturesFunctions g;
+    double perturbazione = g.tolleranza1D*1./10;
     vector<Vector3d> coordinate;
     list<Trace> list_traces; //lista delle tracce
     map<unsigned int, list<Trace>> P_traces; //per ogni frattura memorizziamo una lista contenente gli id elle tracce passanti
     map<unsigned int, list<Trace>> NP_traces; //analogo a sopra ma per tracce non passanti
 
-    coordinate={{0,-0.43,0},{1,-0.78,0},{1,1,0},{0,1,0},{1,0,-1},{1,0,2},{3,0,-1},{3,0,2}};
+    coordinate={{0,-0.43,0},{1,-0.78,0},{1,1,0},{0,1,0},{1,0,-1},{1,0,2},{3,0,2},{3,0,-1}};
     f1.num_vertici=4;
     f2.num_vertici=4;
     f1.vertices={0,1,2,3};
@@ -501,7 +504,7 @@ TEST(IntersectionFractures_test, intersezione_in_un_pto){
     f2.id=1;
     g.IntersectionFractures(f1, f2, coordinate, list_traces, P_traces, NP_traces);
 
-    //in questo test mi aspetto di non trovare tracce
+    //in questo test mi aspetto di trovare una traccia di lunghezza < toll qyuindi non la dovrei considerare come tale
     unsigned int num_tracce_per_0 = P_traces[0].size() + NP_traces[0].size();
     unsigned int num_tracce_per_1 = P_traces[1].size() + NP_traces[1].size();
 
@@ -515,12 +518,11 @@ TEST(IntersectionFractures_test, generale_marti){
     FracturesFunctions g;
     Trace t;
     vector<Vector3d> coordinate;
-    coordinate.resize(8);
     list<Trace> list_traces; //lista delle tracce
     map<unsigned int, list<Trace>> P_traces; //per ogni frattura memorizziamo una lista contenente gli id elle tracce passanti
     map<unsigned int, list<Trace>> NP_traces; //analogo a sopra ma per tracce non passanti
 
-    coordinate={{0,-0.43,0},{1,-0.78,0},{3.75,1,0},{0,1,0},{1,0,-1},{1,0,2},{3,0,-1},{3,0,2}};
+    coordinate={{0,-0.43,0},{1,-0.78,0},{3.75,1,0},{0,1,0},{1,0,-1},{1,0,2},{3,0,2},{3,0,-1}};
     f1.num_vertici=4;
     f2.num_vertici=4;
     f1.vertices={0,1,2,3};
@@ -532,7 +534,7 @@ TEST(IntersectionFractures_test, generale_marti){
     //in questo test mi aspetto di trovare una traccia non passante per entrambe le fratture
     MatrixXd estremi;
     estremi.resize(3,2);
-    estremi << 1, 2.21,
+    estremi << 1, 2.205056179775281,
         0,0,
         0,0;
 
@@ -549,7 +551,7 @@ TEST(IntersectionFractures_test, generale_marti){
     }
     EXPECT_EQ(t.id_frc1,f1.id);
     EXPECT_EQ(t.id_frc2,f2.id);
-    ASSERT_DOUBLE_EQ(t.len,1.21);
+    ASSERT_DOUBLE_EQ(t.len,1.205056179775281);
 
     //verifico che la traccia sia passante per la frattura 1 e non passante per la frattura 0
     list<unsigned int> trc_per_0_P = {};
