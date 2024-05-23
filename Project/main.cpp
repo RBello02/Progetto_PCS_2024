@@ -148,21 +148,49 @@ int main()
     }
 
 
-    // ESPORTAZIONE IN PARAVIEWx
-    // string name="Mesh_";
-    //     for(unsigned int i=0; i< sottoPoligonazione_per_frattura.size();i++){
-    //        PolygonalMesh mesh=sottoPoligonazione_per_frattura[i];
-    //         name=name+to_string(i);
-    //         MatrixXd punti;
-    //         punti.resize(3,mesh.NumberCell0D);
-    //         for(unsigned int j=0; j<mesh.NumberCell0D;j++){
-    //             punti.col(j)=mesh.Cell0DCoordinates[j];
-    //         }
-    //         vector<Gedim::UCDCell> cells;
-    //         VectorXi materials;
-    //         Gedim::UCDUtilities::CreatePointCells(punti,materials);
-    //     }
+
+    //PARAVIEW
+    string name="Mesh_";
+    for(unsigned int i=0; i< sottoPoligonazione_per_frattura.size();i++){
+        string name="Mesh_";
+        name=name+to_string(i);
+        string name0=name+"_Geometry0Ds.csv";
+        string name1=name+"_Geometry1Ds.csv";
+        string name2=name+"_Geometry2Ds.csv";
+
+        PolygonalMesh mesh=sottoPoligonazione_per_frattura[i];
+
+        MatrixXd punti;
+        punti.resize(3,mesh.NumberCell0D);
+        for(unsigned int j=0; j<mesh.NumberCell0D;j++){
+            punti.col(j)=mesh.Cell0DCoordinates[j];
+        }
+
+        ofstream ofs2;
+        ofs2.open(name0);
+
+        if(ofs2.fail()){cerr << "file opened 0 fail." << endl; return 1;}
+
+        Gedim::UCDUtilities exporter;
+        exporter.ExportPoints( name0,
+                              punti);
+        ofs2.close();
+        MatrixXi lati;
+        lati.resize(2,mesh.NumberCell1D);
+        for(unsigned int j=0; j<mesh.NumberCell1D; j++){
+            lati(0,j)=mesh.Cell1DVertices[j][0];
+            lati(1,j)=mesh.Cell1DVertices[j][1];
+        }
         
+        ofs2.open(name1);
+        exporter.ExportSegments(  name1, punti, lati);
+        ofs2.close();
+        ofs2.open(name2);
+        exporter.ExportPolygons(name2,punti,mesh.Cell2DVertices);
+
+        ofs2.close();
+
+    }
 
     return 0;
 }
