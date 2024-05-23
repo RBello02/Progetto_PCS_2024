@@ -28,6 +28,8 @@ struct FracturesFunctions {
     PolygonalMesh SottoPoligonazione(const Fracture& frattura, const list<Trace>& P_traces, const list<Trace>& NP_traces, const vector<Vector3d>& coord);
 
     //funzioni di supporto
+
+/**************************************  TEST_FRACTURES   *****************************************************/
     inline bool Parallelismo(const Matrix3d& piano_1, const Matrix3d& piano_2)
     {
         // questa funzione verifica se i piani sono paralleli
@@ -150,6 +152,9 @@ struct FracturesFunctions {
         return alpha_beta;
     }
 
+
+
+/**************************************  TEST_POLYGONS   *****************************************************/
     inline MatrixXd Retta_per_due_punti(Vector3d& pt1, Vector3d& pt2)
     {
         // l'equazione parametrica è X = at+P

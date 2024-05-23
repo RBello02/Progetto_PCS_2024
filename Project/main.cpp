@@ -25,7 +25,7 @@ int main()
     cout << setprecision(16);
 
     string path = "DFN";
-    string filenameI = path + "/FR10_data.txt";
+    string filenameI = path + "/FR3_data.txt";
 
     //definisco le liste che conterranno le tracce e le fratture
     vector<Fracture> list_fractures; //lista di fratture (è un vettore)
@@ -107,7 +107,7 @@ int main()
     string header_frc = "# FractureId; NumTraces";
     string header_trc = "# TraceId; Tips; Lenght";
 
-    for (Fracture fratt : list_fractures){
+    for (Fracture& fratt : list_fractures){
 
         ofs1 << header_frc << endl;
         ofs1 << fratt.id << del << P_traces_of_fractures[fratt.id].size() + NP_traces_of_fractures[fratt.id].size() << endl;
@@ -138,55 +138,17 @@ int main()
     vector<PolygonalMesh> sottoPoligonazione_per_frattura;  // creo un vettore di oggetti poligonalmesh
     sottoPoligonazione_per_frattura.reserve(num_fratt);     // riservo la memoria corrispondente al numero di fratture
     //calcolo ora la sottopoligonazione per ogni frattura
-    for(Fracture frattura : list_fractures)   // ciclo sulle fratture
+    for(const Fracture &frattura : list_fractures)   // ciclo sulle fratture
     {
         PolygonalMesh mesh;     // inizializzo la mesh
+        mesh = f.FracturesFunctions::SottoPoligonazione(frattura, P_traces_of_fractures[frattura.id], NP_traces_of_fractures[frattura.id], coordinates);
 
-        //se la frattura non ha tracce la lista sarà costituita da una sola mesh che corrisponde al poligono
-        if (P_traces_of_fractures[frattura.id].size() + NP_traces_of_fractures[frattura.id].size() == 0)
-        {
-            //salvo le celle 0D
-            mesh.NumberCell0D += frattura.num_vertici;      // salvo il numero di vertici, che corrispondono al numero di vertici della frattura (in questo caso particolare)
-            mesh.Cell0DId.reserve(frattura.num_vertici);    // riservo la memoria per salvare gli ID dei vertici, il numero è equivalente a quello della frattura (in questo caso particolare)
-            mesh.Cell0DCoordinates.reserve(frattura.num_vertici); // riservo la memoria per salvare le coordinate dei vertici
-            for (unsigned int v = 0; v < frattura.num_vertici; v++) // ciclo sul numero di vertici della frattura
-            {
-                mesh.Cell0DId.push_back(v);    // aggiungo al vettore degli ID della mesh gli ID dei vertici (vanno da 0 a numero_vertici-1)
-                mesh.Cell0DCoordinates.push_back(coordinates[frattura.vertices[v]]);  // aggiungo le coordinate 0D al vettore della mesh, ricorda che coordinates è un vettore di vettori
-                // ricorda che fratture.vertices[v] è unico per ogni vertice della frattura e che coordinates salva le coordinate di tutti i vertici della frattura
-            }
-
-            //salvo le celle 1D
-            mesh.NumberCell1D += frattura.num_vertici;   // il numero di vertici è equivalente al numero di lati
-            mesh.Cell1DId.reserve(frattura.num_vertici);  // riservo la memoria per salvare i lati
-            for (unsigned int v = 0; v < frattura.num_vertici; v++)  // ciclo sul numero di lati
-            {
-                unsigned int id_origin = frattura.vertices[v];          // salvo gli ID dei vertici di origine e fine
-                unsigned int id_end;
-                if(v == frattura.num_vertici){id_end = frattura.vertices[0];} // il poligono è chiuso => l'ultimo vertice è collegato tramite un segmento al primo
-                else{id_end = frattura.vertices[v+1];}
-                mesh.Cell1DId.push_back(v);         // aggiungo v agli ID dei segmenti
-                mesh.Cell1DVertices.push_back({id_origin, id_end}); // aggiungo origine e fine
-            }
-
-            //salvo le celle 2D --> in questo caso ne ho solo una, la frattura stessa
-            mesh.NumberCell2D = 1;   // perché ne ho una
-            mesh.Cell2DId.reserve(1);  // riservo una cella di memoria
-            mesh.Cell2DId.push_back(0); // inizializzo (Renato chiedi a Martina)
-            mesh.Cell2DVertices.reserve(1);  // riservo una cella di memoria
-            mesh.Cell2DVertices.push_back(frattura.vertices);  // inserisco gli ID dei vertici
-            mesh.Cell2DEdges.reserve(1);  // riservo una cella di memoria
-            mesh.Cell2DEdges.push_back(mesh.Cell1DId);  // aggiungo gli ID dei segmenti
-        }
-        else
-        {  // se sulla mia frattura sono presenti delle fratture devo eseguire la sottopoligonazione
-            mesh = f.FracturesFunctions::SottoPoligonazione(frattura, P_traces_of_fractures[frattura.id], NP_traces_of_fractures[frattura.id], coordinates);
-        }
-
-        //aggiungo la mesh creata alla mappa
+        //aggiungo la mesh creata al vettore
         sottoPoligonazione_per_frattura.push_back(mesh);
     }
 
+
+    // ESPORTAZIONE IN PARAVIEWx
     // string name="Mesh_";
     //     for(unsigned int i=0; i< sottoPoligonazione_per_frattura.size();i++){
     //        PolygonalMesh mesh=sottoPoligonazione_per_frattura[i];

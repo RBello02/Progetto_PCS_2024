@@ -293,7 +293,7 @@ TEST(Parallelismo_test, generale_sofi){
     ASSERT_TRUE( b);
 }
 
-// ******************++calcolo_lunghezza********************
+// ******************calcolo_lunghezza********************
 TEST(clacolo_lung_test, generale_reny){
 
     Trace t;
@@ -334,7 +334,7 @@ TEST(clacolo_lung_test, lunghezza_nulla){
     ASSERT_DOUBLE_EQ(b,0);
 }
 
-//************************intersezioni**************
+//************************intersezioni sfere**************
 TEST(NearFracture_test, generale_reny){
     //bool NearFractures(const Fracture& frc1, const Fracture& frc2, const vector<Vector3d>& coord);
     Fracture f1;
@@ -401,6 +401,8 @@ TEST(NearFracture_test, poligoni_uguali){
     ASSERT_TRUE(Risultato_funzione);
 
 }
+
+
 // FracturesFunctions::IntersectionFractures
 
 TEST(IntersectionFractures_test, generale_sofi){
