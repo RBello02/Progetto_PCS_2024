@@ -411,6 +411,7 @@ TEST(IntersectionFractures_test, generale_sofi){
     FracturesFunctions g;
     Trace t;
     vector<Vector3d> coordinate;
+    coordinate.resize(8);
     list<Trace> list_traces; //lista delle tracce
     map<unsigned int, list<Trace>> P_traces_of_fractures; //per ogni frattura memorizziamo una lista contenente gli id elle tracce passanti
     map<unsigned int, list<Trace>> NP_traces_of_fractures; //analogo a sopra ma per tracce non passanti
@@ -480,4 +481,111 @@ TEST(IntersectionFractures_test, generale_sofi){
     EXPECT_FALSE(pr0);
     EXPECT_FALSE(pr1);
 }
+
+
+TEST(IntersectionFractures_test, intersezione_in_un_pto){
+    Fracture f1;
+    Fracture f2;
+    FracturesFunctions g;
+    vector<Vector3d> coordinate;
+    list<Trace> list_traces; //lista delle tracce
+    map<unsigned int, list<Trace>> P_traces; //per ogni frattura memorizziamo una lista contenente gli id elle tracce passanti
+    map<unsigned int, list<Trace>> NP_traces; //analogo a sopra ma per tracce non passanti
+
+    coordinate={{0,-0.43,0},{1,-0.78,0},{1,1,0},{0,1,0},{1,0,-1},{1,0,2},{3,0,-1},{3,0,2}};
+    f1.num_vertici=4;
+    f2.num_vertici=4;
+    f1.vertices={0,1,2,3};
+    f2.vertices={4,5,6,7};
+    f1.id=0;
+    f2.id=1;
+    g.IntersectionFractures(f1, f2, coordinate, list_traces, P_traces, NP_traces);
+
+    //in questo test mi aspetto di non trovare tracce
+    unsigned int num_tracce_per_0 = P_traces[0].size() + NP_traces[0].size();
+    unsigned int num_tracce_per_1 = P_traces[1].size() + NP_traces[1].size();
+
+    EXPECT_EQ(num_tracce_per_0, 0);
+    EXPECT_EQ(num_tracce_per_1, 0);
+}
+
+TEST(IntersectionFractures_test, generale_marti){
+    Fracture f1;
+    Fracture f2;
+    FracturesFunctions g;
+    Trace t;
+    vector<Vector3d> coordinate;
+    coordinate.resize(8);
+    list<Trace> list_traces; //lista delle tracce
+    map<unsigned int, list<Trace>> P_traces; //per ogni frattura memorizziamo una lista contenente gli id elle tracce passanti
+    map<unsigned int, list<Trace>> NP_traces; //analogo a sopra ma per tracce non passanti
+
+    coordinate={{0,-0.43,0},{1,-0.78,0},{3.75,1,0},{0,1,0},{1,0,-1},{1,0,2},{3,0,-1},{3,0,2}};
+    f1.num_vertici=4;
+    f2.num_vertici=4;
+    f1.vertices={0,1,2,3};
+    f2.vertices={4,5,6,7};
+    f1.id=0;
+    f2.id=1;
+    g.IntersectionFractures(f1, f2, coordinate, list_traces, P_traces, NP_traces);
+
+    //in questo test mi aspetto di trovare una traccia non passante per entrambe le fratture
+    MatrixXd estremi;
+    estremi.resize(3,2);
+    estremi << 1, 2.21,
+        0,0,
+        0,0;
+
+    t = (*list_traces.begin());
+
+    MatrixXd risultato_funzione;
+    risultato_funzione.resize(3,2);
+    risultato_funzione=t.coordinates_extremes;
+
+    for (unsigned int i = 0; i < risultato_funzione.cols(); i++){
+        for (unsigned int j = 0; j < risultato_funzione.rows(); j++){
+            EXPECT_NEAR(risultato_funzione(j,i), estremi(j,i), g.tolleranza1D);
+        }
+    }
+    EXPECT_EQ(t.id_frc1,f1.id);
+    EXPECT_EQ(t.id_frc2,f2.id);
+    ASSERT_DOUBLE_EQ(t.len,1.21);
+
+    //verifico che la traccia sia passante per la frattura 1 e non passante per la frattura 0
+    list<unsigned int> trc_per_0_P = {};
+    list<unsigned int> trc_per_0_NP = {};
+    list<unsigned int> trc_per_1_P = {};
+    list<unsigned int> trc_per_1_NP = {};
+
+    for (auto it = P_traces.begin(); it != P_traces.end(); it++){
+        list<Trace> lista= it->second;
+        unsigned int id_frc = it->first;
+        for (const Trace &trc : lista){
+            if (id_frc == 0){trc_per_0_P.push_back(trc.id);}
+            if (id_frc == 1){trc_per_1_P.push_back(trc.id);}
+        }
+    }
+
+    for (auto it = NP_traces.begin(); it != NP_traces.end(); it++){
+        list<Trace> lista= it->second;
+        unsigned int id_frc = it->first;
+        for (const Trace &trc : lista){
+            if (id_frc == 0){trc_per_0_NP.push_back(trc.id);}
+            if (id_frc == 1){trc_per_1_NP.push_back(trc.id);}
+        }
+    }
+
+    EXPECT_EQ(trc_per_0_P.size(), 0); //la fratt 0 non ha tracce passanti
+    EXPECT_EQ(trc_per_1_P.size(), 0); //la fratt 1 non ha tracce passanti
+
+    auto it_0 = find(trc_per_0_NP.begin(), trc_per_0_NP.end(), t.id);
+    auto it_1 = find(trc_per_1_NP.begin(), trc_per_1_NP.end(), t.id);
+
+    bool pr0 = (it_0 == trc_per_0_NP.end()); //ritorna vero se non ho trovato la traccia
+    bool pr1 = (it_1 == trc_per_1_NP.end()); //ritorna vero se non ho trovato la traccia
+
+    EXPECT_FALSE(pr0);
+    EXPECT_FALSE(pr1);
+}
+
 #endif

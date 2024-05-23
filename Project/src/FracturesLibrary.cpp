@@ -284,14 +284,12 @@ void FracturesFunctions::IntersectionFractures(Fracture &frc1, Fracture &frc2, c
 
         bool non_traccia = (id_frc_beta0 == id_frc_beta1) && (id_frc_beta2 == id_frc_beta3);
 
-        if (beta_inters.size()==4 && !non_traccia){
+        if (beta_inters.size()>=4 && !non_traccia){
             cout << "Ho una traccia tra la frattura " << frc1.id << " e la fratt " << frc2.id << endl;
             //posso ordinare gli array tra loro in base al valore di beta
             beta_inters.sort(compare_beta);
 
-
             cout << endl;
-
 
             Trace traccia;
             traccia.id = list_traces.size();
