@@ -92,9 +92,18 @@ namespace UtilsFunction
                         unsigned int id_new_pto = 0;
 
                         if (!fx.pto_unico(pto, coord_frc, id_new_pto)){
-                            //in questo caso non devo aggiungere nulla alla mesh
+                            //caso in cui il prolungamento della traccia tagliante cade su un vertice della frattura che consideriamo
                             nuovi_punti.push_back(pto);  // a nuovo punto appendo il punto di intersezione
                             id_nuoviPunti.push_back(id_new_pto); // appendo anche l'ID nuovo che coincide con l'ID del vertice
+                        }
+                        else if(!fx.pto_unico(pto, mesh.Cell0DCoordinates, id_new_pto)){
+                            //caso in cui il prolungamento della traccia tagliante tocca una cella 0D già creata
+                            nuovi_punti.push_back(pto);  // appendo il punto di intersezione
+                            id_nuoviPunti.push_back(id_new_pto);  // pusho dentro l'id dei nuovi punti
+
+                            //inserisco l'id del punto nella lista prima del vertice di end del segmento
+                            auto pos = find(lista_vert.begin(), lista_vert.end(), id_e);
+                            lista_vert.insert(pos, id_new_pto);
                         }
                         else
                         {

@@ -141,6 +141,67 @@ TEST(sottopoligonazione, generale_marti){
     vector<Vector3d> coordinates;
     Fracture frattura;
     frattura.id = 0;
+    frattura.num_vertici = 6;
+    frattura.vertices.reserve(6);
+
+    for(unsigned int i = 0 ; i<6; i++){frattura.vertices.push_back(i);}
+
+    coordinates.reserve(6);
+    coordinates.push_back({2,9,3});
+    coordinates.push_back({5,9,2});
+    coordinates.push_back({5.5,9,4.5});
+    coordinates.push_back({4,9,6});
+    coordinates.push_back({2.5,9,6});
+    coordinates.push_back({1,9,5});
+
+
+    Trace trc1;
+    trc1.id = 0;
+    trc1.id_frc1 = 0;
+    trc1.id_frc2 = 4;
+
+    MatrixXd extr1;
+    extr1.resize(3,2);
+    Vector3d o1 = {3.49999, 9,2.97};
+    Vector3d e1 =  {4.67782,9,4.80000};
+    extr1.col(0) = o1;
+    extr1.col(1) = e1;
+
+    trc1.coordinates_extremes = extr1;
+
+    Trace trc2;
+    trc2.id = 3;
+    trc2.id_frc1 = 8;
+    trc2.id_frc2 = 0;
+
+    MatrixXd extr2;
+    extr2.resize(3,2);
+    Vector3d o2 = {2, 9,4.80};
+    Vector3d e2 =  {3,9,4.80000};
+    extr2.col(0) = o2;
+    extr2.col(1) = e2;
+
+    trc2.coordinates_extremes = extr2;
+
+    list<Trace> P_traces;
+    list<Trace> NP_traces;
+    NP_traces.push_back(trc1);
+    NP_traces.push_back(trc2);
+
+    mesh = fx.FracturesFunctions::SottoPoligonazione(frattura, P_traces, NP_traces, coordinates);
+
+    //faccio solo una verifica del numero di celle 0D e 2D
+    EXPECT_EQ(mesh.NumberCell0D, 10);
+    EXPECT_EQ(mesh.NumberCell2D, 3);
+}
+
+TEST(sottopoligonazione, estr_traccia_coincidente_con_vertice){
+    FracturesFunctions fx;
+    PolygonalMesh mesh;
+
+    vector<Vector3d> coordinates;
+    Fracture frattura;
+    frattura.id = 0;
     frattura.num_vertici = 5;
     frattura.vertices.reserve(5);
 
@@ -193,5 +254,67 @@ TEST(sottopoligonazione, generale_marti){
     EXPECT_EQ(mesh.NumberCell0D, 8);
     EXPECT_EQ(mesh.NumberCell2D, 3);
 }
+
+TEST(sottopoligonazione, traccia_comune_a_due_sottofratt){
+    FracturesFunctions fx;
+    PolygonalMesh mesh;
+
+    vector<Vector3d> coordinates;
+    Fracture frattura;
+    frattura.id = 0;
+    frattura.num_vertici = 5;
+    frattura.vertices.reserve(5);
+
+    for(unsigned int i = 0 ; i<5; i++){frattura.vertices.push_back(i);}
+
+    coordinates.reserve(5);
+    coordinates.push_back({1,3,0});
+    coordinates.push_back({2,1,0});
+    coordinates.push_back({4,1,0});
+    coordinates.push_back({5,3,0});
+    coordinates.push_back({3,4.5,0});
+
+
+    Trace trc1;
+    trc1.id = 0;
+    trc1.id_frc1 = 0;
+    trc1.id_frc2 = 4;
+
+    MatrixXd extr1;
+    extr1.resize(3,2);
+    Vector3d o1 = {3,4.5,0};
+    Vector3d e1 =  {3,1,0};
+    extr1.col(0) = o1;
+    extr1.col(1) = e1;
+
+    trc1.coordinates_extremes = extr1;
+
+    Trace trc2;
+    trc2.id = 3;
+    trc2.id_frc1 = 8;
+    trc2.id_frc2 = 0;
+
+    MatrixXd extr2;
+    extr2.resize(3,2);
+    Vector3d o2 = {2, 3.25,0};
+    Vector3d e2 =  {4,2.96,0};
+    extr2.col(0) = o2;
+    extr2.col(1) = e2;
+
+    trc2.coordinates_extremes = extr2;
+
+    list<Trace> P_traces;
+    list<Trace> NP_traces;
+    P_traces.push_back(trc1);
+    NP_traces.push_back(trc2);
+
+    mesh = fx.FracturesFunctions::SottoPoligonazione(frattura, P_traces, NP_traces, coordinates);
+
+    //faccio solo una verifica del numero di celle 0D e 2D
+    EXPECT_EQ(mesh.NumberCell0D, 9);
+    EXPECT_EQ(mesh.NumberCell2D, 4);
+}
+
+
 
 #endif
