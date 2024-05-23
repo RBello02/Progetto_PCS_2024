@@ -221,7 +221,7 @@ int main()
         
         ofs2.open(name1);
         exporter.ExportSegments(  name1, punti, lati);
-        
+        ofs2.close();
         ofs2.open(name2);
         exporter.ExportPolygons(name2,punti,mesh.Cell2DVertices);
 
