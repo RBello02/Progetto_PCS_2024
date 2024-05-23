@@ -133,4 +133,65 @@ TEST(punto_unico_test, generale_marti){
 }
 
 
+//test sulla sottopoloigonazione
+TEST(sottopoligonazione, generale_marti){
+    FracturesFunctions fx;
+    PolygonalMesh mesh;
+
+    vector<Vector3d> coordinates;
+    Fracture frattura;
+    frattura.id = 0;
+    frattura.num_vertici = 5;
+    frattura.vertices.reserve(5);
+
+    for(unsigned int i = 0 ; i<5; i++){frattura.vertices.push_back(i);}
+
+    coordinates.reserve(5);
+    coordinates.push_back({1,3,0});
+    coordinates.push_back({2,1,0});
+    coordinates.push_back({4,1,0});
+    coordinates.push_back({5,3,0});
+    coordinates.push_back({3,4.5,0});
+
+
+    Trace trc1;
+    trc1.id = 0;
+    trc1.id_frc1 = 0;
+    trc1.id_frc2 = 4;
+
+    MatrixXd extr1;
+    extr1.resize(3,2);
+    Vector3d o1 = {3,4.5,0};
+    Vector3d e1 =  {3,1,0};
+    extr1.col(0) = o1;
+    extr1.col(1) = e1;
+
+    trc1.coordinates_extremes = extr1;
+
+    Trace trc2;
+    trc2.id = 3;
+    trc2.id_frc1 = 8;
+    trc2.id_frc2 = 0;
+
+    MatrixXd extr2;
+    extr2.resize(3,2);
+    Vector3d o2 = {1.75, 2,0};
+    Vector3d e2 =  {2.6,2.5,0};
+    extr2.col(0) = o2;
+    extr2.col(1) = e2;
+
+    trc2.coordinates_extremes = extr2;
+
+    list<Trace> P_traces;
+    list<Trace> NP_traces;
+    P_traces.push_back(trc1);
+    NP_traces.push_back(trc2);
+
+    mesh = fx.FracturesFunctions::SottoPoligonazione(frattura, P_traces, NP_traces, coordinates);
+
+    //faccio solo una verifica del numero di celle 0D e 2D
+    EXPECT_EQ(mesh.NumberCell0D, 8);
+    EXPECT_EQ(mesh.NumberCell2D, 3);
+}
+
 #endif
