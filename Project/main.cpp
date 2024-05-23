@@ -152,7 +152,6 @@ int main()
     //PARAVIEW
     string name="Mesh_";
     for(unsigned int i=0; i< sottoPoligonazione_per_frattura.size();i++){
-        string name="Mesh_";
         name=name+to_string(i);
         string name0=name+"_Geometry0Ds.csv";
         string name1=name+"_Geometry1Ds.csv";
