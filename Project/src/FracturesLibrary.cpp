@@ -265,7 +265,26 @@ void FracturesFunctions::IntersectionFractures(Fracture &frc1, Fracture &frc2, c
         //se trovo una traccia la salvo
         beta_inters.sort(compare_beta);
         beta_inters.unique();  // tolgo i duplicati al fine di eliminare i casi degeneri (vedi nel test)
-        if (beta_inters.size()==4){
+
+
+        auto it_beta = beta_inters.begin();
+        double beta0 = (*it_beta)[1];
+        unsigned int id_frc_beta0 = (*it_beta)[0];
+        ++ it_beta;
+        Vector3d origin = retta_intersez_piani.row(1).transpose() + (*it_beta)[1] * dir_retta_intersez_piani;
+        double beta1 = (*it_beta)[1];
+        unsigned int id_frc_beta1 = (*it_beta)[0];
+        ++ it_beta;
+        Vector3d end = retta_intersez_piani.row(1).transpose() + (*it_beta)[1] * dir_retta_intersez_piani;
+        double beta2 = (*it_beta)[1];
+        unsigned int id_frc_beta2 = (*it_beta)[0];
+        ++ it_beta;
+        double beta3 = (*it_beta)[1];
+        unsigned int id_frc_beta3 = (*it_beta)[0];
+
+        bool non_traccia = (id_frc_beta0 == id_frc_beta1) && (id_frc_beta2 == id_frc_beta3);
+
+        if (beta_inters.size()==4 && !non_traccia){
             cout << "Ho una traccia tra la frattura " << frc1.id << " e la fratt " << frc2.id << endl;
             //posso ordinare gli array tra loro in base al valore di beta
             beta_inters.sort(compare_beta);
@@ -273,23 +292,11 @@ void FracturesFunctions::IntersectionFractures(Fracture &frc1, Fracture &frc2, c
 
             cout << endl;
 
+
             Trace traccia;
             traccia.id = list_traces.size();
             MatrixXd coord_estremi_traccia = MatrixXd::Zero(3,2);
-            auto it_beta = beta_inters.begin();
-            double beta0 = (*it_beta)[1];
-            unsigned int id_frc_beta0 = (*it_beta)[0];
-            ++ it_beta;
-            Vector3d origin = retta_intersez_piani.row(1).transpose() + (*it_beta)[1] * dir_retta_intersez_piani;
-            double beta1 = (*it_beta)[1];
-            unsigned int id_frc_beta1 = (*it_beta)[0];
-            ++ it_beta;
-            Vector3d end = retta_intersez_piani.row(1).transpose() + (*it_beta)[1] * dir_retta_intersez_piani;
-            double beta2 = (*it_beta)[1];
-            unsigned int id_frc_beta2 = (*it_beta)[0];
-            ++ it_beta;
-            double beta3 = (*it_beta)[1];
-            unsigned int id_frc_beta3 = (*it_beta)[0];
+
 
             coord_estremi_traccia.col(0) = origin;
             coord_estremi_traccia.col(1) = end;
@@ -302,7 +309,7 @@ void FracturesFunctions::IntersectionFractures(Fracture &frc1, Fracture &frc2, c
 
 
             //determiniamo se la traccia è passante o no
-            if (abs(beta0 -beta1) < tolleranza1D && abs(beta2-beta3) < tolleranza1D){
+            if(abs(beta0 -beta1) < tolleranza1D && abs(beta2-beta3) < tolleranza1D){
                 //la traccia è passante per entrambe
                 auto ret1 = P_traces.insert({frc1.id, {traccia}});
                 if(!ret1.second)

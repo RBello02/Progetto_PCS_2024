@@ -174,7 +174,7 @@ namespace UtilsFunction
         // LO FACCIO IOOOO (RENY)
 
         // LAVORO PRIMA SULLE TRACCE PASSANTI
-        for (Trace traccia : P_traces)  // ciclo sulle tracce
+        for (Trace& traccia : P_traces)  // ciclo sulle tracce
         {
             if (traccia.id_frc1 == frattura.id || traccia.id_frc2 == frattura.id)  // se sto ciclando sulle tracce della mia frattura
             {
@@ -226,7 +226,7 @@ namespace UtilsFunction
             }
         }
         // LAVORO ORA SULLE TRACCE NON PASSANTI
-        for (Trace traccia : NP_traces)  // ciclo sulle tracce
+        for (Trace& traccia : NP_traces)  // ciclo sulle tracce
         {
             if (traccia.id_frc1 == frattura.id || traccia.id_frc2 == frattura.id)  // se sto ciclando sulle tracce della mia frattura
             {
