@@ -157,7 +157,7 @@ bool FracturesFunctions::NearFractures(const Fracture& frc1, const Fracture& frc
         {
             raggio1 += (bar1[i]-coord[id_vertice][i])*(bar1[i]-coord[id_vertice][i]);
         }
-        if (raggio1 >= raggio_da_confrontare_1 -tolleranza1D)
+        if (raggio1 >= raggio_da_confrontare_1 +tolleranza1D)
         {
             raggio_da_confrontare_1 = raggio1;
         }
@@ -173,7 +173,7 @@ bool FracturesFunctions::NearFractures(const Fracture& frc1, const Fracture& frc
         {
             raggio2 += (bar2[i]-coord[id_vertice][i])*(bar2[i]-coord[id_vertice][i]);
         }
-        if (raggio2 >= raggio_da_confrontare_2 - tolleranza1D)
+        if (raggio2 >= raggio_da_confrontare_2 + tolleranza1D)
         {
             raggio_da_confrontare_2 = raggio2;
         }
@@ -187,7 +187,7 @@ bool FracturesFunctions::NearFractures(const Fracture& frc1, const Fracture& frc
     }
 
 
-    if (sqrt(raggio_da_confrontare_1+raggio_da_confrontare_2) < sqrt(distbb) + tolleranza1D){flag = false;}
+    if (sqrt(raggio_da_confrontare_1)+sqrt(raggio_da_confrontare_2) < sqrt(distbb) + tolleranza1D){flag = false;}
 
     return flag;
 

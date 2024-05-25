@@ -146,10 +146,55 @@ struct FracturesFunctions {
 
         for (unsigned int i = 0; i<3; i++){b[i] = P2[i]-P1[i];}
 
-        Vector2d x = A.householderQr().solve(b); //x =[alpha; beta]
+        //Vector2d x = A.householderQr().solve(b); //x =[alpha; beta]  vecchia versione
 
-        Vector2d alpha_beta = x;
-        return alpha_beta;
+        // risolvo il sistema a mano
+
+        // cerco la sottomatrice con determinante diverso da zero
+
+        Vector2d x = Vector2d::Zero();
+
+        if (abs(A(0,0)*A(1,1)-A(1,0)*A(0,1)) >= tolleranza1D)
+        {
+            x(1) = (b(1)*A(0,0)-b(0)*A(1,0))/(A(0,0)*A(1,1)-A(1,0)*A(0,1));
+            if (abs(A(0,0))>=tolleranza1D)
+            {
+                x(0) = b(0)/A(0,0) - (A(0,1)/A(0,0))*(x(1));
+            }
+            else
+            {
+                x(0) = b(1)/A(1,0)-(A(1,1)/A(1,0))*x(1);
+            }
+        }
+        else if (abs(A(1,0)*A(2,1)-A(2,0)*A(1,1)) >= tolleranza1D)
+        {
+            x(1) = (b(2)*A(1,0)-b(1)*A(2,0))/(A(1,0)*A(2,1)-A(2,0)*A(1,1));
+            if (abs(A(1,0))>=tolleranza1D)
+            {
+                x(0) = b(1)/A(1,0) - (A(1,1)/A(1,0))*(x(1));
+            }
+            else
+            {
+                x(0) = b(2)/A(2,0)-(A(2,1)/A(2,0))*x(1);
+            }
+        }
+        else
+        {
+            x(1) = (b(2)*A(0,0)-b(0)*A(2,0))/(A(0,0)*A(2,1)-A(2,0)*A(0,1));
+            if (abs(A(0,0))>=tolleranza1D)
+            {
+                x(0) = b(0)/A(0,0) - (A(0,1)/A(0,0))*(x(1));
+            }
+            else
+            {
+                x(0) = b(2)/A(2,0)-(A(2,1)/A(2,0))*x(1);
+            }
+        }
+
+
+
+        //Vector2d alpha_beta = x;
+        return x;
     }
 
 

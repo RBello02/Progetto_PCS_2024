@@ -20,12 +20,13 @@ inline bool compare_tracce(const Trace& trc1, const Trace& trc2){
 }
 
 
-int main()
+int main(int argc, char ** argv)
 {
     cout << setprecision(16);
 
+
     string path = "DFN";
-    string filenameI = path + "/FR3_data.txt";
+    string filenameI = path + "/FR50_data.txt";
 
     //definisco le liste che conterranno le tracce e le fratture
     vector<Fracture> list_fractures; //lista di fratture (è un vettore)
@@ -46,7 +47,7 @@ int main()
         num_fratt = list_fractures.size();
         cout << "Ho un numero di fratture pari a " << num_fratt << endl;
 
-        for (Fracture frc : list_fractures)
+        for (Fracture& frc : list_fractures)
         {
 
             cout << "FRATTURA NUM " << frc.id <<  " che ha " << frc.num_vertici << " vertici." << endl;
@@ -90,7 +91,7 @@ int main()
     ofs << "# TraceId; FractureId1; FractureId2; X1; Y1; Z1; X2; Y2; Z2" << endl;
     const string del = " ; ";
 
-    for (Trace traccia : list_traces){
+    for (Trace& traccia : list_traces){
         ofs << traccia.id << del << traccia.id_frc1 << del << traccia.id_frc2 << del << traccia.coordinates_extremes(0,0) << del << traccia.coordinates_extremes(1,0) << del << traccia.coordinates_extremes(2,0) << del << traccia.coordinates_extremes(0,1) << del << traccia.coordinates_extremes(1,1) << del << traccia.coordinates_extremes(2,1) << endl;
     }
 
@@ -120,12 +121,12 @@ int main()
             (NP_traces_of_fractures[fratt.id]).sort(compare_tracce);
 
             //scorriamo la lista delle tracce passanti
-            for (Trace traccia : P_traces_of_fractures[fratt.id]){
+            for (Trace& traccia : P_traces_of_fractures[fratt.id]){
                 ofs1 << traccia.id << del << "false" << del << traccia.len << endl;
             }
 
             //scorriamo la lista delle tracce non passanti
-            for (Trace traccia : NP_traces_of_fractures[fratt.id]){
+            for (Trace& traccia : NP_traces_of_fractures[fratt.id]){
                 ofs1 << traccia.id << del << "true"  << del << traccia.len << endl;
             }
         }
@@ -135,6 +136,8 @@ int main()
     ofs1.close();
 
     //PARTE 2 PROGETTO
+
+    /*
     vector<PolygonalMesh> sottoPoligonazione_per_frattura;  // creo un vettore di oggetti poligonalmesh
     sottoPoligonazione_per_frattura.reserve(num_fratt);     // riservo la memoria corrispondente al numero di fratture
     //calcolo ora la sottopoligonazione per ogni frattura
@@ -146,16 +149,16 @@ int main()
         //aggiungo la mesh creata al vettore
         sottoPoligonazione_per_frattura.push_back(mesh);
     }
+*/
 
-
-
+/*
     //PARAVIEW
-    string name="Mesh_";
-    for(unsigned int i=0; i< sottoPoligonazione_per_frattura.size();i++){
+    for(unsigned int i=0; i< 2;i++){
+        string name="Mesh_";
         name=name+to_string(i);
-        string name0=name+"_Geometry0Ds.csv";
-        string name1=name+"_Geometry1Ds.csv";
-        string name2=name+"_Geometry2Ds.csv";
+        string name0=name+"_Geometry0Ds.inp";
+        string name1=name+"_Geometry1Ds.inp";
+        string name2=name+"_Geometry2Ds.inp";
 
         PolygonalMesh mesh=sottoPoligonazione_per_frattura[i];
 
@@ -184,12 +187,12 @@ int main()
         ofs2.open(name1);
         exporter.ExportSegments(  name1, punti, lati);
         ofs2.close();
-        ofs2.open(name2);
-        exporter.ExportPolygons(name2,punti,mesh.Cell2DVertices);
+       // ofs2.open(name2);
+       // exporter.ExportPolygons(name2,punti,mesh.Cell2DVertices);
 
-        ofs2.close();
+        //ofs2.close();
 
     }
-
+*/
     return 0;
 }
