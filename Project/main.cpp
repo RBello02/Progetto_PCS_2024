@@ -26,7 +26,7 @@ int main(int argc, char ** argv)
 
 
     string path = "DFN";
-    string filenameI = path + "/FR50_data.txt";
+    string filenameI = path + "/FR3_data.txt";
 
     //definisco le liste che conterranno le tracce e le fratture
     vector<Fracture> list_fractures; //lista di fratture (è un vettore)
@@ -137,7 +137,7 @@ int main(int argc, char ** argv)
 
     //PARTE 2 PROGETTO
 
-    /*
+
     vector<PolygonalMesh> sottoPoligonazione_per_frattura;  // creo un vettore di oggetti poligonalmesh
     sottoPoligonazione_per_frattura.reserve(num_fratt);     // riservo la memoria corrispondente al numero di fratture
     //calcolo ora la sottopoligonazione per ogni frattura
@@ -149,15 +149,15 @@ int main(int argc, char ** argv)
         //aggiungo la mesh creata al vettore
         sottoPoligonazione_per_frattura.push_back(mesh);
     }
-*/
 
-/*
+
+
     //PARAVIEW
-    for(unsigned int i=0; i< 2;i++){
+    for(unsigned int i=0; i< sottoPoligonazione_per_frattura.size();i++){
         string name="Mesh_";
         name=name+to_string(i);
-        string name0=name+"_Geometry0Ds.inp";
-        string name1=name+"_Geometry1Ds.inp";
+        //string name0=name+"_Geometry0Ds.inp";
+        //string name1=name+"_Geometry1Ds.inp";
         string name2=name+"_Geometry2Ds.inp";
 
         PolygonalMesh mesh=sottoPoligonazione_per_frattura[i];
@@ -169,30 +169,35 @@ int main(int argc, char ** argv)
         }
 
         ofstream ofs2;
-        ofs2.open(name0);
+        // ofs2.open(name0);
 
-        if(ofs2.fail()){cerr << "file opened 0 fail." << endl; return 1;}
+        // if(ofs2.fail()){cerr << "file opened 0 fail." << endl; return 1;}
 
         Gedim::UCDUtilities exporter;
-        exporter.ExportPoints( name0,
-                              punti);
-        ofs2.close();
-        MatrixXi lati;
-        lati.resize(2,mesh.NumberCell1D);
-        for(unsigned int j=0; j<mesh.NumberCell1D; j++){
-            lati(0,j)=mesh.Cell1DVertices[j][0];
-            lati(1,j)=mesh.Cell1DVertices[j][1];
-        }
+        // exporter.ExportPoints( name0,
+                              // punti);
+        // ofs2.close();
+        // MatrixXi lati;
+        // lati.resize(2,mesh.NumberCell1D);
+        // for(unsigned int j=0; j<mesh.NumberCell1D; j++){
+        //     lati(0,j)=mesh.Cell1DVertices[j][0];
+        //     lati(1,j)=mesh.Cell1DVertices[j][1];
+        // }
         
-        ofs2.open(name1);
-        exporter.ExportSegments(  name1, punti, lati);
-        ofs2.close();
-       // ofs2.open(name2);
-       // exporter.ExportPolygons(name2,punti,mesh.Cell2DVertices);
+        // ofs2.open(name1);
+        // exporter.ExportSegments(  name1, punti, lati);
+        // ofs2.close();
+        VectorXi materials(mesh.Cell2DId.size());
+        for(unsigned int k=0;k<mesh.Cell2DId.size();k++){
+            materials(k)=mesh.Cell2DId[k];
+         }
+       ofs2.open(name2);
+        exporter.ExportPolygons(name2,punti,mesh.Cell2DVertices,{},{},materials);
 
-        //ofs2.close();
+
+        ofs2.close();
 
     }
-*/
+
     return 0;
 }
