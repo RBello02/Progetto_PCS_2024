@@ -63,8 +63,9 @@ int main(int argc, char ** argv)
             cout << endl;
         }
 
-
     }
+    chrono::steady_clock::time_point tF_import = chrono::steady_clock::now();
+    double durata_import = chrono::duration_cast<chrono::microseconds> (tF_import-t0_import).count();
 
 
     // ciclo sulle coppie di poligoni e determino le tracce
@@ -82,6 +83,9 @@ int main(int argc, char ** argv)
 
         }
     }
+
+    chrono::steady_clock::time_point tF_inters = chrono::steady_clock::now();
+    double durata_intersection = chrono::duration_cast<chrono::microseconds> (tF_inters-t0_intersection).count();
 
 
     //primo file di output
@@ -160,15 +164,13 @@ int main(int argc, char ** argv)
 
 
     cout << endl;
-    chrono::steady_clock::time_point tF = chrono::steady_clock::now();
-    double durata_import = chrono::duration_cast<chrono::microseconds> (tF-t0_import).count();
-    double durata_intersection = chrono::duration_cast<chrono::microseconds> (tF-t0_intersection).count();
-    double durata_mesh = chrono::duration_cast<chrono::microseconds> (tF-t0_mesh).count();
+    chrono::steady_clock::time_point tF_mesh = chrono::steady_clock::now();
+    double durata_mesh = chrono::duration_cast<chrono::microseconds> (tF_mesh-t0_mesh).count();
 
     cout << scientific << setprecision(4); //imposto il formato con cui visualizzerò in output la durata
-    cout << "durata del programma in microsecondi dall'import = " << durata_import << endl;
-    cout << "durata del programma in microsecondi dall'intersection = " << durata_intersection << endl;
-    cout << "durata del programma in microsecondi dalla sottopoligonazione = " << durata_mesh << endl;
+    cout << "durata in microsecondi dell'import = " << durata_import << endl;
+    cout << "durata in microsecondi dll'intersection = " << durata_intersection << endl;
+    cout << "durata in microsecondi dalla sottopoligonazione = " << durata_mesh << endl;
 
     // //PARAVIEW
     // for(unsigned int i=0; i< sottoPoligonazione_per_frattura.size();i++){
