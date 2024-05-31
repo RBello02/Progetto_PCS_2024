@@ -25,7 +25,7 @@ struct FracturesFunctions {
     bool importData(const string& path, vector<Fracture>& lista, vector<Vector3d>& coord);
     bool NearFractures(const Fracture& frc1, const Fracture& frc2, const vector<Vector3d>& coord);
     void IntersectionFractures(Fracture &frc1, Fracture &frc2, const vector<Vector3d>& coord, list<Trace>& list_traces, map<unsigned int, list<Trace>>& P_traces, map<unsigned int, list<Trace>>& NP_traces);
-    PolygonalMesh SottoPoligonazione(const Fracture& frattura, const list<Trace>& P_traces, const list<Trace>& NP_traces, const vector<Vector3d>& coord);
+    PolygonalMesh SottoPoligonazione(const Fracture& frattura,  list<Trace>& P_traces,  list<Trace>& NP_traces, const vector<Vector3d>& coord);
 
     //funzioni di supporto
 
