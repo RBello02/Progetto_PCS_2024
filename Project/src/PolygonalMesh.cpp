@@ -251,24 +251,24 @@ namespace UtilsFunction
                     Vector3d intersezione_tra_tracce = gamma(0)*retta_traccia_da_smistare.row(0)+retta_traccia_da_smistare.row(1);
                     // creo la matrice con le coordinate dei nuovi punti da salvare poi nella traccia
                     MatrixXd coordinate_traccia_per_frattura_1;
-                    coordinate_traccia_per_frattura_1.resize(2,3);
+                    coordinate_traccia_per_frattura_1.resize(3,2);
                     MatrixXd coordinate_traccia_per_frattura_2;
-                    coordinate_traccia_per_frattura_2.resize(2,3);
+                    coordinate_traccia_per_frattura_2.resize(3,2);
                     if (segnatura_origine > toll)
                     {
-                        coordinate_traccia_per_frattura_1.row(0) = origine;
-                        coordinate_traccia_per_frattura_1.row(1) = intersezione_tra_tracce;
+                        coordinate_traccia_per_frattura_1.col(0) = origine;
+                        coordinate_traccia_per_frattura_1.col(1) = intersezione_tra_tracce;
 
-                        coordinate_traccia_per_frattura_2.row(0) = intersezione_tra_tracce;
-                        coordinate_traccia_per_frattura_2.row(1) = fine;
+                        coordinate_traccia_per_frattura_2.col(0) = intersezione_tra_tracce;
+                        coordinate_traccia_per_frattura_2.col(1) = fine;
                     }
                     else
                     {
-                        coordinate_traccia_per_frattura_1.row(0) = fine;
-                        coordinate_traccia_per_frattura_1.row(1) = intersezione_tra_tracce;
+                        coordinate_traccia_per_frattura_1.col(0) = fine;
+                        coordinate_traccia_per_frattura_1.col(1) = intersezione_tra_tracce;
 
-                        coordinate_traccia_per_frattura_2.row(0) = intersezione_tra_tracce;
-                        coordinate_traccia_per_frattura_2.row(1) = origine;
+                        coordinate_traccia_per_frattura_2.col(0) = intersezione_tra_tracce;
+                        coordinate_traccia_per_frattura_2.col(1) = origine;
                     }
                     // passo 2: creo due oggetti traccia con lo stesso ID della traccia originale e le riassegno alle due sotto fratture
                     Trace traccia_per_frattura_1; // inizializzo la prima traccia
@@ -345,24 +345,24 @@ namespace UtilsFunction
                     Vector3d intersezione_tra_tracce = gamma(0)*retta_traccia_da_smistare.row(0)+retta_traccia_da_smistare.row(1);
                     // creo la matrice con le coordinate dei nuovi punti da salvare poi nella traccia
                     MatrixXd coordinate_traccia_per_frattura_1;
-                    coordinate_traccia_per_frattura_1.resize(2,3);
+                    coordinate_traccia_per_frattura_1.resize(3,2);
                     MatrixXd coordinate_traccia_per_frattura_2;
-                    coordinate_traccia_per_frattura_2.resize(2,3);
+                    coordinate_traccia_per_frattura_2.resize(3,2);
                     if (segnatura_origine > toll)
                     {
-                        coordinate_traccia_per_frattura_1.row(0) = origine;
-                        coordinate_traccia_per_frattura_1.row(1) = intersezione_tra_tracce;
+                        coordinate_traccia_per_frattura_1.col(0) = origine;
+                        coordinate_traccia_per_frattura_1.col(1) = intersezione_tra_tracce;
 
-                        coordinate_traccia_per_frattura_2.row(0) = intersezione_tra_tracce;
-                        coordinate_traccia_per_frattura_2.row(1) = fine;
+                        coordinate_traccia_per_frattura_2.col(0) = intersezione_tra_tracce;
+                        coordinate_traccia_per_frattura_2.col(1) = fine;
                     }
                     else
                     {
-                        coordinate_traccia_per_frattura_1.row(0) = fine;
-                        coordinate_traccia_per_frattura_1.row(1) = intersezione_tra_tracce;
+                        coordinate_traccia_per_frattura_1.col(0) = fine;
+                        coordinate_traccia_per_frattura_1.col(1) = intersezione_tra_tracce;
 
-                        coordinate_traccia_per_frattura_2.row(0) = intersezione_tra_tracce;
-                        coordinate_traccia_per_frattura_2.row(1) = origine;
+                        coordinate_traccia_per_frattura_2.col(0) = intersezione_tra_tracce;
+                        coordinate_traccia_per_frattura_2.col(1) = origine;
                     }
                     // passo 2: creo due oggetti traccia con lo stesso ID della traccia originale e le riassegno alle due sotto fratture
                     Trace traccia_per_frattura_1; // inizializzo la prima traccia
