@@ -170,7 +170,7 @@ namespace UtilsFunction
         frc1.vertices.shrink_to_fit();  // riduco la capacità
         frc2.vertices.shrink_to_fit();
         frc1.num_vertici = frc1.vertices.size();   // ovviamente il numero di vertici diventa equivalente alla dimensione attuale del vettore
-        frc2.num_vertici = frc1.vertices.size();
+        frc2.num_vertici = frc2.vertices.size();
 
         list<unsigned int> list_vert1;
         for (unsigned int i = 0; i< frc1.num_vertici; i++){
