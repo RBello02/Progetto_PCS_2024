@@ -8,6 +8,8 @@
 #include <string>
 #include "Eigen/Eigen"
 #include <fstream>
+#include <chrono>
+#include <iomanip>
 
 using namespace FracturesLibrary;
 using namespace PolygonalLibrary;
@@ -26,11 +28,10 @@ int main(int argc, char ** argv)
 
 
     string path = "DFN";
-    string filenameI = path + "/FR3_data.txt";
+    string filenameI = path + "/FR200_data.txt";
 
     //definisco le liste che conterranno le tracce e le fratture
     vector<Fracture> list_fractures; //lista di fratture (è un vettore)
-    list<Trace> list_traces; //lista delle tracce
     map<unsigned int, list<Trace>> P_traces_of_fractures; //per ogni frattura memorizziamo una lista contenente gli id elle tracce passanti
     map<unsigned int, list<Trace>> NP_traces_of_fractures; //analogo a sopra ma per tracce non passanti
 
@@ -40,6 +41,7 @@ int main(int argc, char ** argv)
 
     FracturesFunctions f;
 
+    chrono::steady_clock::time_point t0_import = chrono::steady_clock::now();
 
     if (!f.importData(filenameI, list_fractures, coordinates)){return 1;}   // importo i dati
     else{
@@ -60,11 +62,13 @@ int main(int argc, char ** argv)
             cout << endl;
         }
 
-
     }
+    chrono::steady_clock::time_point tF_import = chrono::steady_clock::now();
+    double durata_import = chrono::duration_cast<chrono::milliseconds> (tF_import-t0_import).count();
 
 
     // ciclo sulle coppie di poligoni e determino le tracce
+    chrono::steady_clock::time_point t0_intersection = chrono::steady_clock::now();
     for(unsigned int i=0; i<num_fratt; i++)
     {
         for (unsigned int j=i+1; j< num_fratt; j++)
@@ -78,6 +82,9 @@ int main(int argc, char ** argv)
 
         }
     }
+
+    chrono::steady_clock::time_point tF_inters = chrono::steady_clock::now();
+    double durata_intersection = chrono::duration_cast<chrono::milliseconds> (tF_inters-t0_intersection).count();
 
 
     //primo file di output
@@ -136,8 +143,9 @@ int main(int argc, char ** argv)
     ofs1.close();
 
     //PARTE 2 PROGETTO
+    cout << endl;
 
-
+    chrono::steady_clock::time_point t0_mesh = chrono::steady_clock::now();
     vector<PolygonalMesh> sottoPoligonazione_per_frattura;  // creo un vettore di oggetti poligonalmesh
     sottoPoligonazione_per_frattura.reserve(num_fratt);     // riservo la memoria corrispondente al numero di fratture
     //calcolo ora la sottopoligonazione per ogni frattura
@@ -148,56 +156,67 @@ int main(int argc, char ** argv)
 
         //aggiungo la mesh creata al vettore
         sottoPoligonazione_per_frattura.push_back(mesh);
+
+        cout << "mesh per frattura " << frattura.id << " completata." << endl;
+
     }
 
 
+    cout << endl;
+    chrono::steady_clock::time_point tF_mesh = chrono::steady_clock::now();
+    double durata_mesh = chrono::duration_cast<chrono::milliseconds> (tF_mesh-t0_mesh).count();
 
-    //PARAVIEW
-    for(unsigned int i=0; i< sottoPoligonazione_per_frattura.size();i++){
-        string name="Mesh_";
-        name=name+to_string(i);
-        //string name0=name+"_Geometry0Ds.inp";
-        //string name1=name+"_Geometry1Ds.inp";
-        string name2=name+"_Geometry2Ds.inp";
+    cout << scientific << setprecision(4); //imposto il formato con cui visualizzerò in output la durata
+    cout << "durata in millisecondi dell'import = " << durata_import << endl;
+    cout << "durata in millisecondi dll'intersection = " << durata_intersection << endl;
+    cout << "durata in millisecondi dalla sottopoligonazione = " << durata_mesh << endl;
 
-        PolygonalMesh mesh=sottoPoligonazione_per_frattura[i];
+    // //PARAVIEW
+    // for(unsigned int i=0; i< sottoPoligonazione_per_frattura.size();i++){
+    //     string name="Mesh_";
+    //     name=name+to_string(i);
+    //     //string name0=name+"_Geometry0Ds.inp";
+    //     //string name1=name+"_Geometry1Ds.inp";
+    //     string name2=name+"_Geometry2Ds.inp";
 
-        MatrixXd punti;
-        punti.resize(3,mesh.NumberCell0D);
-        for(unsigned int j=0; j<mesh.NumberCell0D;j++){
-            punti.col(j)=mesh.Cell0DCoordinates[j];
-        }
+    //     PolygonalMesh mesh=sottoPoligonazione_per_frattura[i];
 
-        ofstream ofs2;
-        // ofs2.open(name0);
+    //     MatrixXd punti;
+    //     punti.resize(3,mesh.NumberCell0D);
+    //     for(unsigned int j=0; j<mesh.NumberCell0D;j++){
+    //         punti.col(j)=mesh.Cell0DCoordinates[j];
+    //     }
 
-        // if(ofs2.fail()){cerr << "file opened 0 fail." << endl; return 1;}
+    //     ofstream ofs2;
+    //     // ofs2.open(name0);
 
-        Gedim::UCDUtilities exporter;
-        // exporter.ExportPoints( name0,
-                              // punti);
-        // ofs2.close();
-        // MatrixXi lati;
-        // lati.resize(2,mesh.NumberCell1D);
-        // for(unsigned int j=0; j<mesh.NumberCell1D; j++){
-        //     lati(0,j)=mesh.Cell1DVertices[j][0];
-        //     lati(1,j)=mesh.Cell1DVertices[j][1];
-        // }
+    //     // if(ofs2.fail()){cerr << "file opened 0 fail." << endl; return 1;}
+
+    //     Gedim::UCDUtilities exporter;
+    //     // exporter.ExportPoints( name0,
+    //                           // punti);
+    //     // ofs2.close();
+    //     // MatrixXi lati;
+    //     // lati.resize(2,mesh.NumberCell1D);
+    //     // for(unsigned int j=0; j<mesh.NumberCell1D; j++){
+    //     //     lati(0,j)=mesh.Cell1DVertices[j][0];
+    //     //     lati(1,j)=mesh.Cell1DVertices[j][1];
+    //     // }
         
-        // ofs2.open(name1);
-        // exporter.ExportSegments(  name1, punti, lati);
-        // ofs2.close();
-        VectorXi materials(mesh.Cell2DId.size());
-        for(unsigned int k=0;k<mesh.Cell2DId.size();k++){
-            materials(k)=mesh.Cell2DId[k];
-         }
-       ofs2.open(name2);
-        exporter.ExportPolygons(name2,punti,mesh.Cell2DVertices,{},{},materials);
+    //     // ofs2.open(name1);
+    //     // exporter.ExportSegments(  name1, punti, lati);
+    //     // ofs2.close();
+    //     VectorXi materials(mesh.Cell2DId.size());
+    //     for(unsigned int k=0;k<mesh.Cell2DId.size();k++){
+    //         materials(k)=mesh.Cell2DId[k];
+    //      }
+    //    ofs2.open(name2);
+    //     exporter.ExportPolygons(name2,punti,mesh.Cell2DVertices,{},{},materials);
 
 
-        ofs2.close();
+    //     ofs2.close();
 
-    }
+    // }
 
     return 0;
 }

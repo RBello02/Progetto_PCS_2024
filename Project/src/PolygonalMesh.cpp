@@ -3,6 +3,7 @@
 #include "reshaping_array.hpp"
 #include "Utils.hpp"
 #include "Eigen/Eigen"
+#include <iostream>
 
 using namespace PolygonalLibrary;
 using namespace FracturesLibrary;
@@ -14,7 +15,7 @@ namespace UtilsFunction
 
 /*****************************************************************************************************************************/
 
-    void divisione_sottopol(const Fracture& frattura, list<Trace> P_traces,  list<Trace> NP_traces, PolygonalMesh& mesh, const double& toll, list<unsigned int> lista_vert)
+    void divisione_sottopol(const Fracture& frattura, list<Trace>& P_traces,  list<Trace>& NP_traces, PolygonalMesh& mesh, const double& toll, list<unsigned int>& lista_vert)
     {
         FracturesFunctions fx;
 
@@ -42,11 +43,11 @@ namespace UtilsFunction
             NP_traces.pop_front();         // elimino il primo elemento dalla lista
         }
 
-        Vector3d pt1 = traccia_tagliante.coordinates_extremes.col(0);   // dopo aver salvato l'oggetto traccia estraggo le coordinate degli estremi della traccia
-        Vector3d pt2 = traccia_tagliante.coordinates_extremes.col(1);
-        MatrixXd retta_traccia = fx.Retta_per_due_punti(pt1, pt2);         // calcolo la retta passante per gli estremi della traccia
-        Vector3d dir_t = retta_traccia.row(0);              // ricavo la direttrice
-        Vector3d pt0 = retta_traccia.row(1);
+        Vector3d estr1_tr_tagliante = traccia_tagliante.coordinates_extremes.col(0);   // dopo aver salvato l'oggetto traccia estraggo le coordinate degli estremi della traccia
+        Vector3d estr2_tr_tagliante = traccia_tagliante.coordinates_extremes.col(1);
+        MatrixXd retta_traccia_tagliante = fx.Retta_per_due_punti(estr1_tr_tagliante, estr2_tr_tagliante);         // calcolo la retta passante per gli estremi della traccia
+        Vector3d dir_tr_tagliante = retta_traccia_tagliante.row(0);              // ricavo la direttrice
+        Vector3d pt0_tr_tagliante = retta_traccia_tagliante.row(1);
 
         //ciclo sui lati della frattura per cercare i due punti di intersezione (devo gestire il caso di capotare su un vertice --> conta doppio)
         vector<Vector3d> nuovi_punti;
@@ -69,14 +70,14 @@ namespace UtilsFunction
             Vector3d dir_f = retta_fratt.row(0);        // calcolo la direttrice
 
             //interseco le rette se queste non sono parallele
-            bool non_parallele = !((dir_f.cross(dir_t)).norm() < toll); // verifico che non sono parallele
+            bool non_parallele = !((dir_f.cross(dir_tr_tagliante)).norm() < toll); // verifico che non sono parallele
 
             if(non_parallele) // se le rette non sono parallele si intersecano
             {
-                Vector2d a_b = fx.intersezione_rette(retta_fratt, retta_traccia);   // vettore contenente alpha e beta di intersezione tra le due rette
+                Vector2d a_b = fx.intersezione_rette(retta_fratt, retta_traccia_tagliante);   // vettore contenente alpha e beta di intersezione tra le due rette
                 //il punto deve stare sul segmento della frattura, ossia alpha appartiene a [0,1]
                 if (a_b[0] > -toll && a_b[0] < 1+ toll){  // la posizione 0 corrisponde agli alpha, faccio un controllo su questi
-                    Vector3d pto = retta_traccia.row(1).transpose() + a_b[1] * dir_t;  // determino il punto di intersezione prendendo il beta di intersezione e sostituendolo nell'equazione della retta
+                    Vector3d pto = pt0_tr_tagliante + a_b[1] * dir_tr_tagliante;  // determino il punto di intersezione prendendo il beta di intersezione e sostituendolo nell'equazione della retta
                     //se pto è già in nuovi_punti lo ignoro sennò faccio quello che devo
                     unsigned int a = 0;  // questa è l'inizializzazione del nuovo id da inserire
                     if(fx.pto_unico(pto, nuovi_punti, a))  // vedo il nuovo pto coincide con i punti di intersezione gia trovati, al passo 0 nuovi punti è vuoto quindi restituisco true ed entro nell'if
@@ -85,9 +86,9 @@ namespace UtilsFunction
                         //devo gestire anche il caso in cui il punto coincide con un vertice della frattura
                         vector<Vector3d> coord_frc;
                         coord_frc.reserve(frattura.num_vertici);
-                        for(unsigned int i = 0; i<frattura.num_vertici; i++)
+                        for(unsigned int k = 0; k<frattura.num_vertici; k++)
                         {
-                            coord_frc.push_back(mesh.Cell0DCoordinates[frattura.vertices[i]]);  // mi salvo le coordinate dei vertici del poligono
+                            coord_frc.push_back(mesh.Cell0DCoordinates[frattura.vertices[k]]);  // mi salvo le coordinate dei vertici del poligono
                         }
                         unsigned int id_new_pto = 0;
 
@@ -169,8 +170,17 @@ namespace UtilsFunction
         frc1.vertices.shrink_to_fit();  // riduco la capacità
         frc2.vertices.shrink_to_fit();
         frc1.num_vertici = frc1.vertices.size();   // ovviamente il numero di vertici diventa equivalente alla dimensione attuale del vettore
-        frc2.num_vertici = frc1.vertices.size();
+        frc2.num_vertici = frc2.vertices.size();
 
+        list<unsigned int> list_vert1;
+        for (unsigned int i = 0; i< frc1.num_vertici; i++){
+            list_vert1.push_back(frc1.vertices[i]);
+        }
+
+        list<unsigned int> list_vert2;
+        for (unsigned int i = 0; i< frc2.num_vertici; i++){
+            list_vert2.push_back(frc2.vertices[i]);
+        }
 
         //determino le tracce passanti e quelle non per ogni sotto-frattura
         list<Trace> P_traces1 = {};   // inizializzo la nuova lista di tracce per le mie fratture
@@ -179,23 +189,23 @@ namespace UtilsFunction
         list<Trace> NP_traces2  = {};
 
 
+
         //MI MANCA DA VERIFICRE QUALI TRACCE APPARTENGANO A QUALI LISTE
         // LO FACCIO IOOOO (RENY)
 
         // LAVORO PRIMA SULLE TRACCE PASSANTI
-        for (Trace& traccia : P_traces)  // ciclo sulle tracce
-        {
-            if (traccia.id_frc1 == frattura.id || traccia.id_frc2 == frattura.id)  // se sto ciclando sulle tracce della mia frattura
+        if(P_traces.size() != 0){
+            for (auto itor = P_traces.begin(); itor != P_traces.end(); itor++)  // ciclo sulle tracce
             {
+                Trace traccia = *itor;
+
                 // adesso devo vedere se le tracce dove sto ciclando sono dentro frac1 o frac2, considero anche il caso in cui appartengono a entrambi
 
                // passo 1: ricavo le coodinate degli estremi
                 Vector3d origine = traccia.coordinates_extremes.col(0);
                 Vector3d fine = traccia.coordinates_extremes.col(1);   // definisco le coordinate degli estremi della traccia
 
-                // passo 2:
-
-                // devo riuscire a capire se la traccia appartiene alla prima o la seconda frattura (o entrambe)
+                // passo 2: devo riuscire a capire se la traccia appartiene alla prima o la seconda frattura (o entrambe)
 
                     // tutti i punti che hanno la stessa direzione e verso nel prodotto vettoriale con il p_0 della traccia tagliante appartengono ad una particolare frattura,
                     // basta quindi confrontare i segni dei prodotti vettoriali
@@ -209,45 +219,90 @@ namespace UtilsFunction
                 {
                     unsigned int id = frc1.vertices[i];
                     Vector3d vettore_provvisorio = mesh.Cell0DCoordinates[id];
-                    if ((dir_t.cross(vettore_provvisorio-pt0)).norm()>toll)
+                    if ((dir_tr_tagliante.cross(vettore_provvisorio-pt0_tr_tagliante)).norm()>toll)
                     {
-                        segnatura = dir_t.cross(vettore_provvisorio-pt0);   // segnatura relativa alla frattura 1, tutti i punti sulla frattura 1 seguono questa segnatura
+                        segnatura = dir_tr_tagliante.cross(vettore_provvisorio-pt0_tr_tagliante);   // segnatura relativa alla frattura 1, tutti i punti sulla frattura 1 seguono questa segnatura
                         rimango_dentro = !rimango_dentro; // esco da while
                     }
+                    i++;
                 }
                 // vediamo come sono segnati gli estremi delle tracce
-                double segnatura_origine = ((dir_t).cross(origine-pt0)).dot(segnatura);
-                double segnatura_fine = (dir_t).cross(fine-pt0).dot(segnatura);
+                double segnatura_origine = ((dir_tr_tagliante).cross(origine-pt0_tr_tagliante)).dot(segnatura);
+                double segnatura_fine = (dir_tr_tagliante).cross(fine-pt0_tr_tagliante).dot(segnatura);
 
-                if ( (segnatura_origine > toll && segnatura_fine > toll) || (segnatura_origine >= 0 && segnatura_origine < toll && segnatura_fine > toll) || (segnatura_origine > toll && segnatura_fine >= 0 && segnatura_fine < toll))  // entrambe stessa direzione della segnatura della frattura 1
+                if ( (segnatura_origine > toll && segnatura_fine > toll) || ( abs(segnatura_origine) < toll  && segnatura_fine > toll) || (segnatura_origine > toll && abs(segnatura_origine) < toll))  // entrambe stessa direzione della segnatura della frattura 1
                 {
                     P_traces1.push_back(traccia);
                 }
-                else if ( (segnatura_origine < - toll && segnatura_fine < - toll) || (segnatura_origine <= 0 && segnatura_origine < -toll && segnatura_fine < - toll) || (segnatura_origine < -toll && segnatura_fine <= 0 && segnatura_fine < -toll))   // tutte queste condizioni servono per vedere i casi delle traccie
+                else if ( (segnatura_origine < - toll && segnatura_fine < - toll) || (abs(segnatura_origine) < toll && segnatura_fine < - toll) || (segnatura_origine < -toll && abs(segnatura_origine) < toll)) // tutte queste condizioni servono per vedere i casi delle traccie
                 {
                     P_traces2.push_back(traccia);
                 }
                 else
                 {
-                    P_traces2.push_back(traccia);
-                    P_traces1.push_back(traccia);
+                    // devo creare due tracce da riassegnare ai sotto poligoni
+
+                    // passo 1: cerco il punto di intersezione tra le due tracce
+                    MatrixXd retta_traccia_da_smistare;
+                    retta_traccia_da_smistare.resize(2,3);
+                    retta_traccia_da_smistare = fx.Retta_per_due_punti(origine,fine);
+
+                    Vector2d gamma = fx.intersezione_rette(retta_traccia_da_smistare,retta_traccia_tagliante);
+                    Vector3d intersezione_tra_tracce = gamma(0)*retta_traccia_da_smistare.row(0)+retta_traccia_da_smistare.row(1);
+                    // creo la matrice con le coordinate dei nuovi punti da salvare poi nella traccia
+                    MatrixXd coordinate_traccia_per_frattura_1;
+                    coordinate_traccia_per_frattura_1.resize(3,2);
+                    MatrixXd coordinate_traccia_per_frattura_2;
+                    coordinate_traccia_per_frattura_2.resize(3,2);
+                    if (segnatura_origine > toll)
+                    {
+                        coordinate_traccia_per_frattura_1.col(0) = origine;
+                        coordinate_traccia_per_frattura_1.col(1) = intersezione_tra_tracce;
+
+                        coordinate_traccia_per_frattura_2.col(0) = intersezione_tra_tracce;
+                        coordinate_traccia_per_frattura_2.col(1) = fine;
+                    }
+                    else
+                    {
+                        coordinate_traccia_per_frattura_1.col(0) = fine;
+                        coordinate_traccia_per_frattura_1.col(1) = intersezione_tra_tracce;
+
+                        coordinate_traccia_per_frattura_2.col(0) = intersezione_tra_tracce;
+                        coordinate_traccia_per_frattura_2.col(1) = origine;
+                    }
+                    // passo 2: creo due oggetti traccia con lo stesso ID della traccia originale e le riassegno alle due sotto fratture
+                    Trace traccia_per_frattura_1; // inizializzo la prima traccia
+                    traccia_per_frattura_1.coordinates_extremes = coordinate_traccia_per_frattura_1;
+                    traccia_per_frattura_1.id_frc1 = traccia.id_frc1;
+                    traccia_per_frattura_1.id_frc2 = traccia.id_frc2;
+                    traccia_per_frattura_1.len = traccia.len;
+                    traccia_per_frattura_1.id = traccia.id;
+
+                    Trace traccia_per_frattura_2; // inizializzo la prima traccia
+                    traccia_per_frattura_2.coordinates_extremes = coordinate_traccia_per_frattura_2;
+                    traccia_per_frattura_2.id_frc1 = traccia.id_frc1;
+                    traccia_per_frattura_2.id_frc2 = traccia.id_frc2;
+                    traccia_per_frattura_2.len = traccia.len;
+                    traccia_per_frattura_2.id = traccia.id;
+
+
+                    P_traces2.push_back(traccia_per_frattura_2);
+                    P_traces1.push_back(traccia_per_frattura_1);
                 }
             }
         }
         // LAVORO ORA SULLE TRACCE NON PASSANTI
-        for (Trace& traccia : NP_traces)  // ciclo sulle tracce
-        {
-            if (traccia.id_frc1 == frattura.id || traccia.id_frc2 == frattura.id)  // se sto ciclando sulle tracce della mia frattura
+        if(NP_traces.size() != 0){
+            for (auto itor = NP_traces.begin(); itor != NP_traces.end(); itor++)  // ciclo sulle tracce
             {
-                // adesso devo vedere se le tracce dove sto ciclando sono dentro frac1 o frac2, considero anche il caso in cui appartengono a entrambi
+                Trace traccia = *itor;
 
+                // adesso devo vedere se le tracce dove sto ciclando sono dentro frac1 o frac2, considero anche il caso in cui appartengono a entrambi
                 // passo 1: ricavo le coodinate degli estremi
                 Vector3d origine = traccia.coordinates_extremes.col(0);
                 Vector3d fine = traccia.coordinates_extremes.col(1);   // definisco le coordinate degli estremi della traccia
 
-                // passo 2:
-
-                // devo riuscire a capire se la traccia appartiene alla prima o la seconda frattura (o entrambe)
+                // passo 2: devo riuscire a capire se la traccia appartiene alla prima o la seconda frattura (o entrambe)
 
                 // tutti i punti che hanno la stessa direzione e verso nel prodotto vettoriale con il p_0 della traccia tagliante appartengono ad una particolare frattura,
                 // basta quindi confrontare i segni dei prodotti vettoriali
@@ -261,15 +316,16 @@ namespace UtilsFunction
                 {
                     unsigned int id = frc1.vertices[i];
                     Vector3d vettore_provvisorio = mesh.Cell0DCoordinates[id];
-                    if ((dir_t.cross(vettore_provvisorio-pt0)).norm()>toll)
+                    if ((dir_tr_tagliante.cross(vettore_provvisorio-pt0_tr_tagliante)).norm()>toll)
                     {
-                        segnatura = dir_t.cross(vettore_provvisorio-pt0);   // segnatura relativa alla frattura 1, tutti i punti sulla frattura 1 seguono questa segnatura
+                        segnatura = dir_tr_tagliante.cross(vettore_provvisorio-pt0_tr_tagliante);   // segnatura relativa alla frattura 1, tutti i punti sulla frattura 1 seguono questa segnatura
                         rimango_dentro = !rimango_dentro; // esco da while
                     }
+                    i++;
                 }
                 // vediamo come sono segnati gli estremi delle tracce
-                double segnatura_origine = ((dir_t).cross(origine-pt0)).dot(segnatura);
-                double segnatura_fine = ((dir_t).cross(fine-pt0)).dot(segnatura);
+                double segnatura_origine = ((dir_tr_tagliante).cross(origine-pt0_tr_tagliante)).dot(segnatura);
+                double segnatura_fine = ((dir_tr_tagliante).cross(fine-pt0_tr_tagliante)).dot(segnatura);
 
                 if ( (segnatura_origine > toll && segnatura_fine > toll) || (segnatura_origine >= 0 && segnatura_origine < toll && segnatura_fine > toll) || (segnatura_origine > toll && segnatura_fine >= 0 && segnatura_fine < toll))  // entrambe stessa direzione della segnatura della frattura 1
                 {
@@ -281,22 +337,53 @@ namespace UtilsFunction
                 }
                 else
                 {
-                    NP_traces2.push_back(traccia);
-                    NP_traces1.push_back(traccia);
+                    MatrixXd retta_traccia_da_smistare;
+                    retta_traccia_da_smistare.resize(2,3);
+                    retta_traccia_da_smistare = fx.Retta_per_due_punti(origine,fine);
+
+                    Vector2d gamma = fx.intersezione_rette(retta_traccia_da_smistare,retta_traccia_tagliante);
+                    Vector3d intersezione_tra_tracce = gamma(0)*retta_traccia_da_smistare.row(0)+retta_traccia_da_smistare.row(1);
+                    // creo la matrice con le coordinate dei nuovi punti da salvare poi nella traccia
+                    MatrixXd coordinate_traccia_per_frattura_1;
+                    coordinate_traccia_per_frattura_1.resize(3,2);
+                    MatrixXd coordinate_traccia_per_frattura_2;
+                    coordinate_traccia_per_frattura_2.resize(3,2);
+                    if (segnatura_origine > toll)
+                    {
+                        coordinate_traccia_per_frattura_1.col(0) = origine;
+                        coordinate_traccia_per_frattura_1.col(1) = intersezione_tra_tracce;
+
+                        coordinate_traccia_per_frattura_2.col(0) = intersezione_tra_tracce;
+                        coordinate_traccia_per_frattura_2.col(1) = fine;
+                    }
+                    else
+                    {
+                        coordinate_traccia_per_frattura_1.col(0) = fine;
+                        coordinate_traccia_per_frattura_1.col(1) = intersezione_tra_tracce;
+
+                        coordinate_traccia_per_frattura_2.col(0) = intersezione_tra_tracce;
+                        coordinate_traccia_per_frattura_2.col(1) = origine;
+                    }
+                    // passo 2: creo due oggetti traccia con lo stesso ID della traccia originale e le riassegno alle due sotto fratture
+                    Trace traccia_per_frattura_1; // inizializzo la prima traccia
+                    traccia_per_frattura_1.coordinates_extremes = coordinate_traccia_per_frattura_1;
+                    traccia_per_frattura_1.id_frc1 = traccia.id_frc1;
+                    traccia_per_frattura_1.id_frc2 = traccia.id_frc2;
+                    traccia_per_frattura_1.len = traccia.len;
+                    traccia_per_frattura_1.id = traccia.id;
+
+                    Trace traccia_per_frattura_2; // inizializzo la prima traccia
+                    traccia_per_frattura_2.coordinates_extremes = coordinate_traccia_per_frattura_2;
+                    traccia_per_frattura_2.id_frc1 = traccia.id_frc1;
+                    traccia_per_frattura_2.id_frc2 = traccia.id_frc2;
+                    traccia_per_frattura_2.len = traccia.len;
+                    traccia_per_frattura_2.id = traccia.id;
+
+
+                    NP_traces2.push_back(traccia_per_frattura_2);
+                    NP_traces1.push_back(traccia_per_frattura_1);
                 }
-
             }
-        }
-
-
-        list<unsigned int> list_vert1;
-        for (unsigned int i = 0; i< frc1.num_vertici; i++){
-            list_vert1.push_back(frc1.vertices[i]);
-        }
-
-        list<unsigned int> list_vert2;
-        for (unsigned int i = 0; i< frc2.num_vertici; i++){
-            list_vert2.push_back(frc2.vertices[i]);
         }
 
         //se non ho tracce interne interrompo la ricorsione e salvo la mesh
@@ -392,7 +479,7 @@ namespace UtilsFunction
 
     }
 
-    PolygonalMesh FracturesFunctions::SottoPoligonazione(const Fracture& frattura, const list<Trace>& P_traces, const list<Trace>& NP_traces, const vector<Vector3d>& coord)
+    PolygonalMesh FracturesFunctions::SottoPoligonazione(const Fracture& frattura,  list<Trace>& P_traces,  list<Trace>& NP_traces, const vector<Vector3d>& coord)
     {
         PolygonalMesh mesh;    // inizializzo un oggetto mesh
         //ridefinisco la frattura in modo da iniziare l'indicizzazione delle celle 0D da 0
