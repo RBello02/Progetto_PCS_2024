@@ -28,11 +28,10 @@ int main(int argc, char ** argv)
 
 
     string path = "DFN";
-    string filenameI = path + "/FR362_data.txt";
+    string filenameI = path + "/FR200_data.txt";
 
     //definisco le liste che conterranno le tracce e le fratture
     vector<Fracture> list_fractures; //lista di fratture (è un vettore)
-    list<Trace> list_traces; //lista delle tracce
     map<unsigned int, list<Trace>> P_traces_of_fractures; //per ogni frattura memorizziamo una lista contenente gli id elle tracce passanti
     map<unsigned int, list<Trace>> NP_traces_of_fractures; //analogo a sopra ma per tracce non passanti
 
@@ -65,7 +64,7 @@ int main(int argc, char ** argv)
 
     }
     chrono::steady_clock::time_point tF_import = chrono::steady_clock::now();
-    double durata_import = chrono::duration_cast<chrono::microseconds> (tF_import-t0_import).count();
+    double durata_import = chrono::duration_cast<chrono::milliseconds> (tF_import-t0_import).count();
 
 
     // ciclo sulle coppie di poligoni e determino le tracce
@@ -85,7 +84,7 @@ int main(int argc, char ** argv)
     }
 
     chrono::steady_clock::time_point tF_inters = chrono::steady_clock::now();
-    double durata_intersection = chrono::duration_cast<chrono::microseconds> (tF_inters-t0_intersection).count();
+    double durata_intersection = chrono::duration_cast<chrono::milliseconds> (tF_inters-t0_intersection).count();
 
 
     //primo file di output
@@ -165,12 +164,12 @@ int main(int argc, char ** argv)
 
     cout << endl;
     chrono::steady_clock::time_point tF_mesh = chrono::steady_clock::now();
-    double durata_mesh = chrono::duration_cast<chrono::microseconds> (tF_mesh-t0_mesh).count();
+    double durata_mesh = chrono::duration_cast<chrono::milliseconds> (tF_mesh-t0_mesh).count();
 
     cout << scientific << setprecision(4); //imposto il formato con cui visualizzerò in output la durata
-    cout << "durata in microsecondi dell'import = " << durata_import << endl;
-    cout << "durata in microsecondi dll'intersection = " << durata_intersection << endl;
-    cout << "durata in microsecondi dalla sottopoligonazione = " << durata_mesh << endl;
+    cout << "durata in millisecondi dell'import = " << durata_import << endl;
+    cout << "durata in millisecondi dll'intersection = " << durata_intersection << endl;
+    cout << "durata in millisecondi dalla sottopoligonazione = " << durata_mesh << endl;
 
     // //PARAVIEW
     // for(unsigned int i=0; i< sottoPoligonazione_per_frattura.size();i++){

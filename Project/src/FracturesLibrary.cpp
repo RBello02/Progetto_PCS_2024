@@ -292,7 +292,7 @@ void FracturesFunctions::IntersectionFractures(Fracture &frc1, Fracture &frc2, c
             cout << endl;
 
             Trace traccia;
-            traccia.id = list_traces.size();
+            traccia.id = P_traces.size() + NP_traces.size();
             MatrixXd coord_estremi_traccia = MatrixXd::Zero(3,2);
 
 
@@ -301,9 +301,7 @@ void FracturesFunctions::IntersectionFractures(Fracture &frc1, Fracture &frc2, c
             traccia.coordinates_extremes = coord_estremi_traccia;
             traccia.id_frc1 = frc1.id;
             traccia.id_frc2 = frc2.id;
-
             traccia.len = traccia.calcolo_lunghezza();
-            list_traces.push_back(traccia);
 
 
             //determiniamo se la traccia è passante o no

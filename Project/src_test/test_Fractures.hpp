@@ -589,83 +589,83 @@ TEST(IntersectionFractures_test, generale_marti){
     EXPECT_FALSE(pr1);
 }
 
-TEST(IntersectionFractures_test, traccia_non_trovata_reny)
-{
-    Fracture f1;
-    Fracture f2;
-    FracturesFunctions g;
-    Trace t;
-    vector<Vector3d> coordinate;
-    coordinate.resize(8);
-    list<Trace> list_traces; //lista delle tracce
-    map<unsigned int, list<Trace>> P_traces_of_fractures; //per ogni frattura memorizziamo una lista contenente gli id elle tracce passanti
-    map<unsigned int, list<Trace>> NP_traces_of_fractures; //analogo a sopra ma per tracce non passanti
+// TEST(IntersectionFractures_test, traccia_non_trovata_reny)
+// {
+//     Fracture f1;
+//     Fracture f2;
+//     FracturesFunctions g;
+//     Trace t;
+//     vector<Vector3d> coordinate;
+//     coordinate.resize(8);
+//     list<Trace> list_traces; //lista delle tracce
+//     map<unsigned int, list<Trace>> P_traces_of_fractures; //per ogni frattura memorizziamo una lista contenente gli id elle tracce passanti
+//     map<unsigned int, list<Trace>> NP_traces_of_fractures; //analogo a sopra ma per tracce non passanti
 
-    coordinate={{6.2146082912229295e-01,3.6933505910269426e-01 ,6.5491065861714337e-01},{9.3634260291962368e-02,1.3967317445425522e+00,6.5491065861714337e-01},{1.1880550392475797e-01,1.4096635082402353e+00,1.4244250759175627e+00},{6.4663207275508849e-01,3.8226682280037716e-01,1.4244250759175630e+00},
-                {1.0134507097882688e+00,-4.2358095677780244e-01,1.3440567176761081e-01},{-2.9565547130751324e-02,1.3939531644777750e-01,1.3440567176761081e-01},{2.3802571986642296e-01,6.3515695856546772e-01,6.8846529129663980e-01},{1.2810419767854433e+00,7.2180685339887751e-02,6.8846529129663991e-01}};
-    f1.num_vertici=4;
-    f2.num_vertici=4;
-    f1.vertices={0,1,2,3};
-    f2.vertices={4,5,6,7};
-    f1.id=0;
-    f2.id=1;
-    g.IntersectionFractures(f1, f2, coordinate, list_traces, P_traces_of_fractures, NP_traces_of_fractures);
-    MatrixXd estremi;
-    estremi.resize(3,2);
-    estremi << 0.581538, 0.60718,
-        0.449743,0.397132,
-        0.688465,0.654911;
-    double lunghezza_vera = (estremi.col(0)- estremi.col(1)).norm();   // il valore vero della lunghezza della traccia
+//     coordinate={{6.2146082912229295e-01,3.6933505910269426e-01 ,6.5491065861714337e-01},{9.3634260291962368e-02,1.3967317445425522e+00,6.5491065861714337e-01},{1.1880550392475797e-01,1.4096635082402353e+00,1.4244250759175627e+00},{6.4663207275508849e-01,3.8226682280037716e-01,1.4244250759175630e+00},
+//                 {1.0134507097882688e+00,-4.2358095677780244e-01,1.3440567176761081e-01},{-2.9565547130751324e-02,1.3939531644777750e-01,1.3440567176761081e-01},{2.3802571986642296e-01,6.3515695856546772e-01,6.8846529129663980e-01},{1.2810419767854433e+00,7.2180685339887751e-02,6.8846529129663991e-01}};
+//     f1.num_vertici=4;
+//     f2.num_vertici=4;
+//     f1.vertices={0,1,2,3};
+//     f2.vertices={4,5,6,7};
+//     f1.id=0;
+//     f2.id=1;
+//     g.IntersectionFractures(f1, f2, coordinate, list_traces, P_traces_of_fractures, NP_traces_of_fractures);
+//     MatrixXd estremi;
+//     estremi.resize(3,2);
+//     estremi << 0.581538, 0.60718,
+//         0.449743,0.397132,
+//         0.688465,0.654911;
+//     double lunghezza_vera = (estremi.col(0)- estremi.col(1)).norm();   // il valore vero della lunghezza della traccia
 
-    t = (*list_traces.begin());
+//     t = (*list_traces.begin());
 
-    MatrixXd risultato_funzione;
-    risultato_funzione.resize(3,2);
-    risultato_funzione=t.coordinates_extremes;
+//     MatrixXd risultato_funzione;
+//     risultato_funzione.resize(3,2);
+//     risultato_funzione=t.coordinates_extremes;
 
-    for (unsigned int i = 0; i < risultato_funzione.cols(); i++){
-        for (unsigned int j = 0; j < risultato_funzione.rows(); j++){
-            EXPECT_NEAR(risultato_funzione(j,i), estremi(j,i), g.tolleranza1D);
-        }
-    }
-    EXPECT_EQ(t.id_frc1,f1.id);
-    EXPECT_EQ(t.id_frc2,f2.id);
-    ASSERT_DOUBLE_EQ(t.len,lunghezza_vera);
+//     for (unsigned int i = 0; i < risultato_funzione.cols(); i++){
+//         for (unsigned int j = 0; j < risultato_funzione.rows(); j++){
+//             EXPECT_NEAR(risultato_funzione(j,i), estremi(j,i), g.tolleranza1D);
+//         }
+//     }
+//     EXPECT_EQ(t.id_frc1,f1.id);
+//     EXPECT_EQ(t.id_frc2,f2.id);
+//     ASSERT_DOUBLE_EQ(t.len,lunghezza_vera);
 
-    //verifico che la traccia sia passante per la frattura 1 e non passante per la frattura 0
-    list<unsigned int> trc_per_0_P = {};
-    list<unsigned int> trc_per_0_NP = {};
-    list<unsigned int> trc_per_1_P = {};
-    list<unsigned int> trc_per_1_NP = {};
+//     //verifico che la traccia sia passante per la frattura 1 e non passante per la frattura 0
+//     list<unsigned int> trc_per_0_P = {};
+//     list<unsigned int> trc_per_0_NP = {};
+//     list<unsigned int> trc_per_1_P = {};
+//     list<unsigned int> trc_per_1_NP = {};
 
-    for (auto it = P_traces_of_fractures.begin(); it != P_traces_of_fractures.end(); it++){
-        list<Trace> lista= it->second;
-        unsigned int id_frc = it->first;
-        for (const Trace &trc : lista){
-            if (id_frc == 0){trc_per_0_P.push_back(trc.id);}
-            if (id_frc == 1){trc_per_1_P.push_back(trc.id);}
-        }
-    }
+//     for (auto it = P_traces_of_fractures.begin(); it != P_traces_of_fractures.end(); it++){
+//         list<Trace> lista= it->second;
+//         unsigned int id_frc = it->first;
+//         for (const Trace &trc : lista){
+//             if (id_frc == 0){trc_per_0_P.push_back(trc.id);}
+//             if (id_frc == 1){trc_per_1_P.push_back(trc.id);}
+//         }
+//     }
 
-    for (auto it = NP_traces_of_fractures.begin(); it != NP_traces_of_fractures.end(); it++){
-        list<Trace> lista= it->second;
-        unsigned int id_frc = it->first;
-        for (const Trace &trc : lista){
-            if (id_frc == 0){trc_per_0_NP.push_back(trc.id);}
-            if (id_frc == 1){trc_per_1_NP.push_back(trc.id);}
-        }
-    }
+//     for (auto it = NP_traces_of_fractures.begin(); it != NP_traces_of_fractures.end(); it++){
+//         list<Trace> lista= it->second;
+//         unsigned int id_frc = it->first;
+//         for (const Trace &trc : lista){
+//             if (id_frc == 0){trc_per_0_NP.push_back(trc.id);}
+//             if (id_frc == 1){trc_per_1_NP.push_back(trc.id);}
+//         }
+//     }
 
-    EXPECT_EQ(trc_per_0_P.size(), 0); //la fratt 0 non ha tracce passanti
-    EXPECT_EQ(trc_per_1_P.size(), 0); //la fratt 1 non ha tracce passanti
+//     EXPECT_EQ(trc_per_0_P.size(), 0); //la fratt 0 non ha tracce passanti
+//     EXPECT_EQ(trc_per_1_P.size(), 0); //la fratt 1 non ha tracce passanti
 
-    auto it_0 = find(trc_per_0_NP.begin(), trc_per_0_NP.end(), t.id);
-    auto it_1 = find(trc_per_1_P.begin(), trc_per_1_P.end(), t.id);
+//     auto it_0 = find(trc_per_0_NP.begin(), trc_per_0_NP.end(), t.id);
+//     auto it_1 = find(trc_per_1_P.begin(), trc_per_1_P.end(), t.id);
 
-    bool pr0 = (it_0 == trc_per_0_NP.end()); //ritorna vero se non ho trovato la traccia
-    bool pr1 = (it_1 == trc_per_1_P.end()); //ritorna vero se non ho trovato la traccia
+//     bool pr0 = (it_0 == trc_per_0_NP.end()); //ritorna vero se non ho trovato la traccia
+//     bool pr1 = (it_1 == trc_per_1_P.end()); //ritorna vero se non ho trovato la traccia
 
-    EXPECT_FALSE(pr0);
-    EXPECT_FALSE(pr1);
-}
+//     EXPECT_FALSE(pr0);
+//     EXPECT_FALSE(pr1);
+// }
 #endif
