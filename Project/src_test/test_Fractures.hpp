@@ -5,6 +5,9 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <math.h>
+#include <iostream>
+#include <fstream>
+#include <string>
 #include "FracturesLibrary.hpp"
 #include "Utils.hpp"
 
@@ -14,6 +17,10 @@ using namespace std;
 using namespace Eigen;
 using namespace FracturesLibrary;
 using namespace UtilsFunction;
+
+inline bool compare_tracce(const Trace& trc1, const Trace& trc2){
+    return trc1.len > trc2.len;
+}
 
 
 // ***************retta_per_vertici**************************+
@@ -587,6 +594,133 @@ TEST(IntersectionFractures_test, generale_marti){
 
     EXPECT_FALSE(pr0);
     EXPECT_FALSE(pr1);
+}
+
+
+TEST(Tuttoilprogramma_test, Generale){
+
+    cout << setprecision(16);
+    FracturesFunctions g;
+    Trace t;
+    string path="TEST_data.txt";
+    string file1="tracceTEST.txt";
+    string file2="tracce_per_frattura_TEST.txt";
+    vector<Fracture> list_fractures;
+    list<Trace> list_traces;
+    map<unsigned int, list<Trace>> P_traces_of_fractures; //per ogni frattura memorizziamo una lista contenente gli id elle tracce passanti
+    map<unsigned int, list<Trace>> NP_traces_of_fractures; //analogo a sopra ma per tracce non passanti
+    unsigned int num_fratt;
+    vector<Vector3d> coordinates;
+    bool l;
+    l=g.importData(path, list_fractures, coordinates);
+    EXPECT_TRUE(l);
+    num_fratt = list_fractures.size();
+    EXPECT_EQ(num_fratt,2);
+    EXPECT_EQ(list_fractures[0].id,0);
+    EXPECT_EQ(list_fractures[1].id,1);
+
+    EXPECT_EQ(list_fractures[0].num_vertici,4);
+    EXPECT_EQ(list_fractures[1].num_vertici,4);
+
+    vector<Vector3d> CoordinateAttese;
+    CoordinateAttese={{0,-4,0},{4,0,0},{0,4,0},{-4,0,0},{0,0,-2},{2,0,0},{0,0,2},{-2,0,0}};
+    EXPECT_EQ(coordinates,CoordinateAttese);
+
+
+    for(unsigned int i=0; i<num_fratt; i++)
+    {
+        for (unsigned int j=i+1; j< num_fratt; j++)
+        {
+            Fracture frc1 = list_fractures[i];
+            Fracture frc2 = list_fractures[j];
+
+            if( g.NearFractures(frc1, frc2, coordinates)){
+                g.IntersectionFractures(frc1, frc2, coordinates, list_traces, P_traces_of_fractures, NP_traces_of_fractures);
+            }
+
+        }
+    }
+
+    //primo file di output
+    string filenameO_tracce = "tracce.txt";
+    ofstream ofs;
+    ofs.open(filenameO_tracce);
+
+
+
+    ofs << "# Number of Traces" << endl << list_traces.size() << endl;
+    ofs << "# TraceId; FractureId1; FractureId2; X1; Y1; Z1; X2; Y2; Z2" << endl;
+    const string del = " ; ";
+
+    for (Trace& traccia : list_traces){
+        ofs << traccia.id << del << traccia.id_frc1 << del << traccia.id_frc2 << del << traccia.coordinates_extremes(0,0) << del << traccia.coordinates_extremes(1,0) << del << traccia.coordinates_extremes(2,0) << del << traccia.coordinates_extremes(0,1) << del << traccia.coordinates_extremes(1,1) << del << traccia.coordinates_extremes(2,1) << endl;
+    }
+
+    ofs.close();
+
+
+    //secondo file di output
+    string filenameO_frc = "tracce_per_frattura.txt";
+    ofstream ofs1;
+    ofs1.open(filenameO_frc);
+
+
+    string header_frc = "# FractureId; NumTraces";
+    string header_trc = "# TraceId; Tips; Lenght";
+
+    for (Fracture& fratt : list_fractures){
+
+        ofs1 << header_frc << endl;
+        ofs1 << fratt.id << del << P_traces_of_fractures[fratt.id].size() + NP_traces_of_fractures[fratt.id].size() << endl;
+
+        if (P_traces_of_fractures[fratt.id].size() + NP_traces_of_fractures[fratt.id].size() != 0){
+            ofs1 << header_trc << endl;
+
+            //prima ordiniamo le liste
+            (P_traces_of_fractures[fratt.id]).sort(compare_tracce);
+            (NP_traces_of_fractures[fratt.id]).sort(compare_tracce);
+
+            //scorriamo la lista delle tracce passanti
+            for (Trace& traccia : P_traces_of_fractures[fratt.id]){
+                ofs1 << traccia.id << del << "false" << del << traccia.len << endl;
+            }
+
+            //scorriamo la lista delle tracce non passanti
+            for (Trace& traccia : NP_traces_of_fractures[fratt.id]){
+                ofs1 << traccia.id << del << "true"  << del << traccia.len << endl;
+            }
+        }
+        ofs1 << endl;
+    }
+
+    ofs1.close();
+
+    ifstream test(file1);
+    ifstream prova(filenameO_tracce);
+
+    string linetest;
+    string lineatt;
+    while (getline(test, linetest)) {
+        getline(prova, lineatt);
+        EXPECT_STREQ(linetest,lineatt);
+
+    }
+    test.close();
+
+
+    test(file2);
+    prova(filename0_frc);
+
+    while (getline(test, linetest)) {
+        getline(prova, lineatt);
+        EXPECT_STREQ(linetest,lineatt);
+
+    }
+    test.close();
+
+
+
+
 }
 
 // TEST(IntersectionFractures_test, traccia_non_trovata_reny)

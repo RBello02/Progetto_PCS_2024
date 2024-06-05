@@ -1,0 +1,10 @@
+# FractureId; NumTraces
+0 ; 1
+# TraceId; Tips; Lenght
+0 ; true ; 1,4142135623730950488016887242097
+
+# FractureId; NumTraces
+1 ; 1
+# TraceId; Tips; Lenght
+0 ; false ; 1,4142135623730950488016887242097
+
