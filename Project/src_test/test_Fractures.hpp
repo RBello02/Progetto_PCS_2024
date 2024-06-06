@@ -734,7 +734,119 @@ TEST(Tuttoilprogramma_test, Generale){
     ifs_prova2.close();
 
 
-    //verifica mesh (sofi scrivi sopra please)
+    //verifica mesh 1 (sofi scrivi sopra please)
+    PolygonalMesh mesh1 = g.SottoPoligonazione(list_fractures[0], P_traces_of_fractures[0], NP_traces_of_fractures[0], coordinates);
+
+    EXPECT_EQ(mesh1.NumberCell0D,4);
+    EXPECT_EQ(mesh1.NumberCell1D, 6);
+    EXPECT_EQ(mesh1.NumberCell2D, 2);
+
+    for (unsigned int i =0; i < mesh1.NumberCell0D; i++){
+        //verifica delle celle 0D
+        for (unsigned int k = 0; k < 3; k++){
+            EXPECT_NEAR(mesh1.Cell0DCoordinates[i][k], coordinates[i][k], g.tolleranza1D);
+        }
+    }
+
+
+    //verifica delle celle 1D
+    unsigned int cont = 0;
+    Vector2i expect = {0,1};
+    EXPECT_EQ(mesh1.Cell1DVertices[cont], expect);
+    expect = {1,3};
+    cont ++;
+    EXPECT_EQ(mesh1.Cell1DVertices[cont], expect);
+    expect = {3,0};
+    cont ++;
+    EXPECT_EQ(mesh1.Cell1DVertices[cont], expect);
+    expect = {1,2};
+    cont++;
+    EXPECT_EQ(mesh1.Cell1DVertices[cont], expect);
+    expect = {2,3};
+    cont ++;
+    EXPECT_EQ(mesh1.Cell1DVertices[cont], expect);
+    expect = {3,1};
+    cont ++;
+    EXPECT_EQ(mesh1.Cell1DVertices[cont], expect);
+
+
+    vector vert_frc1 = mesh1.Cell2DVertices[0]; //verifica dei vertici della sotto fratt 1 della fratt 0
+    EXPECT_EQ(vert_frc1[0], 0);
+    EXPECT_EQ(vert_frc1[1], 1);
+    EXPECT_EQ(vert_frc1[2], 3);
+
+    vector vert_frc2 = mesh1.Cell2DVertices[1]; //verifica dei vertici della sotto fratt 2 della fratt 0
+    EXPECT_EQ(vert_frc2[0], 1);
+    EXPECT_EQ(vert_frc2[1], 2);
+    EXPECT_EQ(vert_frc2[2], 3);
+
+    vector edges_frc1 =mesh1.Cell2DEdges[0];
+    EXPECT_EQ(edges_frc1[0], 0);
+    EXPECT_EQ(edges_frc1[1], 1);
+    EXPECT_EQ(edges_frc1[2], 2);
+
+    vector edges_frc2 =mesh1.Cell2DEdges[1];
+    EXPECT_EQ(edges_frc2[0], 3);
+    EXPECT_EQ(edges_frc2[1], 4);
+    EXPECT_EQ(edges_frc2[2], 5);
+
+
+
+    //verifica mesh 1
+    PolygonalMesh mesh2 = g.SottoPoligonazione(list_fractures[1], P_traces_of_fractures[1], NP_traces_of_fractures[1], coordinates);
+
+    EXPECT_EQ(mesh2.NumberCell0D,4);
+    EXPECT_EQ(mesh2.NumberCell1D, 6);
+    EXPECT_EQ(mesh2.NumberCell2D, 2);
+
+    for (unsigned int i =0; i < mesh2.NumberCell0D; i++){
+        //verifica delle celle 0D
+        for (unsigned int k = 0; k < 3; k++){
+            EXPECT_NEAR(mesh2.Cell0DCoordinates[i][k], coordinates[4+i][k], g.tolleranza1D);
+        }
+    }
+
+
+    //verifica delle celle 1D
+    cont = 0;
+    expect = {0,1};
+    EXPECT_EQ(mesh2.Cell1DVertices[cont], expect);
+    expect = {1,3};
+    cont ++;
+    EXPECT_EQ(mesh2.Cell1DVertices[cont], expect);
+    expect = {3,0};
+    cont ++;
+    EXPECT_EQ(mesh2.Cell1DVertices[cont], expect);
+    expect = {1,2};
+    cont++;
+    EXPECT_EQ(mesh2.Cell1DVertices[cont], expect);
+    expect = {2,3};
+    cont ++;
+    EXPECT_EQ(mesh2.Cell1DVertices[cont], expect);
+    expect = {3,1};
+    cont ++;
+    EXPECT_EQ(mesh2.Cell1DVertices[cont], expect);
+
+
+    vert_frc1 = mesh2.Cell2DVertices[0]; //verifica dei vertici della sotto fratt 1 della fratt 0
+    EXPECT_EQ(vert_frc1[0], 0);
+    EXPECT_EQ(vert_frc1[1], 1);
+    EXPECT_EQ(vert_frc1[2], 3);
+
+    vert_frc2 = mesh2.Cell2DVertices[1]; //verifica dei vertici della sotto fratt 2 della fratt 0
+    EXPECT_EQ(vert_frc2[0], 1);
+    EXPECT_EQ(vert_frc2[1], 2);
+    EXPECT_EQ(vert_frc2[2], 3);
+
+    edges_frc1 =mesh2.Cell2DEdges[0];
+    EXPECT_EQ(edges_frc1[0], 0);
+    EXPECT_EQ(edges_frc1[1], 1);
+    EXPECT_EQ(edges_frc1[2], 2);
+
+    edges_frc2 =mesh2.Cell2DEdges[1];
+    EXPECT_EQ(edges_frc2[0], 3);
+    EXPECT_EQ(edges_frc2[1], 4);
+    EXPECT_EQ(edges_frc2[2], 5);
 
 
 }
