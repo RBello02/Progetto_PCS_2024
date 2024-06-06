@@ -30,7 +30,7 @@ bool FracturesFunctions::importData(const string& path, vector<Fracture>& lista,
     file.open(path);
 
     if(file.fail()){
-        cerr << "errore nell'apertura del file" << endl;
+        cerr << "errore nell'apertura del file di input" << endl;
         return false;}
 
     //la prima riga è di header
