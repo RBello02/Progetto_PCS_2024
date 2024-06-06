@@ -90,7 +90,7 @@ TEST(appartiene_a_segmento_test, genarale_sofi){
 //ho aggiunto questo test per controllare che il segmento comprenda sia orgine che fine
 TEST(appartiene_a_segmento_test, origine_fine){
     FracturesFunctions fx;
-    double perturbazione = fx.tolleranza1D*1./10;
+    double perturbazione = fx.tolleranza1D - 0.5*(fx.tolleranza1D - fx.eps_macchina);
     bool risultato_funzione;
     Vector3d origine,fine,punto;
     origine={1,2,3};
@@ -110,7 +110,7 @@ TEST(punto_unico_test, generale_sofi){
     bool risultato_funzione;
     Vector3d pto;
     vector<Vector3d> punti;
-    double perturbazione = fx.tolleranza1D*1./10;
+    double perturbazione = fx.tolleranza1D - 0.5*(fx.tolleranza1D - fx.eps_macchina);
     pto={2 + perturbazione,4,5};
     punti={{1,4,5},{5,7,8},{9,20,4},{2,4,5}};
     unsigned int id=0;

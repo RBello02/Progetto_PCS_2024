@@ -492,16 +492,17 @@ TEST(IntersectionFractures_test, generale_sofi){
 }
 
 TEST(IntersectionFractures_test, traccia_di_lunghezza_nulla){
+    //tecnicamente tra le due fratture c'è una traccia di lunghezza l tc eps_macch < l < tolleranza1D, verifico che non venga etta come traccia
     Fracture f1;
     Fracture f2;
     FracturesFunctions g;
-    double perturbazione = g.tolleranza1D*1./10;
+    double perturbazione = g.tolleranza1D - 0.5*(g.tolleranza1D - g.eps_macchina);
     vector<Vector3d> coordinate;
     list<Trace> list_traces; //lista delle tracce
     map<unsigned int, list<Trace>> P_traces; //per ogni frattura memorizziamo una lista contenente gli id elle tracce passanti
     map<unsigned int, list<Trace>> NP_traces; //analogo a sopra ma per tracce non passanti
 
-    coordinate={{0,-0.43,0},{1,-0.78,0},{1,1,0},{0,1,0},{1,0,-1},{1,0,2},{3,0,2},{3,0,-1}};
+    coordinate={{0,-0.43,0},{1+perturbazione,-0.78,0},{1+perturbazione,1,0},{0,1,0},{1,0,-1},{1,0,2},{3,0,2},{3,0,-1}};
     f1.num_vertici=4;
     f2.num_vertici=4;
     f1.vertices={0,1,2,3};

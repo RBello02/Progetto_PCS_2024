@@ -303,6 +303,9 @@ void FracturesFunctions::IntersectionFractures(Fracture &frc1, Fracture &frc2, c
             traccia.id_frc2 = frc2.id;
             traccia.len = traccia.calcolo_lunghezza();
 
+            //se trovo una traccia con lunghezza minore della tolleranza non la salvo ed esco dalla funzione
+            if (traccia.len < tolleranza1D){return;}
+
             list_traces.push_back(traccia);
 
 
