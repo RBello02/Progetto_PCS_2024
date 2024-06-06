@@ -613,7 +613,7 @@ TEST(Tuttoilprogramma_test, Generale){
     vector<Vector3d> coordinates;
     bool l;
     l=g.importData(path, list_fractures, coordinates);
-    ASSERT_TRUE(l);
+    EXPECT_TRUE(l);
     num_fratt = list_fractures.size();
     EXPECT_EQ(num_fratt,2);
     EXPECT_EQ(list_fractures[0].id,0);
