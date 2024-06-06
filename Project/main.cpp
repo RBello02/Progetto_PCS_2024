@@ -22,7 +22,7 @@ inline bool compare_tracce(const Trace& trc1, const Trace& trc2){
 }
 
 
-int main(int argc, char ** argv)
+int main()
 {
     cout << setprecision(16);
 

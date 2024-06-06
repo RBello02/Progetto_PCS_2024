@@ -303,6 +303,8 @@ void FracturesFunctions::IntersectionFractures(Fracture &frc1, Fracture &frc2, c
             traccia.id_frc2 = frc2.id;
             traccia.len = traccia.calcolo_lunghezza();
 
+            list_traces.push_back(traccia);
+
 
             //determiniamo se la traccia è passante o no
             if(abs(beta0 -beta1) < tolleranza1D && abs(beta2-beta3) < tolleranza1D){

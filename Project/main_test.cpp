@@ -1,11 +1,10 @@
+#include <gtest/gtest.h>
 #include "test_Fractures.hpp"
-#include "test_PolygonalMesh.hpp"
-#include "Utils.hpp"
+#include "src_test/test_PolygonalMesh.hpp"
 
-
-int main(int argc, char **argv)
+int main()
 {
-    testing::InitGoogleTest(&argc, argv);
+    testing::InitGoogleTest();
 
     return RUN_ALL_TESTS();
 }
