@@ -52,6 +52,8 @@ struct FracturesFunctions {
 + inline MatrixXd Retta_tra_piani(piano_1, piano_2)
 + inline MatrixXd Retta_per_due_vertici_della_frattura( id_vertice1, id_vertice2, coord)
 + inline Vector2d alpha_di_intersezione(retta_fracture, retta_intersez)
+
+
 + inline MatrixXd Retta_per_due_punti(punto1, punto2)
 + inline Vector2d intersezione_rette(retta_frattura, retta_traccia)
 + inline bool appartiene_a_segmento(origin, end, punto)
@@ -65,7 +67,7 @@ Fracture <|--FracturesFunctions
 
 package Reshaping_array <<Frame>>{
 
-class Reshaping{
+class  Reshaping{
 --template<typename T>--
 + void {abstract} VerificaRaddoppio( vector<T>& vec)
 + void {abstract} VerificaDimezzamento( vector<T>& vec)
@@ -73,8 +75,6 @@ class Reshaping{
 
 } 
 
-
-Reshaping_array.Reshaping --> FracturesFunctions::importData : controllo dimensione vettori
 VariablesMain <|-- FracturesFunctions::intersectionFractures
 
 package PolygonalMesh <<Folder>>{
@@ -98,5 +98,6 @@ struct PolygonalMesh{
 
 PolygonalMesh <|-- FracturesLibrary
 UtilsFunctions --> PolygonalMesh
+Reshaping_array <-up- UtilsFunctions
 
 @enduml
