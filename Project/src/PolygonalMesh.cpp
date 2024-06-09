@@ -1,4 +1,4 @@
-#include "PolygonalMesh.hpp"
+﻿#include "PolygonalMesh.hpp"
 #include "FracturesLibrary.hpp"
 #include "reshaping_array.hpp"
 #include "Utils.hpp"
@@ -12,6 +12,49 @@ using namespace Eigen;
 
 namespace UtilsFunction
 {
+
+inline vector<unsigned int> verifica_celle_1D(PolygonalMesh& mesh, Fracture& frattura, const double& toll){
+    FracturesFunctions fx;
+
+    vector<unsigned int> edges;
+    edges.reserve(frattura.num_vertici+1);
+
+    vector<unsigned int> vertices = frattura.vertices;
+
+    for(auto itor = frattura.vertices.begin(); itor != frattura.vertices.end(); itor++){
+        unsigned int id_origin = (*itor);
+        Vector3d origin = mesh.Cell0DCoordinates[id_origin];
+        unsigned int id_end;
+        if(itor == frattura.vertices.end()-1){id_end = frattura.vertices[0];}
+        else{id_end = *(itor+1);}
+        Vector3d end = mesh.Cell0DCoordinates[id_end];
+
+        //CASO O: evito di salvare la cella 1D {a,b} se esiste già la cella {b,a}
+        bool caso0 = false;
+        unsigned int lato_dupl;
+
+        for (unsigned int i = 0; i < mesh.Cell1DVertices.size(); i++){
+            Vector2i cella1 = mesh.Cell1DVertices[i];
+
+
+            //CASO 0
+            if ( (unsigned(cella1[0]) == id_origin && unsigned(cella1[1]) == id_end) ||   (unsigned(cella1[0]) == id_end && unsigned(cella1[1]) == id_origin)){
+                caso0 = true;
+                lato_dupl = i;
+            }
+        }
+
+        //salvo opportunamente la cella 1D
+        if(caso0){edges.push_back(lato_dupl);}
+    }
+
+    frattura.vertices = vertices;
+    return edges;
+
+}
+
+
+
 
 /*****************************************************************************************************************************/
 
@@ -391,34 +434,17 @@ namespace UtilsFunction
             //le celle 0D le ho salvate man mano
 
             //salvo le celle 1D e 2D
-            unsigned int num_cell1d = mesh.NumberCell1D;
-            mesh.NumberCell1D += frc1.num_vertici;
             unsigned int num_celle2d = mesh.NumberCell2D;
             mesh.NumberCell2D +=1;
 
             //mi creo due vettori ausiliari
-            vector<unsigned int> vertices;
-            vertices.reserve(frc1.num_vertici);
             vector<unsigned int> edges;
-            edges.reserve(frc1.num_vertici);
+            edges.reserve(frc1.num_vertici+1);
+            edges = verifica_celle_1D(mesh, frc1, toll);
 
-            for (unsigned int v = 0; v < frc1.num_vertici; v++){
-                unsigned int id_origin = frc1.vertices[v];
-                unsigned int id_end;
-                if(v == frc1.num_vertici-1){id_end = frc1.vertices[0];}
-                else{id_end = frc1.vertices[v+1];}
+            vector<unsigned int> vertices = frc1.vertices;
+            mesh.NumberCell1D = mesh.Cell1DId.size();
 
-                //celle 1D
-                unsigned int id_segm = num_cell1d+v;
-                ReshapingArray::VerificaRaddoppio(mesh.Cell1DId);
-                mesh.Cell1DId.push_back(id_segm);
-                ReshapingArray::VerificaRaddoppio(mesh.Cell1DVertices);
-                mesh.Cell1DVertices.push_back({id_origin, id_end});
-
-                //celle2D
-                vertices.push_back(id_origin);
-                edges.push_back(id_segm);
-            }
 
             ReshapingArray::VerificaRaddoppio(mesh.Cell2DId);
             mesh.Cell2DId.push_back(num_celle2d);
@@ -436,34 +462,17 @@ namespace UtilsFunction
             //le celle 0D le ho salvate man mano
 
             //salvo le celle 1D e 2D
-            unsigned int num_cell1d = mesh.NumberCell1D;
-            mesh.NumberCell1D += frc2.num_vertici;
             unsigned int num_celle2d = mesh.NumberCell2D;
             mesh.NumberCell2D +=1;
 
             //mi creo due vettori ausiliari
-            vector<unsigned int> vertices;
-            vertices.reserve(frc2.num_vertici);
             vector<unsigned int> edges;
-            edges.reserve(frc2.num_vertici);
+            edges.reserve(frc2.num_vertici+1);
+            edges = verifica_celle_1D(mesh, frc2, toll);
 
-            for (unsigned int v = 0; v < frc2.num_vertici; v++){
-                unsigned int id_origin = frc2.vertices[v];
-                unsigned int id_end;
-                if(v == frc2.num_vertici-1){id_end = frc2.vertices[0];}
-                else{id_end = frc2.vertices[v+1];}
+            vector<unsigned int> vertices = frc2.vertices;
+            mesh.NumberCell1D = mesh.Cell1DId.size();
 
-                //celle 1D
-                unsigned int id_segm = num_cell1d+v;
-                ReshapingArray::VerificaRaddoppio(mesh.Cell1DId);
-                mesh.Cell1DId.push_back(id_segm);
-                ReshapingArray::VerificaRaddoppio(mesh.Cell1DVertices);
-                mesh.Cell1DVertices.push_back({id_origin, id_end});
-
-                //celle2D
-                vertices.push_back(id_origin);
-                edges.push_back(id_segm);
-            }
 
             ReshapingArray::VerificaRaddoppio(mesh.Cell2DId);
             mesh.Cell2DId.push_back(num_celle2d);
@@ -471,8 +480,6 @@ namespace UtilsFunction
             mesh.Cell2DEdges.push_back(edges);
             ReshapingArray::VerificaRaddoppio(mesh.Cell2DVertices);
             mesh.Cell2DVertices.push_back(vertices);
-
-
 
         }
         else{divisione_sottopol(frc2, P_traces2, NP_traces2, mesh, toll, list_vert2);}

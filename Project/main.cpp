@@ -28,7 +28,7 @@ int main()
 
 
     string path = "DFN";
-    string filenameI = path + "/FR10_data.txt";
+    string filenameI = path + "/FR200_data.txt";
 
     //definisco le liste che conterranno le tracce e le fratture
     vector<Fracture> list_fractures; //lista di fratture (è un vettore)
