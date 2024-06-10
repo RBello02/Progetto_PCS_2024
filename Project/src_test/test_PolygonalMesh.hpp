@@ -167,6 +167,7 @@ TEST(sottopoligonazione, generale_marti){
     extr1.col(0) = o1;
     extr1.col(1) = e1;
 
+     //per ora controllo sono il numero di celle 0D e 2D, bisognerebbe almeno anche controllare che le coordinate siano giuste e che le celle 2D siano composte dai giusti vertici e dai giusti lati nel giusto ordine
     trc1.coordinates_extremes = extr1;
 
     Trace trc2;
@@ -193,7 +194,38 @@ TEST(sottopoligonazione, generale_marti){
     //faccio solo una verifica del numero di celle 0D e 2D
     EXPECT_EQ(mesh.NumberCell0D, 10);
     EXPECT_EQ(mesh.NumberCell2D, 3);
-}
+    vector<Vector3d> coordinate_attese;
+    coordinate_attese.reserve(10);
+    coordinate_attese.push_back({2,9,3});
+    coordinate_attese.push_back({5,9,2});
+    coordinate_attese.push_back({5.5,9,4.5});
+    coordinate_attese.push_back({4,9,6});
+    coordinate_attese.push_back({2.5,9,6});
+    coordinate_attese.push_back({1,9,5});
+
+    coordinate_attese.push_back({ 3.25092, 9, 2.58303 });
+    coordinate_attese.push_back({ 4.8823, 9, 5.1177 });
+    coordinate_attese.push_back({ 4.67782, 9, 4.8 });
+    coordinate_attese.push_back({ 1.1, 9, 4.8 });
+
+    for(unsigned int j=0;j<mesh.Cell0DCoordinates.size(); j++){
+        EXPECT_EQ(mesh.Cell0DCoordinates[j], coordinate_attese[j]);
+    }
+
+    vector<vector<unsigned int>> vertici_attesi;
+    vertici_attesi.reserve(3);
+    vertici_attesi.push_back({9,8,7,3,4,5});
+    vertici_attesi.push_back({9,0,6,8});
+    vertici_attesi.push_back({6,1,2,7});
+    EXPECT_EQ(mesh.Cell2DVertices, vertici_attesi);
+
+    vector<vector<unsigned int>> lati_attesi;
+    lati_attesi.reserve(12);
+    lati_attesi.push_back({8,1,10,9});
+    lati_attesi.push_back({11,3,4,12,13,14});
+    lati_attesi.push_back({5,7,15,13});
+    //EXPECT_EQ(mesh.Cell2DEdges, lati_attesi); se teniamo il programma così non ha senso questo test
+    }
 
 TEST(sottopoligonazione, estr_traccia_coincidente_con_vertice){
     FracturesFunctions fx;
@@ -253,6 +285,28 @@ TEST(sottopoligonazione, estr_traccia_coincidente_con_vertice){
     //faccio solo una verifica del numero di celle 0D e 2D
     EXPECT_EQ(mesh.NumberCell0D, 8);
     EXPECT_EQ(mesh.NumberCell2D, 3);
+    vector<Vector3d> coordinate_attese;
+    coordinate_attese.reserve(8);
+    coordinate_attese.push_back({1,3,0});
+    coordinate_attese.push_back({2,1,0});
+    coordinate_attese.push_back({4,1,0});
+    coordinate_attese.push_back({5,3,0});
+    coordinate_attese.push_back({3,4.5,0});
+
+    coordinate_attese.push_back({3,1,0});
+    coordinate_attese.push_back({ 1.55682, 1.88636, 0 });
+    coordinate_attese.push_back({ 3, 2.73529, 0 });
+
+    for(unsigned int j=0;j<mesh.Cell0DCoordinates.size(); j++){
+        EXPECT_EQ(mesh.Cell0DCoordinates[j], coordinate_attese[j]);
+    }
+
+    vector<vector<unsigned int>> vertici_attesi;
+    vertici_attesi.reserve(3);
+    vertici_attesi.push_back({0,6,7,4});
+    vertici_attesi.push_back({6,1,5,7});
+    vertici_attesi.push_back({5,2,3,4});
+    EXPECT_EQ(mesh.Cell2DVertices, vertici_attesi);
 }
 
 TEST(sottopoligonazione, traccia_comune_a_due_sottofratt){
@@ -313,6 +367,30 @@ TEST(sottopoligonazione, traccia_comune_a_due_sottofratt){
     //faccio solo una verifica del numero di celle 0D e 2D
     EXPECT_EQ(mesh.NumberCell0D, 9);
     EXPECT_EQ(mesh.NumberCell2D, 4);
+    vector<Vector3d> coordinate_attese;
+    coordinate_attese.reserve(9);
+    coordinate_attese.push_back({1,3,0});
+    coordinate_attese.push_back({2,1,0});
+    coordinate_attese.push_back({4,1,0});
+    coordinate_attese.push_back({5,3,0});
+    coordinate_attese.push_back({3,4.5,0});
+
+    coordinate_attese.push_back({ 3, 1, 0 });
+    coordinate_attese.push_back({ 3, 3.105, 0 });
+    coordinate_attese.push_back({ 1.44134, 3.33101, 0 });
+    coordinate_attese.push_back({ 4.91375, 2.82751, 0 });
+
+    for(unsigned int j=0;j<mesh.Cell0DCoordinates.size(); j++){
+        EXPECT_EQ(mesh.Cell0DCoordinates[j], coordinate_attese[j]);
+    }
+    vector<vector<unsigned int>> vertici_attesi;
+    vertici_attesi.reserve(3);
+    vertici_attesi.push_back({ 7, 6, 4 });
+    vertici_attesi.push_back({ 7, 0, 1, 5, 6 });
+    vertici_attesi.push_back({ 6, 8, 3, 4 });
+    vertici_attesi.push_back({ 6, 5, 2, 8 });
+    EXPECT_EQ(mesh.Cell2DVertices, vertici_attesi);
+
 }
 
 
