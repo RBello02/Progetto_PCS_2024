@@ -221,12 +221,6 @@ TEST(sottopoligonazione, generale_marti){
     vertici_attesi.push_back({6,1,2,7});
     EXPECT_EQ(mesh.Cell2DVertices, vertici_attesi);
 
-    vector<vector<unsigned int>> lati_attesi;
-    lati_attesi.reserve(12);
-    lati_attesi.push_back({8,1,10,9});
-    lati_attesi.push_back({11,3,4,12,13,14});
-    lati_attesi.push_back({5,7,15,13});
-    //EXPECT_EQ(mesh.Cell2DEdges, lati_attesi); se teniamo il programma così non ha senso questo test
     }
 
 TEST(sottopoligonazione, estr_traccia_coincidente_con_vertice){
