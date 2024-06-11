@@ -46,6 +46,15 @@ inline vector<unsigned int> verifica_celle_1D(PolygonalMesh& mesh, Fracture& fra
 
         //salvo opportunamente la cella 1D
         if(caso0){edges.push_back(lato_dupl);}
+        else{
+            //devo creare una nuova cella 1D
+            unsigned int new_id = mesh.Cell1DId.size();
+            ReshapingArray::VerificaRaddoppio(mesh.Cell1DId);
+            mesh.Cell1DId.push_back(new_id);
+            ReshapingArray::VerificaRaddoppio(mesh.Cell1DVertices);
+            mesh.Cell1DVertices.push_back({id_origin, id_end});
+            edges.push_back(new_id);
+        }
     }
 
     frattura.vertices = vertices;
