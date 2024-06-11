@@ -8,6 +8,7 @@
 
 using namespace UtilsFunction;
 
+
 TEST(Retta_per_due_punti_test, generale_reny){
     FracturesFunctions fx;
     Vector3d pt1,pt2;
@@ -167,7 +168,6 @@ TEST(sottopoligonazione, generale_marti){
     extr1.col(0) = o1;
     extr1.col(1) = e1;
 
-     //per ora controllo sono il numero di celle 0D e 2D, bisognerebbe almeno anche controllare che le coordinate siano giuste e che le celle 2D siano composte dai giusti vertici e dai giusti lati nel giusto ordine
     trc1.coordinates_extremes = extr1;
 
     Trace trc2;
@@ -203,13 +203,15 @@ TEST(sottopoligonazione, generale_marti){
     coordinate_attese.push_back({2.5,9,6});
     coordinate_attese.push_back({1,9,5});
 
-    coordinate_attese.push_back({ 3.25092, 9, 2.58303 });
-    coordinate_attese.push_back({ 4.8823, 9, 5.1177 });
+    coordinate_attese.push_back({ 3.250924183729939, 9, 2.58302527209002 });
+    coordinate_attese.push_back({ 4.882299398569733, 9, 5.117700601430268 });
     coordinate_attese.push_back({ 4.67782, 9, 4.8 });
     coordinate_attese.push_back({ 1.1, 9, 4.8 });
 
     for(unsigned int j=0;j<mesh.Cell0DCoordinates.size(); j++){
-        EXPECT_EQ(mesh.Cell0DCoordinates[j], coordinate_attese[j]);
+        unsigned int l=mesh.Cell0DCoordinates[j].size();
+        for(unsigned int k=0; k<l; k++ ){
+            ASSERT_NEAR(mesh.Cell0DCoordinates[j][k],coordinate_attese[j][k], fx.tolleranza1D);}
     }
 
     vector<vector<unsigned int>> vertici_attesi;
@@ -294,13 +296,14 @@ TEST(sottopoligonazione, estr_traccia_coincidente_con_vertice){
     coordinate_attese.push_back({3,4.5,0});
 
     coordinate_attese.push_back({3,1,0});
-    coordinate_attese.push_back({ 1.55682, 1.88636, 0 });
-    coordinate_attese.push_back({ 3, 2.73529, 0 });
+    coordinate_attese.push_back({1.556818181818182, 1.886363636363636, 0});
+    coordinate_attese.push_back({3, 2.735294117647059, 0});
 
     for(unsigned int j=0;j<mesh.Cell0DCoordinates.size(); j++){
-        EXPECT_EQ(mesh.Cell0DCoordinates[j], coordinate_attese[j]);
+        unsigned int l=mesh.Cell0DCoordinates[j].size();
+        for(unsigned int k=0; k<l; k++ ){
+            ASSERT_NEAR(mesh.Cell0DCoordinates[j][k],coordinate_attese[j][k], fx.tolleranza1D);}
     }
-
     vector<vector<unsigned int>> vertici_attesi;
     vertici_attesi.reserve(3);
     vertici_attesi.push_back({0,6,7,4});
@@ -310,6 +313,7 @@ TEST(sottopoligonazione, estr_traccia_coincidente_con_vertice){
 }
 
 TEST(sottopoligonazione, traccia_comune_a_due_sottofratt){
+
     FracturesFunctions fx;
     PolygonalMesh mesh;
 
@@ -377,14 +381,16 @@ TEST(sottopoligonazione, traccia_comune_a_due_sottofratt){
 
     coordinate_attese.push_back({ 3, 1, 0 });
     coordinate_attese.push_back({ 3, 3.105, 0 });
-    coordinate_attese.push_back({ 1.44134, 3.33101, 0 });
-    coordinate_attese.push_back({ 4.91375, 2.82751, 0 });
+    coordinate_attese.push_back({1.441340782122905, 3.331005586592179, 0});
+    coordinate_attese.push_back({4.9137529137529139, 2.8275058275058274, 0});
 
     for(unsigned int j=0;j<mesh.Cell0DCoordinates.size(); j++){
-        EXPECT_EQ(mesh.Cell0DCoordinates[j], coordinate_attese[j]);
+        unsigned int l=mesh.Cell0DCoordinates[j].size();
+        for(unsigned int k=0; k<l; k++ ){
+            EXPECT_NEAR(mesh.Cell0DCoordinates[j][k],coordinate_attese[j][k], fx.tolleranza1D);}
     }
     vector<vector<unsigned int>> vertici_attesi;
-    vertici_attesi.reserve(3);
+    vertici_attesi.reserve(4);
     vertici_attesi.push_back({ 7, 6, 4 });
     vertici_attesi.push_back({ 7, 0, 1, 5, 6 });
     vertici_attesi.push_back({ 6, 8, 3, 4 });
