@@ -356,7 +356,7 @@ TEST(NearFracture_test, generale_reny){
     f1.vertices={0,1,2,3};
     f2.vertices={4,5,6,7};
     bool Risultato_funzione;
-    Risultato_funzione=g.NearFractures(f1,f2,coordinate);
+    Risultato_funzione=g.vicinanza_sfere(f1,f2,coordinate);
     ASSERT_TRUE(Risultato_funzione);
 
 }
@@ -372,7 +372,7 @@ TEST(NearFracture_test, genarale_sofi){
     f1.vertices={0,1,2};
     f2.vertices={3,4,5,6};
     bool Risultato_funzione;
-    Risultato_funzione=g.NearFractures(f1,f2,coordinate);
+    Risultato_funzione=g.vicinanza_sfere(f1,f2,coordinate);
     EXPECT_FALSE(Risultato_funzione);
 
 }
@@ -388,7 +388,7 @@ TEST(NearFracture_test, sfere_tangenti){
     f1.vertices={0,1,2,3};
     f2.vertices={4,5,6,7};
     bool Risultato_funzione;
-    Risultato_funzione=g.NearFractures(f1,f2,coordinate);
+    Risultato_funzione=g.vicinanza_sfere(f1,f2,coordinate);
     EXPECT_FALSE(Risultato_funzione);
 
 }
@@ -406,7 +406,7 @@ TEST(NearFracture_test, poligoni_uguali){
     f1.vertices={0,1,2,3};
     f2.vertices={4,5,6,7};
     bool Risultato_funzione;
-    Risultato_funzione=g.NearFractures(f1,f2,coordinate);
+    Risultato_funzione=g.vicinanza_sfere(f1,f2,coordinate);
     ASSERT_TRUE(Risultato_funzione);
 
 }
@@ -432,7 +432,7 @@ TEST(IntersectionFractures_test, generale_sofi){
     f2.vertices={4,5,6,7};
     f1.id=0;
     f2.id=1;
-    g.IntersectionFractures(f1, f2, coordinate, list_traces, P_traces_of_fractures, NP_traces_of_fractures);
+    g.ricerca_tracce(f1, f2, coordinate, list_traces, P_traces_of_fractures, NP_traces_of_fractures);
     MatrixXd estremi;
     estremi.resize(3,2);
     estremi << 2, -2,
@@ -509,7 +509,7 @@ TEST(IntersectionFractures_test, traccia_di_lunghezza_nulla){
     f2.vertices={4,5,6,7};
     f1.id=0;
     f2.id=1;
-    g.IntersectionFractures(f1, f2, coordinate, list_traces, P_traces, NP_traces);
+    g.ricerca_tracce(f1, f2, coordinate, list_traces, P_traces, NP_traces);
 
     //in questo test mi aspetto di trovare una traccia di lunghezza < toll qyuindi non la dovrei considerare come tale
     unsigned int num_tracce_per_0 = P_traces[0].size() + NP_traces[0].size();
@@ -536,7 +536,7 @@ TEST(IntersectionFractures_test, generale_marti){
     f2.vertices={4,5,6,7};
     f1.id=0;
     f2.id=1;
-    g.IntersectionFractures(f1, f2, coordinate, list_traces, P_traces, NP_traces);
+    g.ricerca_tracce(f1, f2, coordinate, list_traces, P_traces, NP_traces);
 
     //in questo test mi aspetto di trovare una traccia non passante per entrambe le fratture
     MatrixXd estremi;
@@ -613,7 +613,7 @@ TEST(Tuttoilprogramma_test, Generale){
     unsigned int num_fratt;
     vector<Vector3d> coordinates;
     bool l;
-    l=g.importData(path, list_fractures, coordinates);
+    l=g.lettura_da_file(path, list_fractures, coordinates);
     EXPECT_TRUE(l);
     num_fratt = list_fractures.size();
     EXPECT_EQ(num_fratt,2);
@@ -635,8 +635,8 @@ TEST(Tuttoilprogramma_test, Generale){
             Fracture frc1 = list_fractures[i];
             Fracture frc2 = list_fractures[j];
 
-            if( g.NearFractures(frc1, frc2, coordinates)){
-                g.IntersectionFractures(frc1, frc2, coordinates, list_traces, P_traces_of_fractures, NP_traces_of_fractures);
+            if( g.vicinanza_sfere(frc1, frc2, coordinates)){
+                g.ricerca_tracce(frc1, frc2, coordinates, list_traces, P_traces_of_fractures, NP_traces_of_fractures);
             }
 
         }
@@ -735,10 +735,10 @@ TEST(Tuttoilprogramma_test, Generale){
 
 
     //verifica mesh 1 (sofi scrivi sopra please)
-    PolygonalMesh mesh1 = g.SottoPoligonazione(list_fractures[0], P_traces_of_fractures[0], NP_traces_of_fractures[0], coordinates);
+    PolygonalMesh mesh1 = g.creazione_mesh(list_fractures[0], P_traces_of_fractures[0], NP_traces_of_fractures[0], coordinates);
 
     EXPECT_EQ(mesh1.NumberCell0D,4);
-    EXPECT_EQ(mesh1.NumberCell1D, 6);
+    EXPECT_EQ(mesh1.NumberCell1D, 5);
     EXPECT_EQ(mesh1.NumberCell2D, 2);
 
     for (unsigned int i =0; i < mesh1.NumberCell0D; i++){
@@ -765,9 +765,6 @@ TEST(Tuttoilprogramma_test, Generale){
     expect = {2,3};
     cont ++;
     EXPECT_EQ(mesh1.Cell1DVertices[cont], expect);
-    expect = {3,1};
-    cont ++;
-    EXPECT_EQ(mesh1.Cell1DVertices[cont], expect);
 
 
     vector vert_frc1 = mesh1.Cell2DVertices[0]; //verifica dei vertici della sotto fratt 1 della fratt 0
@@ -788,15 +785,15 @@ TEST(Tuttoilprogramma_test, Generale){
     vector edges_frc2 =mesh1.Cell2DEdges[1];
     EXPECT_EQ(edges_frc2[0], 3);
     EXPECT_EQ(edges_frc2[1], 4);
-    EXPECT_EQ(edges_frc2[2], 5);
+    EXPECT_EQ(edges_frc2[2], 1);
 
 
 
     //verifica mesh 1
-    PolygonalMesh mesh2 = g.SottoPoligonazione(list_fractures[1], P_traces_of_fractures[1], NP_traces_of_fractures[1], coordinates);
+    PolygonalMesh mesh2 = g.creazione_mesh(list_fractures[1], P_traces_of_fractures[1], NP_traces_of_fractures[1], coordinates);
 
     EXPECT_EQ(mesh2.NumberCell0D,4);
-    EXPECT_EQ(mesh2.NumberCell1D, 6);
+    EXPECT_EQ(mesh2.NumberCell1D, 5);
     EXPECT_EQ(mesh2.NumberCell2D, 2);
 
     for (unsigned int i =0; i < mesh2.NumberCell0D; i++){
@@ -823,9 +820,7 @@ TEST(Tuttoilprogramma_test, Generale){
     expect = {2,3};
     cont ++;
     EXPECT_EQ(mesh2.Cell1DVertices[cont], expect);
-    expect = {3,1};
-    cont ++;
-    EXPECT_EQ(mesh2.Cell1DVertices[cont], expect);
+
 
 
     vert_frc1 = mesh2.Cell2DVertices[0]; //verifica dei vertici della sotto fratt 1 della fratt 0
@@ -846,7 +841,7 @@ TEST(Tuttoilprogramma_test, Generale){
     edges_frc2 =mesh2.Cell2DEdges[1];
     EXPECT_EQ(edges_frc2[0], 3);
     EXPECT_EQ(edges_frc2[1], 4);
-    EXPECT_EQ(edges_frc2[2], 5);
+    EXPECT_EQ(edges_frc2[2], 1);
 
 
 }

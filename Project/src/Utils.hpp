@@ -18,14 +18,14 @@ namespace UtilsFunction{
 struct FracturesFunctions {
 
     double eps_macchina  = numeric_limits<double>::epsilon();
-    const double tolleranza1D = max(pow(10,-13), eps_macchina);
-    const double tolleranza2D = max(eps_macchina, pow(tolleranza1D, 2) * 0.75);
-    const double tolleranza3D = max(eps_macchina, sqrt(2)/12 * pow(tolleranza1D,3));
+    double tolleranza1D = max(pow(10,-13), eps_macchina);
+    double tolleranza2D = max(eps_macchina, pow(tolleranza1D, 2) * 0.75);
+    double tolleranza3D = max(eps_macchina, sqrt(2)/12 * pow(tolleranza1D,3));
 
-    bool importData(const string& path, vector<Fracture>& lista, vector<Vector3d>& coord);
-    bool NearFractures(const Fracture& frc1, const Fracture& frc2, const vector<Vector3d>& coord);
-    void IntersectionFractures(Fracture &frc1, Fracture &frc2, const vector<Vector3d>& coord, list<Trace>& list_traces, map<unsigned int, list<Trace>>& P_traces, map<unsigned int, list<Trace>>& NP_traces);
-    PolygonalMesh SottoPoligonazione(const Fracture& frattura,  list<Trace>& P_traces,  list<Trace>& NP_traces, const vector<Vector3d>& coord);
+    bool lettura_da_file(const string& path, vector<Fracture>& lista, vector<Vector3d>& coord);
+    bool vicinanza_sfere(const Fracture& frc1, const Fracture& frc2, const vector<Vector3d>& coord);
+    void ricerca_tracce(Fracture &frc1, Fracture &frc2, const vector<Vector3d>& coord, list<Trace>& list_traces, map<unsigned int, list<Trace>>& P_traces, map<unsigned int, list<Trace>>& NP_traces);
+    PolygonalMesh creazione_mesh(const Fracture& frattura,  list<Trace>& P_traces,  list<Trace>& NP_traces, const vector<Vector3d>& coord);
 
     //funzioni di supporto
 
@@ -126,12 +126,12 @@ struct FracturesFunctions {
 
     }
 
-    inline Vector2d alpha_di_intersezione(MatrixXd r_frattura, MatrixXd retta_intersez)
+    inline Vector2d alpha_di_intersezione(MatrixXd segmento_frattura, MatrixXd retta_intersez)
     {
         //imposto un sistema lineare per la ricerca dei parametri alpha e beta
         //primo parametro è la matrice della retta del poligono
-        Vector3d t1 = r_frattura.row(0).transpose();
-        Vector3d P1 = r_frattura.row(1).transpose();
+        Vector3d t1 = segmento_frattura.row(0).transpose();
+        Vector3d P1 = segmento_frattura.row(1).transpose();
 
         //secondo parametro è la matrice della retta di intersezione tra i piani
         Vector3d t2 = retta_intersez.row(0).transpose();
@@ -228,13 +228,13 @@ struct FracturesFunctions {
 
     }
 
-    inline Vector2d intersezione_rette(MatrixXd& r_frattura, MatrixXd& r_traccia)
+    inline Vector2d intersezione_rette(MatrixXd& segmento_frattura, MatrixXd& r_traccia)
     {
 
         //imposto un sistema lineare per la ricerca dei parametri alpha e beta
         //primo parametro è la matrice della retta del poligono --> retta in funzione di alpha
-        Vector3d t1 = r_frattura.row(0).transpose();
-        Vector3d P1 = r_frattura.row(1).transpose();
+        Vector3d t1 = segmento_frattura.row(0).transpose();
+        Vector3d P1 = segmento_frattura.row(1).transpose();
 
         //secondo parametro è la matrice della retta della traccia --> retta in funzione di beta
         Vector3d t2 = r_traccia.row(0).transpose();

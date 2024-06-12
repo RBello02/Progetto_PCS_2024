@@ -22,7 +22,7 @@ inline bool compare_tracce(const Trace& trc1, const Trace& trc2){
 }
 
 
-int main()
+int main(int argc, char** argv)
 {
     cout << setprecision(16);
 
@@ -42,9 +42,15 @@ int main()
 
     FracturesFunctions f;
 
+    if(argc == 2){
+        double toll_da_command_line;
+        toll_da_command_line = stod(argv[1]);
+        f.tolleranza1D = toll_da_command_line;
+    }
+
     chrono::steady_clock::time_point t0_import = chrono::steady_clock::now();
 
-    if (!f.importData(filenameI, list_fractures, coordinates)){return 1;}   // importo i dati
+    if (!f.lettura_da_file(filenameI, list_fractures, coordinates)){return 1;}   // importo i dati
     else{
         //stampo un poo' di roba per verificare che sia tutto giusto
         num_fratt = list_fractures.size();
@@ -77,8 +83,8 @@ int main()
             Fracture frc1 = list_fractures[i];
             Fracture frc2 = list_fractures[j];
 
-            if( f.NearFractures(frc1, frc2, coordinates)){
-                f.IntersectionFractures(frc1, frc2, coordinates, list_traces, P_traces_of_fractures, NP_traces_of_fractures);
+            if( f.vicinanza_sfere(frc1, frc2, coordinates)){
+                f.ricerca_tracce(frc1, frc2, coordinates, list_traces, P_traces_of_fractures, NP_traces_of_fractures);
             }
 
         }
@@ -153,7 +159,7 @@ int main()
     for(const Fracture &frattura : list_fractures)   // ciclo sulle fratture
     {
         PolygonalMesh mesh;     // inizializzo la mesh
-        mesh = f.FracturesFunctions::SottoPoligonazione(frattura, P_traces_of_fractures[frattura.id], NP_traces_of_fractures[frattura.id], coordinates);
+        mesh = f.FracturesFunctions::creazione_mesh(frattura, P_traces_of_fractures[frattura.id], NP_traces_of_fractures[frattura.id], coordinates);
 
         //aggiungo la mesh creata al vettore
         sottoPoligonazione_per_frattura.push_back(mesh);

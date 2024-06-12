@@ -1,4 +1,4 @@
-#include "PolygonalMesh.hpp"
+﻿#include "PolygonalMesh.hpp"
 #include "FracturesLibrary.hpp"
 #include "reshaping_array.hpp"
 #include "Utils.hpp"
@@ -13,11 +13,60 @@ using namespace Eigen;
 namespace UtilsFunction
 {
 
+inline vector<unsigned int> verifica_celle_1D(PolygonalMesh& mesh, Fracture& frattura){
+
+    vector<unsigned int> edges;
+    edges.reserve(frattura.num_vertici+1);
+
+    vector<unsigned int> vertices = frattura.vertices;
+
+    for(auto itor = frattura.vertices.begin(); itor != frattura.vertices.end(); itor++){
+        unsigned int id_origin = (*itor);
+        unsigned int id_end;
+        if(itor == frattura.vertices.end()-1){id_end = frattura.vertices[0];}
+        else{id_end = *(itor+1);}
+
+        //CASO O: evito di salvare la cella 1D {a,b} se esiste già la cella {b,a}
+        bool caso0 = false;
+        unsigned int lato_dupl;
+
+        for (unsigned int i = 0; i < mesh.Cell1DVertices.size(); i++){
+            Vector2i cella1 = mesh.Cell1DVertices[i];
+
+
+            //CASO 0
+            if ( (unsigned(cella1[0]) == id_origin && unsigned(cella1[1]) == id_end) ||   (unsigned(cella1[0]) == id_end && unsigned(cella1[1]) == id_origin)){
+                caso0 = true;
+                lato_dupl = i;
+                break;
+            }
+        }
+
+        //salvo opportunamente la cella 1D
+        if(caso0){edges.push_back(lato_dupl);}
+        else{
+            //devo creare una nuova cella 1D
+            unsigned int new_id = mesh.Cell1DId.size();
+            ReshapingArray::VerificaRaddoppio(mesh.Cell1DId);
+            mesh.Cell1DId.push_back(new_id);
+            ReshapingArray::VerificaRaddoppio(mesh.Cell1DVertices);
+            mesh.Cell1DVertices.push_back({id_origin, id_end});
+            edges.push_back(new_id);
+        }
+    }
+
+    frattura.vertices = vertices;
+    return edges;
+
+}
+
+
+
+
 /*****************************************************************************************************************************/
 
-    void divisione_sottopol(const Fracture& frattura, list<Trace>& P_traces,  list<Trace>& NP_traces, PolygonalMesh& mesh, const double& toll, list<unsigned int>& lista_vert)
+void sottopoligonazione_ricorsiva(const Fracture& frattura, list<Trace>& P_traces,  list<Trace>& NP_traces, PolygonalMesh& mesh, FracturesFunctions& fx, list<unsigned int>& lista_vert)
     {
-        FracturesFunctions fx;
 
         /*questa procedura sarà definita ricorsivamente:
             * prima divido la frattura in due in base alla prima traccia che dobbiamo considerare
@@ -70,13 +119,13 @@ namespace UtilsFunction
             Vector3d dir_f = retta_fratt.row(0);        // calcolo la direttrice
 
             //interseco le rette se queste non sono parallele
-            bool non_parallele = !((dir_f.cross(dir_tr_tagliante)).norm() < toll); // verifico che non sono parallele
+            bool non_parallele = !((dir_f.cross(dir_tr_tagliante)).norm() < fx.tolleranza1D); // verifico che non sono parallele
 
             if(non_parallele) // se le rette non sono parallele si intersecano
             {
                 Vector2d a_b = fx.intersezione_rette(retta_fratt, retta_traccia_tagliante);   // vettore contenente alpha e beta di intersezione tra le due rette
                 //il punto deve stare sul segmento della frattura, ossia alpha appartiene a [0,1]
-                if (a_b[0] > -toll && a_b[0] < 1+ toll){  // la posizione 0 corrisponde agli alpha, faccio un controllo su questi
+                if (a_b[0] > -fx.tolleranza1D && a_b[0] < 1+ fx.tolleranza1D){  // la posizione 0 corrisponde agli alpha, faccio un controllo su questi
                     Vector3d pto = pt0_tr_tagliante + a_b[1] * dir_tr_tagliante;  // determino il punto di intersezione prendendo il beta di intersezione e sostituendolo nell'equazione della retta
                     //se pto è già in nuovi_punti lo ignoro sennò faccio quello che devo
                     unsigned int a = 0;  // questa è l'inizializzazione del nuovo id da inserire
@@ -219,7 +268,7 @@ namespace UtilsFunction
                 {
                     unsigned int id = frc1.vertices[i];
                     Vector3d vettore_provvisorio = mesh.Cell0DCoordinates[id];
-                    if ((dir_tr_tagliante.cross(vettore_provvisorio-pt0_tr_tagliante)).norm()>toll)
+                    if ((dir_tr_tagliante.cross(vettore_provvisorio-pt0_tr_tagliante)).norm()>fx.tolleranza1D)
                     {
                         segnatura = dir_tr_tagliante.cross(vettore_provvisorio-pt0_tr_tagliante);   // segnatura relativa alla frattura 1, tutti i punti sulla frattura 1 seguono questa segnatura
                         rimango_dentro = !rimango_dentro; // esco da while
@@ -230,11 +279,11 @@ namespace UtilsFunction
                 double segnatura_origine = ((dir_tr_tagliante).cross(origine-pt0_tr_tagliante)).dot(segnatura);
                 double segnatura_fine = (dir_tr_tagliante).cross(fine-pt0_tr_tagliante).dot(segnatura);
 
-                if ( (segnatura_origine > toll && segnatura_fine > toll) || ( abs(segnatura_origine) < toll  && segnatura_fine > toll) || (segnatura_origine > toll && abs(segnatura_origine) < toll))  // entrambe stessa direzione della segnatura della frattura 1
+                if ( (segnatura_origine > fx.tolleranza1D && segnatura_fine > fx.tolleranza1D) || ( abs(segnatura_origine) < fx.tolleranza1D  && segnatura_fine > fx.tolleranza1D) || (segnatura_origine > fx.tolleranza1D && abs(segnatura_origine) < fx.tolleranza1D))  // entrambe stessa direzione della segnatura della frattura 1
                 {
                     P_traces1.push_back(traccia);
                 }
-                else if ( (segnatura_origine < - toll && segnatura_fine < - toll) || (abs(segnatura_origine) < toll && segnatura_fine < - toll) || (segnatura_origine < -toll && abs(segnatura_origine) < toll)) // tutte queste condizioni servono per vedere i casi delle traccie
+                else if ( (segnatura_origine < - fx.tolleranza1D && segnatura_fine < - fx.tolleranza1D) || (abs(segnatura_origine) < fx.tolleranza1D && segnatura_fine < - fx.tolleranza1D) || (segnatura_origine < -fx.tolleranza1D && abs(segnatura_origine) < fx.tolleranza1D)) // tutte queste condizioni servono per vedere i casi delle traccie
                 {
                     P_traces2.push_back(traccia);
                 }
@@ -254,7 +303,7 @@ namespace UtilsFunction
                     coordinate_traccia_per_frattura_1.resize(3,2);
                     MatrixXd coordinate_traccia_per_frattura_2;
                     coordinate_traccia_per_frattura_2.resize(3,2);
-                    if (segnatura_origine > toll)
+                    if (segnatura_origine > fx.tolleranza1D)
                     {
                         coordinate_traccia_per_frattura_1.col(0) = origine;
                         coordinate_traccia_per_frattura_1.col(1) = intersezione_tra_tracce;
@@ -316,7 +365,7 @@ namespace UtilsFunction
                 {
                     unsigned int id = frc1.vertices[i];
                     Vector3d vettore_provvisorio = mesh.Cell0DCoordinates[id];
-                    if ((dir_tr_tagliante.cross(vettore_provvisorio-pt0_tr_tagliante)).norm()>toll)
+                    if ((dir_tr_tagliante.cross(vettore_provvisorio-pt0_tr_tagliante)).norm()>fx.tolleranza1D)
                     {
                         segnatura = dir_tr_tagliante.cross(vettore_provvisorio-pt0_tr_tagliante);   // segnatura relativa alla frattura 1, tutti i punti sulla frattura 1 seguono questa segnatura
                         rimango_dentro = !rimango_dentro; // esco da while
@@ -327,11 +376,11 @@ namespace UtilsFunction
                 double segnatura_origine = ((dir_tr_tagliante).cross(origine-pt0_tr_tagliante)).dot(segnatura);
                 double segnatura_fine = ((dir_tr_tagliante).cross(fine-pt0_tr_tagliante)).dot(segnatura);
 
-                if ( (segnatura_origine > toll && segnatura_fine > toll) || (segnatura_origine >= 0 && segnatura_origine < toll && segnatura_fine > toll) || (segnatura_origine > toll && segnatura_fine >= 0 && segnatura_fine < toll))  // entrambe stessa direzione della segnatura della frattura 1
+                if ( (segnatura_origine > fx.tolleranza1D && segnatura_fine > fx.tolleranza1D) || (segnatura_origine >= 0 && segnatura_origine < fx.tolleranza1D && segnatura_fine > fx.tolleranza1D) || (segnatura_origine > fx.tolleranza1D && segnatura_fine >= 0 && segnatura_fine < fx.tolleranza1D))  // entrambe stessa direzione della segnatura della frattura 1
                 {
                     NP_traces1.push_back(traccia);
                 }
-                else if ( (segnatura_origine < - toll && segnatura_fine < - toll) || (segnatura_origine <= 0 && segnatura_origine < -toll && segnatura_fine < - toll) || (segnatura_origine < -toll && segnatura_fine <= 0 && segnatura_fine < -toll))   // tutte queste condizioni servono per vedere i casi delle traccie
+                else if ( (segnatura_origine < - fx.tolleranza1D && segnatura_fine < - fx.tolleranza1D) || (segnatura_origine <= 0 && segnatura_origine < -fx.tolleranza1D && segnatura_fine < - fx.tolleranza1D) || (segnatura_origine < -fx.tolleranza1D && segnatura_fine <= 0 && segnatura_fine < -fx.tolleranza1D))   // tutte queste condizioni servono per vedere i casi delle traccie
                 {
                     NP_traces2.push_back(traccia);
                 }
@@ -348,7 +397,7 @@ namespace UtilsFunction
                     coordinate_traccia_per_frattura_1.resize(3,2);
                     MatrixXd coordinate_traccia_per_frattura_2;
                     coordinate_traccia_per_frattura_2.resize(3,2);
-                    if (segnatura_origine > toll)
+                    if (segnatura_origine > fx.tolleranza1D)
                     {
                         coordinate_traccia_per_frattura_1.col(0) = origine;
                         coordinate_traccia_per_frattura_1.col(1) = intersezione_tra_tracce;
@@ -391,34 +440,17 @@ namespace UtilsFunction
             //le celle 0D le ho salvate man mano
 
             //salvo le celle 1D e 2D
-            unsigned int num_cell1d = mesh.NumberCell1D;
-            mesh.NumberCell1D += frc1.num_vertici;
             unsigned int num_celle2d = mesh.NumberCell2D;
             mesh.NumberCell2D +=1;
 
             //mi creo due vettori ausiliari
-            vector<unsigned int> vertices;
-            vertices.reserve(frc1.num_vertici);
             vector<unsigned int> edges;
-            edges.reserve(frc1.num_vertici);
+            edges.reserve(frc1.num_vertici+1);
+            edges = verifica_celle_1D(mesh, frc1);
 
-            for (unsigned int v = 0; v < frc1.num_vertici; v++){
-                unsigned int id_origin = frc1.vertices[v];
-                unsigned int id_end;
-                if(v == frc1.num_vertici-1){id_end = frc1.vertices[0];}
-                else{id_end = frc1.vertices[v+1];}
+            vector<unsigned int> vertices = frc1.vertices;
+            mesh.NumberCell1D = mesh.Cell1DId.size();
 
-                //celle 1D
-                unsigned int id_segm = num_cell1d+v;
-                ReshapingArray::VerificaRaddoppio(mesh.Cell1DId);
-                mesh.Cell1DId.push_back(id_segm);
-                ReshapingArray::VerificaRaddoppio(mesh.Cell1DVertices);
-                mesh.Cell1DVertices.push_back({id_origin, id_end});
-
-                //celle2D
-                vertices.push_back(id_origin);
-                edges.push_back(id_segm);
-            }
 
             ReshapingArray::VerificaRaddoppio(mesh.Cell2DId);
             mesh.Cell2DId.push_back(num_celle2d);
@@ -430,40 +462,23 @@ namespace UtilsFunction
 
 
         }
-        else{divisione_sottopol(frc1, P_traces1, NP_traces1, mesh, toll, list_vert1);}
+        else{sottopoligonazione_ricorsiva(frc1, P_traces1, NP_traces1, mesh, fx, list_vert1);}
 
         if (P_traces2.size() + NP_traces2.size() == 0){
             //le celle 0D le ho salvate man mano
 
             //salvo le celle 1D e 2D
-            unsigned int num_cell1d = mesh.NumberCell1D;
-            mesh.NumberCell1D += frc2.num_vertici;
             unsigned int num_celle2d = mesh.NumberCell2D;
             mesh.NumberCell2D +=1;
 
             //mi creo due vettori ausiliari
-            vector<unsigned int> vertices;
-            vertices.reserve(frc2.num_vertici);
             vector<unsigned int> edges;
-            edges.reserve(frc2.num_vertici);
+            edges.reserve(frc2.num_vertici+1);
+            edges = verifica_celle_1D(mesh, frc2);
 
-            for (unsigned int v = 0; v < frc2.num_vertici; v++){
-                unsigned int id_origin = frc2.vertices[v];
-                unsigned int id_end;
-                if(v == frc2.num_vertici-1){id_end = frc2.vertices[0];}
-                else{id_end = frc2.vertices[v+1];}
+            vector<unsigned int> vertices = frc2.vertices;
+            mesh.NumberCell1D = mesh.Cell1DId.size();
 
-                //celle 1D
-                unsigned int id_segm = num_cell1d+v;
-                ReshapingArray::VerificaRaddoppio(mesh.Cell1DId);
-                mesh.Cell1DId.push_back(id_segm);
-                ReshapingArray::VerificaRaddoppio(mesh.Cell1DVertices);
-                mesh.Cell1DVertices.push_back({id_origin, id_end});
-
-                //celle2D
-                vertices.push_back(id_origin);
-                edges.push_back(id_segm);
-            }
 
             ReshapingArray::VerificaRaddoppio(mesh.Cell2DId);
             mesh.Cell2DId.push_back(num_celle2d);
@@ -472,14 +487,12 @@ namespace UtilsFunction
             ReshapingArray::VerificaRaddoppio(mesh.Cell2DVertices);
             mesh.Cell2DVertices.push_back(vertices);
 
-
-
         }
-        else{divisione_sottopol(frc2, P_traces2, NP_traces2, mesh, toll, list_vert2);}
+        else{sottopoligonazione_ricorsiva(frc2, P_traces2, NP_traces2, mesh, fx, list_vert2);}
 
     }
 
-    PolygonalMesh FracturesFunctions::SottoPoligonazione(const Fracture& frattura,  list<Trace>& P_traces,  list<Trace>& NP_traces, const vector<Vector3d>& coord)
+    PolygonalMesh FracturesFunctions::creazione_mesh(const Fracture& frattura,  list<Trace>& P_traces,  list<Trace>& NP_traces, const vector<Vector3d>& coord)
     {
         PolygonalMesh mesh;    // inizializzo un oggetto mesh
         //ridefinisco la frattura in modo da iniziare l'indicizzazione delle celle 0D da 0
@@ -513,7 +526,7 @@ namespace UtilsFunction
             {
                 unsigned int id_origin = frattura.vertices[v];          // salvo gli ID dei vertici di origine e fine
                 unsigned int id_end;
-                if(v == frattura.num_vertici){id_end = frattura.vertices[0];} // il poligono è chiuso => l'ultimo vertice è collegato tramite un segmento al primo
+                if(v == frattura.num_vertici -1){id_end = frattura.vertices[0];} // il poligono è chiuso => l'ultimo vertice è collegato tramite un segmento al primo
                 else{id_end = frattura.vertices[v+1];}
                 mesh.Cell1DId.push_back(v);         // aggiungo v agli ID dei segmenti
                 mesh.Cell1DVertices.push_back({id_origin, id_end}); // aggiungo origine e fine
@@ -537,7 +550,7 @@ namespace UtilsFunction
                 vert_fract.push_back(frc.vertices[i]);   // in questa lista pusho tutti i vertici della frattura frc
             }
 
-            divisione_sottopol(frc, P_traces, NP_traces, mesh, tolleranza1D, vert_fract);  // do tutto in pasto alla funzione che fa la sotto poligonazione
+            sottopoligonazione_ricorsiva(frc, P_traces, NP_traces, mesh, *this, vert_fract);  // do tutto in pasto alla funzione che fa la sotto poligonazione
         }
         return mesh;
 

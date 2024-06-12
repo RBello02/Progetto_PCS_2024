@@ -189,7 +189,7 @@ TEST(sottopoligonazione, generale_marti){
     NP_traces.push_back(trc1);
     NP_traces.push_back(trc2);
 
-    mesh = fx.FracturesFunctions::SottoPoligonazione(frattura, P_traces, NP_traces, coordinates);
+    mesh = fx.FracturesFunctions::creazione_mesh(frattura, P_traces, NP_traces, coordinates);
 
     //faccio solo una verifica del numero di celle 0D e 2D
     EXPECT_EQ(mesh.NumberCell0D, 10);
@@ -221,7 +221,15 @@ TEST(sottopoligonazione, generale_marti){
     vertici_attesi.push_back({6,1,2,7});
     EXPECT_EQ(mesh.Cell2DVertices, vertici_attesi);
 
-    }
+
+    vector<vector<unsigned int>> lati_attesi;
+    lati_attesi.reserve(12);
+    lati_attesi.push_back({0,1,2,3,4,5});
+    lati_attesi.push_back({6,7,8,0});
+    lati_attesi.push_back({9,10,11,12});
+    EXPECT_EQ(mesh.Cell2DEdges, lati_attesi);
+
+}
 
 TEST(sottopoligonazione, estr_traccia_coincidente_con_vertice){
     FracturesFunctions fx;
@@ -276,7 +284,7 @@ TEST(sottopoligonazione, estr_traccia_coincidente_con_vertice){
     P_traces.push_back(trc1);
     NP_traces.push_back(trc2);
 
-    mesh = fx.FracturesFunctions::SottoPoligonazione(frattura, P_traces, NP_traces, coordinates);
+    mesh = fx.FracturesFunctions::creazione_mesh(frattura, P_traces, NP_traces, coordinates);
 
     //faccio solo una verifica del numero di celle 0D e 2D
     EXPECT_EQ(mesh.NumberCell0D, 8);
@@ -304,6 +312,14 @@ TEST(sottopoligonazione, estr_traccia_coincidente_con_vertice){
     vertici_attesi.push_back({6,1,5,7});
     vertici_attesi.push_back({5,2,3,4});
     EXPECT_EQ(mesh.Cell2DVertices, vertici_attesi);
+
+  vector<vector<unsigned int>> lati_attesi;
+    lati_attesi.reserve(12);
+    lati_attesi.push_back({0,1,2,3});
+    lati_attesi.push_back({4,5,6,1});
+    lati_attesi.push_back({7,8,9,10});
+    EXPECT_EQ(mesh.Cell2DEdges, lati_attesi);
+
 }
 
 TEST(sottopoligonazione, traccia_comune_a_due_sottofratt){
@@ -360,7 +376,7 @@ TEST(sottopoligonazione, traccia_comune_a_due_sottofratt){
     P_traces.push_back(trc1);
     NP_traces.push_back(trc2);
 
-    mesh = fx.FracturesFunctions::SottoPoligonazione(frattura, P_traces, NP_traces, coordinates);
+    mesh = fx.FracturesFunctions::creazione_mesh(frattura, P_traces, NP_traces, coordinates);
 
     //faccio solo una verifica del numero di celle 0D e 2D
     EXPECT_EQ(mesh.NumberCell0D, 9);
@@ -391,8 +407,16 @@ TEST(sottopoligonazione, traccia_comune_a_due_sottofratt){
     vertici_attesi.push_back({ 6, 5, 2, 8 });
     EXPECT_EQ(mesh.Cell2DVertices, vertici_attesi);
 
+
+    vector<vector<unsigned int>> lati_attesi;
+    lati_attesi.reserve(12);
+    lati_attesi.push_back({0,1,2});
+    lati_attesi.push_back({3,4,5,6,0});
+    lati_attesi.push_back({7,8,9,1});
+    lati_attesi.push_back({6,10,11,7});
+    EXPECT_EQ(mesh.Cell2DEdges, lati_attesi);
+
+
 }
-
-
 
 #endif
