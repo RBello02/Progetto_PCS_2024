@@ -8,6 +8,7 @@
 
 using namespace UtilsFunction;
 
+
 TEST(Retta_per_due_punti_test, generale_reny){
     FracturesFunctions fx;
     Vector3d pt1,pt2;
@@ -220,6 +221,7 @@ TEST(sottopoligonazione, generale_marti){
     vertici_attesi.push_back({6,1,2,7});
     EXPECT_EQ(mesh.Cell2DVertices, vertici_attesi);
 
+
     vector<vector<unsigned int>> lati_attesi;
     lati_attesi.reserve(12);
     lati_attesi.push_back({0,1,2,3,4,5});
@@ -311,12 +313,13 @@ TEST(sottopoligonazione, estr_traccia_coincidente_con_vertice){
     vertici_attesi.push_back({5,2,3,4});
     EXPECT_EQ(mesh.Cell2DVertices, vertici_attesi);
 
-    vector<vector<unsigned int>> lati_attesi;
+  vector<vector<unsigned int>> lati_attesi;
     lati_attesi.reserve(12);
     lati_attesi.push_back({0,1,2,3});
     lati_attesi.push_back({4,5,6,1});
     lati_attesi.push_back({7,8,9,10});
     EXPECT_EQ(mesh.Cell2DEdges, lati_attesi);
+
 }
 
 TEST(sottopoligonazione, traccia_comune_a_due_sottofratt){
@@ -404,6 +407,7 @@ TEST(sottopoligonazione, traccia_comune_a_due_sottofratt){
     vertici_attesi.push_back({ 6, 5, 2, 8 });
     EXPECT_EQ(mesh.Cell2DVertices, vertici_attesi);
 
+
     vector<vector<unsigned int>> lati_attesi;
     lati_attesi.reserve(12);
     lati_attesi.push_back({0,1,2});
@@ -411,6 +415,7 @@ TEST(sottopoligonazione, traccia_comune_a_due_sottofratt){
     lati_attesi.push_back({7,8,9,1});
     lati_attesi.push_back({6,10,11,7});
     EXPECT_EQ(mesh.Cell2DEdges, lati_attesi);
+
 
 }
 
