@@ -208,13 +208,11 @@ void sottopoligonazione_ricorsiva(const Fracture& frattura, list<Trace>& P_trace
                 {
                     ReshapingArray::VerificaRaddoppio(frc1.vertices);
                     frc1.vertices.push_back(elem);
-
                 }
                 else // se il flag è false assegno gli elementi alla seconda frattura
                 {
                     ReshapingArray::VerificaRaddoppio(frc2.vertices);
                     frc2.vertices.push_back(elem);
-
                 }
 
             }
