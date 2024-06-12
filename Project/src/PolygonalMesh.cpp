@@ -52,6 +52,8 @@ inline vector<unsigned int> verifica_celle_1D(PolygonalMesh& mesh, Fracture& fra
             ReshapingArray::VerificaRaddoppio(mesh.Cell1DVertices);
             mesh.Cell1DVertices.push_back({id_origin, id_end});
             edges.push_back(new_id);
+            ReshapingArray::VerificaRaddoppio(mesh.Cell1DStatus);
+            mesh.Cell1DStatus.push_back(true);
         }
     }
 
@@ -460,7 +462,6 @@ void sottopoligonazione_ricorsiva(const Fracture& frattura, list<Trace>& P_trace
             mesh.Cell2DVertices.push_back(vertices);
 
 
-
         }
         else{sottopoligonazione_ricorsiva(frc1, P_traces1, NP_traces1, mesh, fx, list_vert1);}
 
@@ -492,8 +493,8 @@ void sottopoligonazione_ricorsiva(const Fracture& frattura, list<Trace>& P_trace
 
     }
 
-    inline bool campare_punti_interni(const Trace& trc1, const Trace& trc2){
-        return trc1.len > trc2.len;
+    inline bool compare_punti_interni(const array<double,2>& arr1, const array<double,2>& arr2){
+        return arr1[1] > arr2[1];
     }
 
     PolygonalMesh FracturesFunctions::creazione_mesh(const Fracture& frattura,  list<Trace>& P_traces,  list<Trace>& NP_traces, const vector<Vector3d>& coord)
@@ -526,6 +527,7 @@ void sottopoligonazione_ricorsiva(const Fracture& frattura, list<Trace>& P_trace
             //salvo le celle 1D
             mesh.NumberCell1D += frattura.num_vertici;   // il numero di vertici è equivalente al numero di lati
             mesh.Cell1DId.reserve(frattura.num_vertici);  // riservo la memoria per salvare i lati
+            mesh.Cell1DStatus.reserve(frattura.num_vertici);
             for (unsigned int v = 0; v < frattura.num_vertici; v++)  // ciclo sul numero di lati
             {
                 unsigned int id_origin = frattura.vertices[v];          // salvo gli ID dei vertici di origine e fine
@@ -534,6 +536,8 @@ void sottopoligonazione_ricorsiva(const Fracture& frattura, list<Trace>& P_trace
                 else{id_end = frattura.vertices[v+1];}
                 mesh.Cell1DId.push_back(v);         // aggiungo v agli ID dei segmenti
                 mesh.Cell1DVertices.push_back({id_origin, id_end}); // aggiungo origine e fine
+                mesh.Cell1DStatus.push_back(true);
+
             }
 
             //salvo le celle 2D --> in questo caso ne ho solo una, la frattura stessa
@@ -568,8 +572,7 @@ void sottopoligonazione_ricorsiva(const Fracture& frattura, list<Trace>& P_trace
                 Vector2i id_estremi_lato = mesh.Cell1DVertices[id_lato];
                 MatrixXd retta_del_lato = (*this).Retta_per_due_punti(mesh.Cell0DCoordinates[id_estremi_lato[0]], mesh.Cell0DCoordinates[id_estremi_lato[1]]);
 
-                vector<array<double,2>> punti_interni;
-                punti_interni.reserve(50);
+                list<Vector2d> punti_interni;
 
                 //cicliamo sulle celle 0d e cerchiamo i punti interni al segmento id_lato
                 for (unsigned int k = 0 ; k < mesh.NumberCell0D; k++){
@@ -579,16 +582,52 @@ void sottopoligonazione_ricorsiva(const Fracture& frattura, list<Trace>& P_trace
                     bool appartenenza_al_segm = (*this).appartiene_a_segmento(mesh.Cell0DCoordinates[id_estremi_lato[0]],mesh.Cell0DCoordinates[id_estremi_lato[1]], pto);
                     if(appartenenza_al_segm){
                         double alpha = (*this).ascissa_curvilinea(retta_del_lato, pto);
-                        ReshapingArray::VerificaRaddoppio(punti_interni);
-                        punti_interni.push_back({static_cast<double>(k), alpha});
+                        Vector2d el = {k,alpha};
+                        punti_interni.push_back(el);
                     }
 
                 }
 
 
-                punti_interni.shrink_to_fit();
+                if(punti_interni.size() > 2){
+                    mesh.Cell1DStatus[id_lato] = false;
+
+                    punti_interni.sort(compare_punti_interni);
 
 
+                    vector<unsigned int> id_punti_interni;
+                    id_punti_interni.reserve(punti_interni.size());
+                    for(auto tori = punti_interni.begin(); tori != punti_interni.end(); tori ++){
+                        unsigned int id= (*tori)[0];
+                        id_punti_interni.push_back(id);
+                    }
+
+
+                    for (unsigned int k = 0; k < id_punti_interni.size(); k++){
+                        unsigned int id_origin = id_punti_interni[k];
+                        unsigned int id_end;
+                        if(k == id_punti_interni.size()-1){id_end = id_punti_interni[0];}
+                        else{id_end = id_punti_interni[k+1];}
+
+                        //verifico che non esista già una cella 1D
+                        bool caso0 = false;
+                        unsigned int id_lato_dupl;
+                        for (unsigned int i = 0; i < mesh.Cell1DVertices.size(); i++){
+                            Vector2i cella1 = mesh.Cell1DVertices[i];
+
+                            if ( (unsigned(cella1[0]) == id_origin && unsigned(cella1[1]) == id_end) ||   (unsigned(cella1[0]) == id_end && unsigned(cella1[1]) == id_origin)){
+                                caso0 = true;
+                                id_lato_dupl = i;
+                                break;
+                            }
+
+                        }
+
+
+
+                    }
+
+                }
             }
         }
         return mesh;
