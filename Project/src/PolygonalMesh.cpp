@@ -13,7 +13,7 @@ using namespace Eigen;
 namespace UtilsFunction
 {
 
-inline vector<unsigned int> verifica_celle_1D(PolygonalMesh& mesh, Fracture& frattura, const double& toll){
+inline vector<unsigned int> verifica_celle_1D(PolygonalMesh& mesh, Fracture& frattura){
     FracturesFunctions fx;
 
     vector<unsigned int> edges;
@@ -23,11 +23,9 @@ inline vector<unsigned int> verifica_celle_1D(PolygonalMesh& mesh, Fracture& fra
 
     for(auto itor = frattura.vertices.begin(); itor != frattura.vertices.end(); itor++){
         unsigned int id_origin = (*itor);
-        Vector3d origin = mesh.Cell0DCoordinates[id_origin];
         unsigned int id_end;
         if(itor == frattura.vertices.end()-1){id_end = frattura.vertices[0];}
         else{id_end = *(itor+1);}
-        Vector3d end = mesh.Cell0DCoordinates[id_end];
 
         //CASO O: evito di salvare la cella 1D {a,b} se esiste già la cella {b,a}
         bool caso0 = false;
@@ -41,6 +39,7 @@ inline vector<unsigned int> verifica_celle_1D(PolygonalMesh& mesh, Fracture& fra
             if ( (unsigned(cella1[0]) == id_origin && unsigned(cella1[1]) == id_end) ||   (unsigned(cella1[0]) == id_end && unsigned(cella1[1]) == id_origin)){
                 caso0 = true;
                 lato_dupl = i;
+                break;
             }
         }
 
@@ -449,7 +448,7 @@ inline vector<unsigned int> verifica_celle_1D(PolygonalMesh& mesh, Fracture& fra
             //mi creo due vettori ausiliari
             vector<unsigned int> edges;
             edges.reserve(frc1.num_vertici+1);
-            edges = verifica_celle_1D(mesh, frc1, toll);
+            edges = verifica_celle_1D(mesh, frc1);
 
             vector<unsigned int> vertices = frc1.vertices;
             mesh.NumberCell1D = mesh.Cell1DId.size();
@@ -477,7 +476,7 @@ inline vector<unsigned int> verifica_celle_1D(PolygonalMesh& mesh, Fracture& fra
             //mi creo due vettori ausiliari
             vector<unsigned int> edges;
             edges.reserve(frc2.num_vertici+1);
-            edges = verifica_celle_1D(mesh, frc2, toll);
+            edges = verifica_celle_1D(mesh, frc2);
 
             vector<unsigned int> vertices = frc2.vertices;
             mesh.NumberCell1D = mesh.Cell1DId.size();
