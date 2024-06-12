@@ -188,7 +188,7 @@ TEST(sottopoligonazione, generale_marti){
     NP_traces.push_back(trc1);
     NP_traces.push_back(trc2);
 
-    mesh = fx.FracturesFunctions::SottoPoligonazione(frattura, P_traces, NP_traces, coordinates);
+    mesh = fx.FracturesFunctions::creazione_mesh(frattura, P_traces, NP_traces, coordinates);
 
     //faccio solo una verifica del numero di celle 0D e 2D
     EXPECT_EQ(mesh.NumberCell0D, 10);
@@ -282,7 +282,7 @@ TEST(sottopoligonazione, estr_traccia_coincidente_con_vertice){
     P_traces.push_back(trc1);
     NP_traces.push_back(trc2);
 
-    mesh = fx.FracturesFunctions::SottoPoligonazione(frattura, P_traces, NP_traces, coordinates);
+    mesh = fx.FracturesFunctions::creazione_mesh(frattura, P_traces, NP_traces, coordinates);
 
     //faccio solo una verifica del numero di celle 0D e 2D
     EXPECT_EQ(mesh.NumberCell0D, 8);
@@ -373,7 +373,7 @@ TEST(sottopoligonazione, traccia_comune_a_due_sottofratt){
     P_traces.push_back(trc1);
     NP_traces.push_back(trc2);
 
-    mesh = fx.FracturesFunctions::SottoPoligonazione(frattura, P_traces, NP_traces, coordinates);
+    mesh = fx.FracturesFunctions::creazione_mesh(frattura, P_traces, NP_traces, coordinates);
 
     //faccio solo una verifica del numero di celle 0D e 2D
     EXPECT_EQ(mesh.NumberCell0D, 9);

@@ -23,7 +23,7 @@ inline bool compare_beta(const array<double,2>& arr1, const array<double,2>& arr
 
 /****************************************************************************************************************/
 
-bool FracturesFunctions::importData(const string& path, vector<Fracture>& lista, vector<Vector3d>& coord){
+bool FracturesFunctions::lettura_da_file(const string& path, vector<Fracture>& lista, vector<Vector3d>& coord){
 
     //apro il file
     ifstream file;
@@ -105,7 +105,7 @@ bool FracturesFunctions::importData(const string& path, vector<Fracture>& lista,
 }
 
 
-bool FracturesFunctions::NearFractures(const Fracture& frc1, const Fracture& frc2, const vector<Vector3d>& coord){
+bool FracturesFunctions::vicinanza_sfere(const Fracture& frc1, const Fracture& frc2, const vector<Vector3d>& coord){
 
     bool flag = true;
     // vettori per le coordinate dei due baricentri (approssimativamente):
@@ -193,7 +193,7 @@ bool FracturesFunctions::NearFractures(const Fracture& frc1, const Fracture& frc
 
 }
 
-void FracturesFunctions::IntersectionFractures(Fracture &frc1, Fracture &frc2, const vector<Vector3d>& coord, list<Trace>& list_traces, map<unsigned int, list<Trace> > &P_traces, map<unsigned int, list<Trace> > &NP_traces){
+void FracturesFunctions::ricerca_tracce(Fracture &frc1, Fracture &frc2, const vector<Vector3d>& coord, list<Trace>& list_traces, map<unsigned int, list<Trace> > &P_traces, map<unsigned int, list<Trace> > &NP_traces){
     Matrix3d piano_frc1 = frc1.calcolo_piano(coord);
     Matrix3d piano_frc2 = frc2.calcolo_piano(coord);
 
