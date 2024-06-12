@@ -28,7 +28,7 @@ int main(int argc, char** argv)
 
 
     string path = "DFN";
-    string filenameI = path + "/FR362_data.txt";
+    string filenameI = path + "/FR200_data.txt";
 
     //definisco le liste che conterranno le tracce e le fratture
     vector<Fracture> list_fractures; //lista di fratture (è un vettore)
@@ -164,8 +164,6 @@ int main(int argc, char** argv)
         //aggiungo la mesh creata al vettore
         sottoPoligonazione_per_frattura.push_back(mesh);
 
-        cout << "mesh per frattura " << frattura.id << " completata." << endl;
-
     }
 
 
@@ -178,58 +176,58 @@ int main(int argc, char** argv)
     cout << "durata in millisecondi dll'intersection = " << durata_intersection << endl;
     cout << "durata in millisecondi dalla sottopoligonazione = " << durata_mesh << endl;
 
-    //PARAVIEW
-    for(unsigned int i=360; i< 362;i++){
-        string name="Mesh_";
-        name=name+to_string(i);
-        string name0=name+"_Geometry0Ds.inp";
-        string name1=name+"_Geometry1Ds.inp";
-        string name2=name+"_Geometry2Ds.inp";
+    // //PARAVIEW
+    // for(unsigned int i=360; i< 362;i++){
+    //     string name="Mesh_";
+    //     name=name+to_string(i);
+    //     string name0=name+"_Geometry0Ds.inp";
+    //     string name1=name+"_Geometry1Ds.inp";
+    //     string name2=name+"_Geometry2Ds.inp";
 
-        PolygonalMesh mesh=sottoPoligonazione_per_frattura[i];
+    //     PolygonalMesh mesh=sottoPoligonazione_per_frattura[i];
 
-        MatrixXd punti;
-        punti.resize(3,mesh.NumberCell0D);
-        for(unsigned int j=0; j<mesh.NumberCell0D;j++){
-            punti.col(j)=mesh.Cell0DCoordinates[j];
-        }
+    //     MatrixXd punti;
+    //     punti.resize(3,mesh.NumberCell0D);
+    //     for(unsigned int j=0; j<mesh.NumberCell0D;j++){
+    //         punti.col(j)=mesh.Cell0DCoordinates[j];
+    //     }
 
-        ofstream ofs2;
-        ofs2.open(name0);
+    //     ofstream ofs2;
+    //     ofs2.open(name0);
 
-        if(ofs2.fail()){cerr << "file opened 0 fail." << endl; return 1;}
+    //     if(ofs2.fail()){cerr << "file opened 0 fail." << endl; return 1;}
 
-        Gedim::UCDUtilities exporter;
-        VectorXi materials0(mesh.Cell0DId.size());
-        for(unsigned int k=0;k<mesh.Cell0DId.size();k++){
-            materials0(k)=mesh.Cell0DId[k];
-        }
-        exporter.ExportPoints( name0,
-                              punti,
-                              {},
-                              materials0);
-        ofs2.close();
-        MatrixXi lati;
-        lati.resize(2,mesh.NumberCell1D);
-        for(unsigned int j=0; j<mesh.NumberCell1D; j++){
-            lati(0,j)=mesh.Cell1DVertices[j][0];
-            lati(1,j)=mesh.Cell1DVertices[j][1];
-        }
-        VectorXi materials(mesh.Cell1DId.size());
-        for(unsigned int k=0;k<mesh.Cell1DId.size();k++){
-            materials(k)=mesh.Cell1DId[k];
-        }
-        ofs2.open(name1);
-        exporter.ExportSegments(  name1, punti, lati,{},{},materials);
-        ofs2.close();
+    //     Gedim::UCDUtilities exporter;
+    //     VectorXi materials0(mesh.Cell0DId.size());
+    //     for(unsigned int k=0;k<mesh.Cell0DId.size();k++){
+    //         materials0(k)=mesh.Cell0DId[k];
+    //     }
+    //     exporter.ExportPoints( name0,
+    //                           punti,
+    //                           {},
+    //                           materials0);
+    //     ofs2.close();
+    //     MatrixXi lati;
+    //     lati.resize(2,mesh.NumberCell1D);
+    //     for(unsigned int j=0; j<mesh.NumberCell1D; j++){
+    //         lati(0,j)=mesh.Cell1DVertices[j][0];
+    //         lati(1,j)=mesh.Cell1DVertices[j][1];
+    //     }
+    //     VectorXi materials(mesh.Cell1DId.size());
+    //     for(unsigned int k=0;k<mesh.Cell1DId.size();k++){
+    //         materials(k)=mesh.Cell1DId[k];
+    //     }
+    //     ofs2.open(name1);
+    //     exporter.ExportSegments(  name1, punti, lati,{},{},materials);
+    //     ofs2.close();
 
-       // ofs2.open(name2);
-       //  exporter.ExportPolygons(name2,punti,mesh.Cell2DVertices,{},{},materials);
+    //    // ofs2.open(name2);
+    //    //  exporter.ExportPolygons(name2,punti,mesh.Cell2DVertices,{},{},materials);
 
 
-       //  ofs2.close();
+    //    //  ofs2.close();
 
-    }
+    // }
 
     return 0;
 }

@@ -290,6 +290,18 @@ struct FracturesFunctions {
         return unico;
     }
 
+    inline double ascissa_curvilinea(MatrixXd& retta, Vector3d& x){
+        Vector3d P = retta.row(1);
+        Vector3d t = retta.row(0);
+        double alpha;
+        if (abs(t(0)) > tolleranza1D){
+            alpha = (x(0)-P(0))/t(0);}
+        else if (abs(t(1)) > tolleranza1D){
+            alpha = (x(1)-P(1))/t(1);}
+        else{
+            alpha = (x(2)-P(2))/t(2);}
+        return alpha;
+    }
 };
 } //namespace
 

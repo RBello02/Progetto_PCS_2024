@@ -18,6 +18,7 @@ struct PolygonalMesh{
     unsigned int NumberCell1D = 0; ///< number of Cell1D
     vector<unsigned int> Cell1DId = {}; ///< Cell1D id, size 1 x NumberCell1D: contiene gli id dei lati
     vector<Vector2i> Cell1DVertices = {}; ///< Cell1D vertices indices, size 2 x NumberCell1D (fromId,toId): contiene l'id della testa e della coda del segmento
+    vector<bool> Cell1DStatus = {};
 
     unsigned int NumberCell2D = 0; ///< number of Cell2D
     vector<unsigned int> Cell2DId = {}; ///< Cell2D id, size 1 x NumberCell2D: id celle 2D
