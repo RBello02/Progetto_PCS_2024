@@ -191,10 +191,11 @@ void sottopoligonazione_ricorsiva(const Fracture& frattura, list<Trace>& P_trace
             if (elem == id_nuoviPunti[0] || elem == id_nuoviPunti[1])  // questo è il caso in cui vado a finire su uno dei nuovi punti della frattura, quindi lo assegno a entrambe le sotto fratture
             {
                 //assegno l'elemento ad entrambe le fratture
-                frc1.vertices.push_back(elem);
                 ReshapingArray::VerificaRaddoppio(frc1.vertices);
-                frc2.vertices.push_back(elem);
+                frc1.vertices.push_back(elem);
                 ReshapingArray::VerificaRaddoppio(frc2.vertices);
+                frc2.vertices.push_back(elem);
+
 
                 //switcho la flag
                 flag = !flag;  // perché da qua in poi incontro gli elementi della seconda frattura
@@ -203,13 +204,13 @@ void sottopoligonazione_ricorsiva(const Fracture& frattura, list<Trace>& P_trace
             {
                 if (flag)  // se il frag è True allora assegno i punti alla prima frattura
                 {
-                    frc1.vertices.push_back(elem);
                     ReshapingArray::VerificaRaddoppio(frc1.vertices);
+                    frc1.vertices.push_back(elem);
                 }
                 else // se il flag è false assegno gli elementi alla seconda frattura
                 {
-                    frc2.vertices.push_back(elem);
                     ReshapingArray::VerificaRaddoppio(frc2.vertices);
+                    frc2.vertices.push_back(elem);
                 }
 
             }
