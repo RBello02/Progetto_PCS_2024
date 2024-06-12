@@ -193,6 +193,40 @@ TEST(sottopoligonazione, generale_marti){
     //faccio solo una verifica del numero di celle 0D e 2D
     EXPECT_EQ(mesh.NumberCell0D, 10);
     EXPECT_EQ(mesh.NumberCell2D, 3);
+    vector<Vector3d> coordinate_attese;
+    coordinate_attese.reserve(10);
+    coordinate_attese.push_back({2,9,3});
+    coordinate_attese.push_back({5,9,2});
+    coordinate_attese.push_back({5.5,9,4.5});
+    coordinate_attese.push_back({4,9,6});
+    coordinate_attese.push_back({2.5,9,6});
+    coordinate_attese.push_back({1,9,5});
+
+    coordinate_attese.push_back({ 3.250924183729939, 9, 2.58302527209002 });
+    coordinate_attese.push_back({ 4.882299398569733, 9, 5.117700601430268 });
+    coordinate_attese.push_back({ 4.67782, 9, 4.8 });
+    coordinate_attese.push_back({ 1.1, 9, 4.8 });
+
+    for(unsigned int j=0;j<mesh.Cell0DCoordinates.size(); j++){
+        unsigned int l=mesh.Cell0DCoordinates[j].size();
+        for(unsigned int k=0; k<l; k++ ){
+            ASSERT_NEAR(mesh.Cell0DCoordinates[j][k],coordinate_attese[j][k], fx.tolleranza1D);}
+    }
+
+    vector<vector<unsigned int>> vertici_attesi;
+    vertici_attesi.reserve(3);
+    vertici_attesi.push_back({9,8,7,3,4,5});
+    vertici_attesi.push_back({9,0,6,8});
+    vertici_attesi.push_back({6,1,2,7});
+    EXPECT_EQ(mesh.Cell2DVertices, vertici_attesi);
+
+    vector<vector<unsigned int>> lati_attesi;
+    lati_attesi.reserve(12);
+    lati_attesi.push_back({0,1,2,3,4,5});
+    lati_attesi.push_back({6,7,8,0});
+    lati_attesi.push_back({9,10,11,12});
+    EXPECT_EQ(mesh.Cell2DEdges, lati_attesi);
+
 }
 
 TEST(sottopoligonazione, estr_traccia_coincidente_con_vertice){
@@ -253,9 +287,40 @@ TEST(sottopoligonazione, estr_traccia_coincidente_con_vertice){
     //faccio solo una verifica del numero di celle 0D e 2D
     EXPECT_EQ(mesh.NumberCell0D, 8);
     EXPECT_EQ(mesh.NumberCell2D, 3);
+    vector<Vector3d> coordinate_attese;
+    coordinate_attese.reserve(8);
+    coordinate_attese.push_back({1,3,0});
+    coordinate_attese.push_back({2,1,0});
+    coordinate_attese.push_back({4,1,0});
+    coordinate_attese.push_back({5,3,0});
+    coordinate_attese.push_back({3,4.5,0});
+
+    coordinate_attese.push_back({3,1,0});
+    coordinate_attese.push_back({1.556818181818182, 1.886363636363636, 0});
+    coordinate_attese.push_back({3, 2.735294117647059, 0});
+
+    for(unsigned int j=0;j<mesh.Cell0DCoordinates.size(); j++){
+        unsigned int l=mesh.Cell0DCoordinates[j].size();
+        for(unsigned int k=0; k<l; k++ ){
+            ASSERT_NEAR(mesh.Cell0DCoordinates[j][k],coordinate_attese[j][k], fx.tolleranza1D);}
+    }
+    vector<vector<unsigned int>> vertici_attesi;
+    vertici_attesi.reserve(3);
+    vertici_attesi.push_back({0,6,7,4});
+    vertici_attesi.push_back({6,1,5,7});
+    vertici_attesi.push_back({5,2,3,4});
+    EXPECT_EQ(mesh.Cell2DVertices, vertici_attesi);
+
+    vector<vector<unsigned int>> lati_attesi;
+    lati_attesi.reserve(12);
+    lati_attesi.push_back({0,1,2,3});
+    lati_attesi.push_back({4,5,6,1});
+    lati_attesi.push_back({7,8,9,10});
+    EXPECT_EQ(mesh.Cell2DEdges, lati_attesi);
 }
 
 TEST(sottopoligonazione, traccia_comune_a_due_sottofratt){
+
     FracturesFunctions fx;
     PolygonalMesh mesh;
 
@@ -313,8 +378,40 @@ TEST(sottopoligonazione, traccia_comune_a_due_sottofratt){
     //faccio solo una verifica del numero di celle 0D e 2D
     EXPECT_EQ(mesh.NumberCell0D, 9);
     EXPECT_EQ(mesh.NumberCell2D, 4);
+    vector<Vector3d> coordinate_attese;
+    coordinate_attese.reserve(9);
+    coordinate_attese.push_back({1,3,0});
+    coordinate_attese.push_back({2,1,0});
+    coordinate_attese.push_back({4,1,0});
+    coordinate_attese.push_back({5,3,0});
+    coordinate_attese.push_back({3,4.5,0});
+
+    coordinate_attese.push_back({ 3, 1, 0 });
+    coordinate_attese.push_back({ 3, 3.105, 0 });
+    coordinate_attese.push_back({1.441340782122905, 3.331005586592179, 0});
+    coordinate_attese.push_back({4.9137529137529139, 2.8275058275058274, 0});
+
+    for(unsigned int j=0;j<mesh.Cell0DCoordinates.size(); j++){
+        unsigned int l=mesh.Cell0DCoordinates[j].size();
+        for(unsigned int k=0; k<l; k++ ){
+            EXPECT_NEAR(mesh.Cell0DCoordinates[j][k],coordinate_attese[j][k], fx.tolleranza1D);}
+    }
+    vector<vector<unsigned int>> vertici_attesi;
+    vertici_attesi.reserve(4);
+    vertici_attesi.push_back({ 7, 6, 4 });
+    vertici_attesi.push_back({ 7, 0, 1, 5, 6 });
+    vertici_attesi.push_back({ 6, 8, 3, 4 });
+    vertici_attesi.push_back({ 6, 5, 2, 8 });
+    EXPECT_EQ(mesh.Cell2DVertices, vertici_attesi);
+
+    vector<vector<unsigned int>> lati_attesi;
+    lati_attesi.reserve(12);
+    lati_attesi.push_back({0,1,2});
+    lati_attesi.push_back({3,4,5,6,0});
+    lati_attesi.push_back({7,8,9,1});
+    lati_attesi.push_back({6,10,11,7});
+    EXPECT_EQ(mesh.Cell2DEdges, lati_attesi);
+
 }
-
-
 
 #endif
