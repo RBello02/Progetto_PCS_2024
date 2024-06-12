@@ -105,7 +105,7 @@ void sottopoligonazione_ricorsiva(const Fracture& frattura, list<Trace>& P_trace
         id_nuoviPunti.reserve(4);
 
 
-        for (unsigned int i = 0; i< frattura.num_vertici; i++)  // ciclo sui vertici della frattura
+        for (unsigned int i = 0; i< frattura.num_vertici; i++)  // ciclo sui lati della frattura per intersecarla con i lati
         {
             // definisco i segmenti del poligono
             unsigned int id_o = frattura.vertices[i];  // salvo l'ID del vertice di inizio del segmento
@@ -132,6 +132,7 @@ void sottopoligonazione_ricorsiva(const Fracture& frattura, list<Trace>& P_trace
                     if(fx.pto_unico(pto, nuovi_punti, a))  // vedo il nuovo pto coincide con i punti di intersezione gia trovati, al passo 0 nuovi punti è vuoto quindi restituisco true ed entro nell'if
                     {
 
+                        // struttura di supporto in cui ci salviamo i vertici della frattura
                         //devo gestire anche il caso in cui il punto coincide con un vertice della frattura
                         vector<Vector3d> coord_frc;
                         coord_frc.reserve(frattura.num_vertici);
@@ -185,16 +186,16 @@ void sottopoligonazione_ricorsiva(const Fracture& frattura, list<Trace>& P_trace
         frc2.vertices.reserve(10);  // riserco i vertici
 
         //per suddividere i vertici nelle due fratture scorro la lista e avrò un booleano che switcho appena trovo uno dei due nuovi vertici
-        bool flag = true;
+        bool flag = true; // true è per la frattura 1
         for(unsigned int elem : lista_vert)  // ciclo sulla lista dei vertici della frattura
         {
             if (elem == id_nuoviPunti[0] || elem == id_nuoviPunti[1])  // questo è il caso in cui vado a finire su uno dei nuovi punti della frattura, quindi lo assegno a entrambe le sotto fratture
             {
                 //assegno l'elemento ad entrambe le fratture
+                ReshapingArray::VerificaRaddoppio(frc1.vertices);
                 frc1.vertices.push_back(elem);
                 ReshapingArray::VerificaRaddoppio(frc1.vertices);
                 frc2.vertices.push_back(elem);
-                ReshapingArray::VerificaRaddoppio(frc2.vertices);
 
                 //switcho la flag
                 flag = !flag;  // perché da qua in poi incontro gli elementi della seconda frattura
@@ -203,13 +204,15 @@ void sottopoligonazione_ricorsiva(const Fracture& frattura, list<Trace>& P_trace
             {
                 if (flag)  // se il frag è True allora assegno i punti alla prima frattura
                 {
-                    frc1.vertices.push_back(elem);
                     ReshapingArray::VerificaRaddoppio(frc1.vertices);
+                    frc1.vertices.push_back(elem);
+
                 }
                 else // se il flag è false assegno gli elementi alla seconda frattura
                 {
-                    frc2.vertices.push_back(elem);
                     ReshapingArray::VerificaRaddoppio(frc2.vertices);
+                    frc2.vertices.push_back(elem);
+
                 }
 
             }
@@ -239,9 +242,6 @@ void sottopoligonazione_ricorsiva(const Fracture& frattura, list<Trace>& P_trace
 
 
 
-        //MI MANCA DA VERIFICRE QUALI TRACCE APPARTENGANO A QUALI LISTE
-        // LO FACCIO IOOOO (RENY)
-
         // LAVORO PRIMA SULLE TRACCE PASSANTI
         if(P_traces.size() != 0){
             for (auto itor = P_traces.begin(); itor != P_traces.end(); itor++)  // ciclo sulle tracce
@@ -261,17 +261,17 @@ void sottopoligonazione_ricorsiva(const Fracture& frattura, list<Trace>& P_trace
                     // per ricavare un vettore direzzione da confrontare basta vedere sui vertici della della frattura 1. Ne scelgo uno, possibilmente con distanza da p0 > tolleranza, altrimenti faccio casino
 
                 // vado a definire una segnatura (ovvero un vettore direzione)
-                bool rimango_dentro = true;
+                bool rimango_dentro_while = true;
                 unsigned int i = 0;
                 Vector3d segnatura (0,0,0);
-                while (rimango_dentro && i<frc1.num_vertici)
+                while (rimango_dentro_while && i<frc1.num_vertici)
                 {
                     unsigned int id = frc1.vertices[i];
                     Vector3d vettore_provvisorio = mesh.Cell0DCoordinates[id];
                     if ((dir_tr_tagliante.cross(vettore_provvisorio-pt0_tr_tagliante)).norm()>fx.tolleranza1D)
                     {
                         segnatura = dir_tr_tagliante.cross(vettore_provvisorio-pt0_tr_tagliante);   // segnatura relativa alla frattura 1, tutti i punti sulla frattura 1 seguono questa segnatura
-                        rimango_dentro = !rimango_dentro; // esco da while
+                        rimango_dentro_while = !rimango_dentro_while; // esco da while
                     }
                     i++;
                 }
@@ -551,6 +551,33 @@ void sottopoligonazione_ricorsiva(const Fracture& frattura, list<Trace>& P_trace
             }
 
             sottopoligonazione_ricorsiva(frc, P_traces, NP_traces, mesh, *this, vert_fract);  // do tutto in pasto alla funzione che fa la sotto poligonazione
+            // usiamo this per avere le funzioni di FracturesFunctions legato alla tolleranza
+        }
+
+
+        for(unsigned int id_cella_2d=0; id_cella_2d<mesh.NumberCell2D; id_cella_2d ++){
+            vector<unsigned int> vertici=mesh.Cell2DVertices[id_cella_2d];
+            vector<unsigned int> lati=mesh.Cell2DEdges[id_cella_2d];
+
+            for(auto itor = mesh.Cell2DEdges[id_cella_2d].begin(); itor != mesh.Cell2DEdges[id_cella_2d].end(); itor++ ){
+                unsigned int id_lato= (*itor);
+                Vector2i id_estremi_lato = mesh.Cell1DVertices(id_lato);
+                (*this).Retta_per_due_punti(mesh.Cell0DCoordinates[id_estremi_lato[0]], );
+
+                vector<array<double,2>> punti_interni;
+                punti_interni.reserve(50);
+
+
+
+
+                //cicliamo sulle celle 0d e cerchiamo i punti interni al segmento id_lato
+                for (unsigned int k = 0 ; k < mesh.NumberCell0D; k++){
+
+                }
+
+
+
+            }
         }
         return mesh;
 
