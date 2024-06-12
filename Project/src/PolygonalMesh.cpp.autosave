@@ -492,7 +492,7 @@ void sottopoligonazione_ricorsiva(const Fracture& frattura, list<Trace>& P_trace
 
     }
 
-    inline bool campare_punti_interni(const Trace& trc1, const Trace& trc2){
+    inline bool campare_punti_interni(const, const Trace& trc2){
         return trc1.len > trc2.len;
     }
 
