@@ -218,18 +218,16 @@ TEST(sottopoligonazione, generale_marti){
     vertici_attesi.reserve(3);
     vertici_attesi.push_back({9,8,7,3,4,5});
     vertici_attesi.push_back({9,0,6,8});
-    vertici_attesi.push_back({6,1,2,7});
-    EXPECT_EQ(mesh.Cell2DVertices, vertici_attesi);
-
+    vertici_attesi.push_back({8,6,1,2,7});
+    ASSERT_EQ(mesh.Cell2DVertices, vertici_attesi);
 
     vector<vector<unsigned int>> lati_attesi;
     lati_attesi.reserve(12);
     lati_attesi.push_back({0,1,2,3,4,5});
     lati_attesi.push_back({6,7,8,0});
-    lati_attesi.push_back({9,10,11,12});
+    lati_attesi.push_back({8,9,10,11,1});
     EXPECT_EQ(mesh.Cell2DEdges, lati_attesi);
-
-}
+    }
 
 TEST(sottopoligonazione, estr_traccia_coincidente_con_vertice){
     FracturesFunctions fx;
@@ -310,16 +308,15 @@ TEST(sottopoligonazione, estr_traccia_coincidente_con_vertice){
     vertici_attesi.reserve(3);
     vertici_attesi.push_back({0,6,7,4});
     vertici_attesi.push_back({6,1,5,7});
-    vertici_attesi.push_back({5,2,3,4});
+    vertici_attesi.push_back({7,5,2,3,4});
     EXPECT_EQ(mesh.Cell2DVertices, vertici_attesi);
 
-  vector<vector<unsigned int>> lati_attesi;
+    vector<vector<unsigned int>> lati_attesi;
     lati_attesi.reserve(12);
     lati_attesi.push_back({0,1,2,3});
     lati_attesi.push_back({4,5,6,1});
-    lati_attesi.push_back({7,8,9,10});
+    lati_attesi.push_back({6,7,8,9,2});
     EXPECT_EQ(mesh.Cell2DEdges, lati_attesi);
-
 }
 
 TEST(sottopoligonazione, traccia_comune_a_due_sottofratt){
@@ -407,7 +404,6 @@ TEST(sottopoligonazione, traccia_comune_a_due_sottofratt){
     vertici_attesi.push_back({ 6, 5, 2, 8 });
     EXPECT_EQ(mesh.Cell2DVertices, vertici_attesi);
 
-
     vector<vector<unsigned int>> lati_attesi;
     lati_attesi.reserve(12);
     lati_attesi.push_back({0,1,2});
@@ -416,7 +412,9 @@ TEST(sottopoligonazione, traccia_comune_a_due_sottofratt){
     lati_attesi.push_back({6,10,11,7});
     EXPECT_EQ(mesh.Cell2DEdges, lati_attesi);
 
-
 }
+
+
+
 
 #endif
