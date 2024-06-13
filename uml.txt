@@ -41,23 +41,24 @@ struct FracturesFunctions {
 + const double tolleranda2D
 + const double tolleranda3D
 
-+ bool {abstract} importData(path, vector_fracture,  coord);
-+ bool {abstract} NearFractures(fracture1, fracture2, coord);
-+ void {abstract} IntersectionFractures(fracure1, fracture2, coord, list_traces, P_traces,  NP_traces);
-+ PolygonalMesh {abstract} SottoPoligonazione(frattura,P_traces,NP_traces, coord)
++ bool {abstract} lettura_da_file(percorso, vector<fracture>,  coordinate);
++ bool {abstract} vicinanza_sfere(fracture1, fracture2, coordinate);
++ void {abstract} ricerca_tracce(fracure1, fracture2, coordinate, list_traces, P_traces,  NP_traces);
++ PolygonalMesh {abstract} creazione_mesh(frattura,P_traces,NP_traces, coord)
 
 --funzioni di supporto--
 
 + inline bool Parallelismo(piano_1, piano_2)
 + inline MatrixXd Retta_tra_piani(piano_1, piano_2)
-+ inline MatrixXd Retta_per_due_vertici_della_frattura( id_vertice1, id_vertice2, coord)
-+ inline Vector2d alpha_di_intersezione(retta_fracture, retta_intersez)
++ inline MatrixXd Retta_per_due_vertici_della_frattura(vertice1, vertice2, coord)
++ inline Vector2d alpha_di_intersezione(lato, retta_intersezione)
 
 
 + inline MatrixXd Retta_per_due_punti(punto1, punto2)
-+ inline Vector2d intersezione_rette(retta_frattura, retta_traccia)
-+ inline bool appartiene_a_segmento(origin, end, punto)
++ inline Vector2d intersezione_rette(lato, retta_traccia)
++ inline bool appartiene_a_segmento(origine, fine, punto)
 + inline bool pto_unico(punto, punti, id)
++ inline double ascissa_curvilinea(retta, punto)
 
 }
 }
@@ -86,7 +87,8 @@ struct PolygonalMesh{
 
 + NumberCell1D : unsigned int
 + Cell1DId :  vector<unsigned int>  
-+ Cell1DVertices : vector<Vector2i>  
++ Cell1DVertices : vector<Vector2i> 
++ Cell1DStatus : vector<bool>
 
 + NumberCell2D : unsigned int 
 + Cell2DId : vector<unsigned int> 
