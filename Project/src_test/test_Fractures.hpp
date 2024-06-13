@@ -844,6 +844,30 @@ TEST(Tuttoilprogramma_test, Generale){
     EXPECT_EQ(edges_frc2[2], 1);
 
 
+
 }
 
+TEST(ascissa_curvilinea, Generale_Renato_1)
+{
+    FracturesFunctions g;
+    double toll = g.tolleranza1D;
+    MatrixXd retta;
+    retta.resize(2,3);
+    retta << 1,1,1,
+             0,0,0;
+    Vector3d x = {5,5,5};
+    EXPECT_NEAR(g.ascissa_curvilinea(retta,x), 5, toll);
+}
+
+TEST(ascissa_curvilinea, Generale_Renato_2)
+{
+    FracturesFunctions g;
+    double toll = g.tolleranza1D;
+    MatrixXd retta;
+    retta.resize(2,3);
+    retta << 1,1,1,
+        0,0,0;
+    Vector3d x = {5,0,5};
+    EXPECT_TRUE(isnan(g.ascissa_curvilinea(retta,x)));
+}
 #endif

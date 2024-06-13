@@ -293,13 +293,24 @@ struct FracturesFunctions {
     inline double ascissa_curvilinea(MatrixXd& retta, Vector3d& x){
         Vector3d P = retta.row(1);
         Vector3d t = retta.row(0);
+
+        double controllo = t.cross(x-P).norm();
+
         double alpha;
-        if (abs(t(0)) > tolleranza1D){
-            alpha = (x(0)-P(0))/t(0);}
-        else if (abs(t(1)) > tolleranza1D){
-            alpha = (x(1)-P(1))/t(1);}
-        else{
-            alpha = (x(2)-P(2))/t(2);}
+
+        if(abs(controllo) < tolleranza1D)
+        {
+            if (abs(t(0)) > tolleranza1D){
+                alpha = (x(0)-P(0))/t(0);}
+            else if (abs(t(1)) > tolleranza1D){
+                alpha = (x(1)-P(1))/t(1);}
+            else{
+                alpha = (x(2)-P(2))/t(2);}
+        }
+        else
+        {
+            alpha = 0.0/0.0;
+        }
         return alpha;
     }
 };
