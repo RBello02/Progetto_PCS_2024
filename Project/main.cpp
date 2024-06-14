@@ -212,21 +212,22 @@ int main(int argc, char** argv)
             lati(1,j)=mesh.Cell1DVertices[j][1];
         }
 
-        vector<unsigned int> materials;
-        materials.reserve(mesh.Cell1DId.size());
-        for(unsigned int k=0;k<mesh.Cell1DId.size();k++){
-            if(mesh.Cell1DStatus[k] != false){
-                materials.push_back(k);}
-        }
-        VectorXi mat1;
-        mat1.resize(materials.size());
-        for(unsigned int l=0; l<materials.size(); l++){
-            mat1[l]=materials[l];
+
+
+        VectorXi materials;
+        materials.resize(mesh.NumberCell1D);
+        for(unsigned int k=0; k<mesh.NumberCell1D;k++){
+            if(mesh.Cell1DStatus[k]){
+                materials[k]=k;
+            }
+            else{
+                materials[k]=0;
+            }
         }
 
 
         ofs2.open(name1);
-        exporter.ExportSegments(name1, punti, lati,{},{},mat1);
+        exporter.ExportSegments(name1, punti, lati,{},{},materials);
         ofs2.close();
 
        // ofs2.open(name2);
