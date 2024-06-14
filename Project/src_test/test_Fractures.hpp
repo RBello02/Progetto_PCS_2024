@@ -862,7 +862,6 @@ TEST(ascissa_curvilinea, Generale_Renato_1)
 TEST(ascissa_curvilinea, Generale_Renato_2)
 {
     FracturesFunctions g;
-    double toll = g.tolleranza1D;
     MatrixXd retta;
     retta.resize(2,3);
     retta << 1,1,1,

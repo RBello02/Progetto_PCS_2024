@@ -358,17 +358,17 @@ void sottopoligonazione_ricorsiva(const Fracture& frattura, list<Trace>& P_trace
                 // per ricavare un vettore direzzione da confrontare basta vedere sui vertici della della frattura 1. Ne scelgo uno, possibilmente con distanza da p0 > tolleranza, altrimenti faccio casino
 
                 // vado a definire una segnatura (ovvero un vettore direzione)
-                bool rimango_dentro = true;
+                bool rimango_dentro_while = true;
                 unsigned int i = 0;
                 Vector3d segnatura (0,0,0);
-                while (rimango_dentro && i<frc1.num_vertici)
+                while (rimango_dentro_while && i<frc1.num_vertici)
                 {
                     unsigned int id = frc1.vertices[i];
                     Vector3d vettore_provvisorio = mesh.Cell0DCoordinates[id];
                     if ((dir_tr_tagliante.cross(vettore_provvisorio-pt0_tr_tagliante)).norm()>fx.tolleranza1D)
                     {
                         segnatura = dir_tr_tagliante.cross(vettore_provvisorio-pt0_tr_tagliante);   // segnatura relativa alla frattura 1, tutti i punti sulla frattura 1 seguono questa segnatura
-                        rimango_dentro = !rimango_dentro; // esco da while
+                        rimango_dentro_while = !rimango_dentro_while; // esco da while
                     }
                     i++;
                 }
